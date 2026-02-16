@@ -3,7 +3,15 @@ uuid = "d5106ebc-8f76-4abe-9d9c-e2e957300c8c"
 authors = ["Imperial College London"]
 version = "1.0.0-DEV"
 
+[deps]
+GlobalTradeAnalysisProjectModelV7 = "17bf7c9d-bd82-4e09-a8b5-dac70c0d12c3"
+HeaderArrayFile = "e2354eee-dcc0-4139-addc-ce07950641e0"
+NamedArrays = "86f7a689-2022-50b4-a561-43c23ac3c673"
+
 [compat]
+GlobalTradeAnalysisProjectModelV7 = "0.1.11"
+HeaderArrayFile = "0.2.0"
+NamedArrays = "0.10.5"
 julia = "1.1"
 
 [extras]
