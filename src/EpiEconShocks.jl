@@ -1,5 +1,5 @@
 module EpiEconShocks
 
-# Write your package code here.
+include("ShockGtap.jl")
 
 end
