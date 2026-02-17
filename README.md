@@ -12,11 +12,11 @@ _EpiEconShocks.jl_ is currently a thin wrapper around the [_GlobalTradeAnalysisP
 
 ## Installation
 
-_Daedalus.jl_ can be installed from GitHub using the Julia package manager _Pkg.jl_.
+_EpiEconShocks.jl_ can be installed from GitHub using the Julia package manager _Pkg.jl_.
 
 ```julia
 using Pkg
-Pkg.add(url="git@github.com:pratikunterwegs/Daedalus.jl.git")
+Pkg.add(url="git@github.com:jameel-institute/EpiEconShocks.jl.git")
 ```
 
 ## Quick start
