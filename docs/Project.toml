@@ -1,4 +1,6 @@
 [deps]
 BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
+Daedalus = "05fc9732-d2bf-478b-9a56-f88318f7a02f"
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 EpiEconShocks = "d5106ebc-8f76-4abe-9d9c-e2e957300c8c"
