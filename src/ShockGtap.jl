@@ -43,10 +43,7 @@ function shock_gtap(
     # Get the required inputs for calibration by providing the target values in start_data
     (; fixed_calibration, data_calibration) = generate_calibration_inputs(mc, start_data)
 
-    # Keep the default closure (fixed) for later
-    fixed_default = deepcopy(mc.fixed)
-
-    # Load the calibration data and closure 
+    # Load the calibration data and closure
     mc.data = deepcopy(data_calibration)
     mc.fixed = deepcopy(fixed_calibration)
 
@@ -63,27 +60,25 @@ function shock_gtap(
     # NOTE: example data only has skilled or unskilled labour
     labour_name = ["skilled labor", "unskilled labor"]
 
-    # make deep copies as calibrated data is modified in place
+    # make a deep copy as calibrated data is modified in place
     # NOTE: example data has NaNs - unclear whether this is expected or
     # these should be replaced with zeros
-    # NOTE: "qe" appears to be endowment per region, "qes" is the same per sector
-    # qes has one more dimension than qe to accommodate this
-    base_qe = deepcopy(calibrated_data["qe"])   # aggregate factor endowments
-    base_qes = deepcopy(calibrated_data["qes"]) # detailed per-activity factor (optional)
+    # NOTE: "qes" is endowment supply per sector and region; "qe" is the
+    # regional aggregate from which the GTAP model's CES rule would
+    # re-distribute labour across sectors (inappropriate for a pandemic shock)
+    base_qes = deepcopy(calibrated_data["qes"])
 
     # prepare storage for results
     # NOTE: no real reason to use NamedArray other than user convenience IMO
     y_by_q = NamedArray(
         zeros(length(regions), length(quarters)), (regions, collect(quarters)))
-    wage_by_q = NamedArray(
-        zeros(length(regions), length(quarters)), (regions, collect(quarters)))
     ev_by_q = NamedArray(
         zeros(length(regions), length(quarters)), (regions, collect(quarters)))
 
     for q in quarters
-        # apply shock to aggregate labour endowment (exogenous)
+        # apply shock to sector-level labour endowment (exogenous)
         # NOTE: must re-use initial value as mc.data is modified in place
-        mc.data["qe"][labour_name, :] .= base_qe[labour_name, :] .* shock_multipliers[q]
+        mc.data["qes"][labour_name, :, :] .= base_qes[labour_name, :, :] .* shock_multipliers[q]
 
         run_model!(mc)
 
