@@ -260,7 +260,7 @@ version = "4.1.1"
 deps = ["DiffEqCallbacks", "LinearAlgebra", "OrdinaryDiffEq", "StaticArrays"]
 git-tree-sha1 = "7f9c69b8e91e78238de45a6b65ceae7695018fc8"
 repo-rev = "main"
-repo-url = "git@github.com:pratikunterwegs/Daedalus.jl.git"
+repo-url = "https://github.com/pratikunterwegs/Daedalus.jl.git"
 uuid = "05fc9732-d2bf-478b-9a56-f88318f7a02f"
 version = "1.0.0-DEV"
 
