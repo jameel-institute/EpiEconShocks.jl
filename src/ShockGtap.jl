@@ -78,7 +78,8 @@ function shock_gtap(
     for q in quarters
         # apply shock to sector-level labour endowment (exogenous)
         # NOTE: must re-use initial value as mc.data is modified in place
-        mc.data["qes"][labour_name, :, :] .= base_qes[labour_name, :, :] .* shock_multipliers[q]
+        mc.data["qes"][labour_name, :, :] .= base_qes[labour_name, :, :] .*
+                                             shock_multipliers[q]
 
         run_model!(mc)
 
