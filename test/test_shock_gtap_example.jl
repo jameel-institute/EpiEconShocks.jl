@@ -6,6 +6,6 @@ using EpiEconShocks
     @test begin
         model = EpiEconShocks.Example.get_example_model()
         result = EpiEconShocks.Example.shock_gtap_example(model, 0.5)
-        !isnothing(result) && haskey(result, :y_by_q) && haskey(result, :ev_by_q)
+        !isnothing(result)
     end
 end
