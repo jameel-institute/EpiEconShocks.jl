@@ -40,7 +40,9 @@ Next we pass the proportional losses in labour supply to the function `shock_gta
 ```@example using_daedalus
 # pass a shock to a model using example data and view outputs
 # assumes equal shocks to all regions
-gtap_output = EpiEconShocks.Example.shock_gtap_example(labour_available);
+example_model = EpiEconShocks.Example.get_example_model();
+
+gtap_output = EpiEconShocks.Example.shock_gtap_example(example_model, labour_available);
 
 gtap_output.y_by_q
 ```

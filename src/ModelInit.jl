@@ -67,24 +67,25 @@ function initial_gtap_model(datadir::String;
 
     (; hData,
         hParameters,
-        hSets) = aggregate_data(
+        hSets) = GTAP.aggregate_data(
         hData = data, hParameters = parameters, hSets = sets,
         comMap = comm_agg, regMap = regions_agg, endMap = endow_agg);
 
     ## generate model structure from aggregated data
-    mc = generate_initial_model(
+    mc = GTAP.generate_initial_model(
         hSets = hSets, hData = hData, hParameters = hParameters);
 
     ## prepare and apply calibration
     start_data = deepcopy(mc.data) # only really used to validate calibration
 
-    (; fixed_calibration, data_calibration) = generate_calibration_inputs(mc, start_data);
+    (; fixed_calibration,
+        data_calibration) = GTAP.generate_calibration_inputs(mc, start_data);
 
     mc.data = deepcopy(data_calibration)
     mc.fixed = deepcopy(fixed_calibration)
 
     # run initial model in place
-    run_model!(mc)
+    GTAP.run_model!(mc)
 
     return mc
 end

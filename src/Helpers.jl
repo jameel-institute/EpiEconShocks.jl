@@ -117,6 +117,24 @@ function cluster_regions(regions::NamedArray,
     return cluster_named_array(regions, preserve; fill_value = "row", groups = groups)
 end
 
+"""
+    cluster_commodities(commodities::NamedArray)::NamedArray
+
+Aggregate commodities in a NamedArray by clustering into major commodity groups.
+
+# Arguments
+- `commodities::NamedArray`: Input array of commodity codes.
+
+# Returns
+- `NamedArray`: New array with commodities clustered into groups: crops, animals, extract,
+  processed food, manuf (manufacturing), and svces (services).
+
+# Example
+```julia
+commodities = NamedArray([1:65;], [:commodity])
+result = cluster_commodities(commodities)
+```
+"""
 function cluster_commodities(commodities::NamedArray)::NamedArray
     comm_agg = deepcopy(commodities)
 
@@ -131,6 +149,24 @@ function cluster_commodities(commodities::NamedArray)::NamedArray
     return comm_agg
 end
 
+"""
+    cluster_endowments(endowm::NamedArray)::NamedArray
+
+Aggregate endowments in a NamedArray by clustering into major factor groups.
+
+# Arguments
+- `endowm::NamedArray`: Input array of endowment codes.
+
+# Returns
+- `NamedArray`: New array with endowments clustered into groups: land, skilled labor,
+  unskilled labor, capital, and other.
+
+# Example
+```julia
+endowments = NamedArray([:land, :skilled, :unskilled, :capital, :other], [:endowment])
+result = cluster_endowments(endowments)
+```
+"""
 function cluster_endowments(endowm::NamedArray)::NamedArray
     endow_agg = deepcopy(endowm)
 
