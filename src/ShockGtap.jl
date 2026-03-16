@@ -22,13 +22,14 @@ A named tuple `(y_by_q, ev_by_q)` containing:
 - `ev_by_q`: NamedArray of equivalent variation (welfare change) by region relative to baseline
 """
 function shock_gtap(model::GTAP.model_container_struct,
-        labour_scaling::Float64)
+        labour_scaling::Float64
+)
     # TODO: check inputs?
 
     # Save the calibrated data
-    calibrated_data = deepcopy(mc.data)
+    calibrated_data = deepcopy(model.data)
 
-    regions = mc.sets["reg"]
+    regions = model.sets["reg"]
     labour_name = ["skilled labor", "unskilled labor"]
 
     # make a deep copy as calibrated data is modified in place
@@ -44,21 +45,21 @@ function shock_gtap(model::GTAP.model_container_struct,
     y_by_q = NamedArray(zeros(length(regions), 1), (regions, [1]))
     ev_by_q = NamedArray(zeros(length(regions), 1), (regions, [1]))
 
-    # NOTE: must re-use initial value as mc.data is modified in place
+    # NOTE: must re-use initial value as model.data is modified in place
     # NOTE: shock all regions equally; may need region-specific shocks later
-    mc.data["qe"][labour_name, :] .= base_qes[labour_name, :, :] .*
-                                     labour_scaling
+    model.data["qe"][labour_name, :] .= base_qes[labour_name, :, :] .*
+                                        labour_scaling
 
     # get new equilibrium
-    run_model!(mc)
+    run_model!(model)
 
     # save outputs
-    y_by_q[:, 1] .= mc.data["y"]  # GDP/income
+    y_by_q[:, 1] .= model.data["y"]  # GDP/income
     ev_by_q[:, 1] .= calculate_expenditure(
-        sets = mc.sets,
+        sets = model.sets,
         data0 = calibrated_data,
-        data1 = mc.data,
-        parameters = mc.parameters
+        data1 = model.data,
+        parameters = model.parameters
     ) .- calibrated_data["y"]
 
     # examine gdp/income and expenditure
