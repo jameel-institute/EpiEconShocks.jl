@@ -1,19 +1,17 @@
-"""
-Functions to help set up a calibrated GTAP model.
-"""
+
 module ModelInit
 
 export initial_gtap_model
 
 using ..Helpers
 
-using GlobalTradeAnalysisProjectModelV7
+import GlobalTradeAnalysisProjectModelV7 as GTAP
 using HeaderArrayFile
 using NamedArrays
 
 """
     initial_gtap_model(datadir::String;
-        roi::Union{String, Vector{String}} = ["gbr", "usa", "chn"])::GlobalTradeAnalysisProjectModelV7.model_container_struct
+        roi::Union{String, Vector{String}} = ["gbr", "usa", "chn"])::GTAP.model_container_struct
 
 Initialize and calibrate a GTAP (Global Trade Analysis Project) economic model.
 
@@ -43,7 +41,7 @@ interest (roi), building the model structure, and running calibration to ensure 
 7. Returns the calibrated model container
 """
 function initial_gtap_model(datadir::String;
-        roi::Union{String, Vector{String}} = ["gbr", "usa", "chn", "eur"])::GlobalTradeAnalysisProjectModelV7.model_container_struct
+        roi::Union{String, Vector{String}} = ["gbr", "usa", "chn", "eur"])::GTAP.model_container_struct
 
     # TODO: add checks on datadir and files therein
 
