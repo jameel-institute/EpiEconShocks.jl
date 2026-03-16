@@ -38,7 +38,7 @@ function shock_gtap(model::GTAP.model_container_struct,
     # NOTE: "qes" is endowment supply per sector and region; "qe" is the
     # regional aggregate from which the GTAP model's CES rule would
     # re-distribute labour across sectors (inappropriate for a pandemic shock)
-    base_qes = deepcopy(calibrated_data["qes"])
+    base_qes = deepcopy(calibrated_data["qe"])
 
     # prepare storage for results
     # NOTE: no real reason to use NamedArray other than user convenience IMO
@@ -47,15 +47,15 @@ function shock_gtap(model::GTAP.model_container_struct,
 
     # NOTE: must re-use initial value as model.data is modified in place
     # NOTE: shock all regions equally; may need region-specific shocks later
-    model.data["qe"][labour_name, :] .= base_qes[labour_name, :, :] .*
+    model.data["qe"][labour_name, :] .= base_qes[labour_name, :] .*
                                         labour_scaling
 
     # get new equilibrium
-    run_model!(model)
+    GTAP.run_model!(model)
 
     # save outputs
-    y_by_q[:, 1] .= model.data["y"]  # GDP/income
-    ev_by_q[:, 1] .= calculate_expenditure(
+    y_by_q .= model.data["y"]  # GDP/income
+    ev_by_q .= GTAP.calculate_expenditure(
         sets = model.sets,
         data0 = calibrated_data,
         data1 = model.data,

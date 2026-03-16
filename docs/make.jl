@@ -17,7 +17,9 @@ makedocs(;
     pages = [
         "Home" => "index.md",
         "Setting up GTAP" => "setup.md",
-        "Realistic use case" => "daedalus.md"
+        "Use with an epidemic model" => "daedalus.md",
+        "Index" => "pkg_index.md",
+        "Function Reference" => "reference.md"
     ]
 )
 

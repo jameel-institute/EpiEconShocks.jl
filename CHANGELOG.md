@@ -27,10 +27,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update `cluster_regions()` docstring to reflect `get_eu_states()` usage
 - Document `initial_gtap_model()` with detailed workflow explanation and deepcopy rationale
 - Add comprehensive docstring to `shock_gtap()` function explaining labour shock mechanism and return values
+- Add docstrings to `cluster_commodities()` and `cluster_endowments()` functions to enable Documenter.jl cross-references in setup guide
 
 ### Tests
 - Add basic test suite for `cluster_named_array()` function in `test/test_cluster_named_array.jl`
 - Add test cases for `groups` argument (Dict, NamedTuple, multiple groups)
 - Update existing tests to use keyword-only syntax for `fill_value` argument
 - Add basic test suite for `cluster_regions()` function in `test/test_cluster_gtap.jl`
-
+- Add basic test suite for `shock_gtap_example()` function in `test/test_shock_gtap_example.jl`
+- Add basic test suite for `shock_gtap()` function in `test/test_shock_gtap.jl`
