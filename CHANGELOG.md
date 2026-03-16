@@ -5,12 +5,6 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
-
-### Changed
-- Reduce Julia version requirement to 1.10.0
-- Add explicit StyledStrings dependency constraint (v1.10) for Julia 1.10 compatibility
-
 ## [0.0.1] - 2026-03-13
 
 ### Features
@@ -23,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Refactor `cluster_named_array()` signature: `fill_value` is now a keyword-only argument for improved clarity
 - Refactor `cluster_regions()` signature: `fill_value` is now a keyword-only argument
 - Update `cluster_regions()` to pass `roi` argument to `cluster_regions()` function
+- Reduce Julia version requirement to 1.10.0
+- Add explicit StyledStrings dependency constraint (v1.10) for Julia 1.10 compatibility
 
 ### Documentation
 - Add docstrings to `cluster_regions()` and `cluster_named_array()` functions in `src/Helpers.jl`
