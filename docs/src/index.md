@@ -23,17 +23,14 @@ Pkg.add(url="git@github.com:jameel-institute/EpiEconShocks.jl.git")
 
 ## Quick start
 
-Here is a basic example of the current functionality.
+Here is a basic example of the current functionality using example data.
+A more detailed example may be provided once more detailed data can be shared online.
 
 ```@example basic_use
 using EpiEconShocks
 
-# run the single function shock_gtap() applying a 50% shock over
-# 8 quarters
-nquarters = 8
-shock = repeat([0.5], nquarters)
-
-shock_gtap(nquarters, shock)
+# run the single function shock_gtap_example() applying a 5% labour shock
+EpiEconShocks.Example.shock_gtap_example(0.05)
 ```
 
 ## Related projects
@@ -49,10 +46,3 @@ To report a bug, request a feature, or just start a discussion, [please open an 
 ## References
 
 WIP
-
-```@index
-```
-
-```@autodocs
-Modules = [EpiEconShocks]
-```

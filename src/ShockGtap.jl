@@ -1,63 +1,34 @@
 
 export shock_gtap
 
-using GlobalTradeAnalysisProjectModelV7
+import GlobalTradeAnalysisProjectModelV7 as GTAP
 using HeaderArrayFile
 using NamedArrays
 
 """
-    shock_gtap(nquarters::Int = 8, shock_multipliers::Vector{Float64} = repeat([0.5], nquarters))
-Run a sequence of labour supply shocks in the GTAP model and examine the
-resulting changes in GDP/income and expenditure.
+    shock_gtap(model::GTAP.model_container_struct, labour_scaling::Float64)
 
-Code taken from the example provided in the documentation of
-GlobalTradeAnalysisProjectModelV7.jl, with some modifications to apply a
-sequence of shocks and save the results.
+Apply a labour endowment shock to a GTAP economic model and compute the resulting economic outcomes.
+
+This function scales labour endowments (both skilled and unskilled) across all sectors and regions by a specified factor, then runs the GTAP model to compute the equilibrium response. The shock is applied uniformly across labour types and sectors while allowing the model's CES rule to re-distribute labour across sectors.
 
 # Arguments
-- `nquarters`: Number of quarters to simulate (default: 8)
-- `shock_multipliers`: Vector of proportional multipliers to apply to the
-  labour endowment for each quarter (default: 50% reduction for all quarters)
+- `model::GTAP.model_container_struct`: A GTAP model container with initialized data, sets, and parameters
+- `labour_scaling::Float64`: Multiplier applied to labour endowments (e.g., 0.5 for a 50% reduction)
 
 # Returns
-A named tuple containing:
-- `y_by_q`: Named array of GDP/income by region and quarter;
-- `ev_by_q`: Named array of expenditure change by region and quarter.
-
-# Examples
-```julia
-results = shock_gtap(8)
-```
+A named tuple `(y_by_q, ev_by_q)` containing:
+- `y_by_q`: NamedArray of GDP/income by region
+- `ev_by_q`: NamedArray of equivalent variation (welfare change) by region relative to baseline
 """
-function shock_gtap(
-        nquarters::Int = 8, shock_multipliers::Vector{Float64} = repeat([0.5], nquarters))
-    # Get the sample data
-    (; hData, hParameters, hSets) = get_sample_data()
+function shock_gtap(model::GTAP.model_container_struct,
+        labour_scaling::Float64)
+    # TODO: check inputs?
 
-    # Produce initial uncalibrated model using the GTAP data
-    mc = generate_initial_model(hSets = hSets, hData = hData, hParameters = hParameters)
-
-    # Keep the start data for calibration---the value flows are the correct ones
-    start_data = deepcopy(mc.data)
-
-    # Get the required inputs for calibration by providing the target values in start_data
-    (; fixed_calibration, data_calibration) = generate_calibration_inputs(mc, start_data)
-
-    # Load the calibration data and closure
-    mc.data = deepcopy(data_calibration)
-    mc.fixed = deepcopy(fixed_calibration)
-
-    run_model!(mc)
-
-    # Save the calibrated data---this is the starting point for all simulation
+    # Save the calibrated data
     calibrated_data = deepcopy(mc.data)
 
-    # NOTE: this model has no real representation of time; the shocks
-    # occur at some t timepoints that could represent any time interval
-    quarters = 1:nquarters
     regions = mc.sets["reg"]
-
-    # NOTE: example data only has skilled or unskilled labour
     labour_name = ["skilled labor", "unskilled labor"]
 
     # make a deep copy as calibrated data is modified in place
@@ -70,28 +41,25 @@ function shock_gtap(
 
     # prepare storage for results
     # NOTE: no real reason to use NamedArray other than user convenience IMO
-    y_by_q = NamedArray(
-        zeros(length(regions), length(quarters)), (regions, collect(quarters)))
-    ev_by_q = NamedArray(
-        zeros(length(regions), length(quarters)), (regions, collect(quarters)))
+    y_by_q = NamedArray(zeros(length(regions), 1), (regions, [1]))
+    ev_by_q = NamedArray(zeros(length(regions), 1), (regions, [1]))
 
-    for q in quarters
-        # apply shock to sector-level labour endowment (exogenous)
-        # NOTE: must re-use initial value as mc.data is modified in place
-        mc.data["qes"][labour_name, :, :] .= base_qes[labour_name, :, :] .*
-                                             shock_multipliers[q]
+    # NOTE: must re-use initial value as mc.data is modified in place
+    # NOTE: shock all regions equally; may need region-specific shocks later
+    mc.data["qe"][labour_name, :] .= base_qes[labour_name, :, :] .*
+                                     labour_scaling
 
-        run_model!(mc)
+    # get new equilibrium
+    run_model!(mc)
 
-        # save outputs
-        y_by_q[:, q] .= mc.data["y"]  # GDP/income
-        ev_by_q[:, q] .= calculate_expenditure(
-            sets = mc.sets,
-            data0 = calibrated_data,
-            data1 = mc.data,
-            parameters = mc.parameters
-        ) .- calibrated_data["y"]
-    end
+    # save outputs
+    y_by_q[:, 1] .= mc.data["y"]  # GDP/income
+    ev_by_q[:, 1] .= calculate_expenditure(
+        sets = mc.sets,
+        data0 = calibrated_data,
+        data1 = mc.data,
+        parameters = mc.parameters
+    ) .- calibrated_data["y"]
 
     # examine gdp/income and expenditure
     # NOTE: I don't understand the specifics of the internal calculations

@@ -15,38 +15,32 @@ using Daedalus
 using EpiEconShocks
 using Plots
 
-quarter_length = 90
-nquarters = 8
-time_end = float(nquarters * quarter_length)
+output = daedalus("United Kingdom", 3.0, time_end=100.0);
+horizon = 100
 
-output = daedalus(r0=3.0, time_end=time_end);
+workers = sum(Daedalus.DataLoader.get_country("United Kingdom").workers)
 
 # get cumulative number of infectious symptomatic, hospitalised, and dead
 # in each quarter
 working_groups = 5:49
 
-labour_loss =
-    Daedalus.Outputs.get_values(output, "Is", quarter_length, working_groups) .+
-    Daedalus.Outputs.get_values(output, "H", quarter_length, working_groups) .+
-    Daedalus.Outputs.get_values(output, "D", quarter_length, working_groups)
+labour_loss = sum(
+        Daedalus.Outputs.get_values(output, "Is", horizon, working_groups) .+
+        Daedalus.Outputs.get_values(output, "H", horizon, working_groups) .+
+        Daedalus.Outputs.get_values(output, "D", horizon, working_groups)
+    )
 
-labour_prop_loss = labour_loss ./
-    (sum(Daedalus.Data.aus_workers() * quarter_length))
+labour_prop_loss = labour_loss / (workers * horizon)
 
-# plot proportional loss in labour supply in each quarter
-plot(labour_prop_loss * 100)
-xlabel!("# Economic quarter (90 days)")
-ylabel!("% labour supply lost")
+labour_available = 1.0 - labour_prop_loss
 ```
 
 Next we pass the proportional losses in labour supply to the function `shock_gtap()` to compute new equilibria for each level of available labour supply.
 
 ```@example using_daedalus
-# calculate available labour from proportion lost
-labour_available = 1.0 .- labour_prop_loss
-
-# run model and view outputs
-gtap_output = shock_gtap(nquarters, labour_available);
+# pass a shock to a model using example data and view outputs
+# assumes equal shocks to all regions
+gtap_output = EpiEconShocks.Example.shock_gtap_example(labour_available);
 
 gtap_output.y_by_q
 ```
