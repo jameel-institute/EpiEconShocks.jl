@@ -2,11 +2,13 @@
 CurrentModule = EpiEconShocks
 ```
 
-# EpiEconShocks
+# EpiEconShocks.jl
 
+[![Project Status: Concept – Minimal or no implementation has been done yet, or the repository is only intended to be a limited example, demo, or proof-of-concept.](https://www.repostatus.org/badges/latest/concept.svg)](https://www.repostatus.org/#concept)
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://jameel-institute.github.io/EpiEconShocks.jl/dev/)
 [![Build Status](https://github.com/jameel-institute/EpiEconShocks.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/jameel-institute/EpiEconShocks.jl/actions/workflows/CI.yml?query=branch%3Amain)
 [![Coverage](https://codecov.io/gh/jameel-institute/EpiEconShocks.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/jameel-institute/EpiEconShocks.jl)
+[![SciML Code Style](https://img.shields.io/static/v1?label=code%20style&message=SciML&color=9558b2&labelColor=389826)](https://github.com/SciML/SciMLStyle)
 
 _EpiEconShocks.jl_ is a proof-of-concept package that demonstrates how to translate epidemic outcomes such as cases, hospitalisations, and deaths into 'shocks' or disruptions to the economic system of the affected population.
 
@@ -35,6 +37,10 @@ example_model = EpiEconShocks.Example.get_example_model();
 shock = EpiEconShocks.ParameterShock("qe", ["skilled labor", "unskilled labor"], 0.05)
 EpiEconShocks.Example.shock_gtap_example(example_model, [shock])
 ```
+
+## Further documentation
+
+Further long-form documentation, a package index, and function documentation may be found at the [package website](https://jameel-institute.github.io/EpiEconShocks.jl/dev/).
 
 ## Related projects
 
