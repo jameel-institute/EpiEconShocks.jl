@@ -532,7 +532,7 @@ weakdeps = ["Adapt", "ChainRulesCore"]
 deps = ["GlobalTradeAnalysisProjectModelV7", "HeaderArrayFile", "NamedArrays"]
 path = ".."
 uuid = "d5106ebc-8f76-4abe-9d9c-e2e957300c8c"
-version = "0.0.1"
+version = "0.0.2"
 
 [[deps.EpollShim_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
