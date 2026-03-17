@@ -4,8 +4,9 @@ module Example
 export shock_gtap_example, get_example_model
 
 using GlobalTradeAnalysisProjectModelV7
-using NamedArrays
-using HeaderArrayFile
+
+import ..shock_gtap
+import ..ParameterShock
 
 """
     get_example_model()
@@ -28,36 +29,16 @@ function get_example_model()::model_container_struct
 end
 
 """
-    shock_gtap_example(model::model_container_struct, labour_scaling::Float64)
+    shock_gtap_example(model::model_container_struct, shocks::Vector{ParameterShock})
 
 Run an example of passing a (labour supply) shock to a GTAP model, using the
     example dataset provided in `GlobalTradeAnalysisProjectModelV7.jl`.
+
+This is a convenience function that delegates to `shock_gtap` but using example data.
 """
 function shock_gtap_example(model::model_container_struct,
-        labour_scaling::Float64)
-    calibrated_data = deepcopy(model.data)
-    regions = model.sets["reg"]
-    labour_name = ["skilled labor", "unskilled labor"]
-
-    base_qe = deepcopy(calibrated_data["qe"])
-
-    y_by_q = NamedArray(zeros(length(regions), 1), (regions, [1]))
-    ev_by_q = NamedArray(zeros(length(regions), 1), (regions, [1]))
-
-    model.data["qe"][labour_name, :] .= base_qe[labour_name, :] .*
-                                        labour_scaling
-
-    run_model!(model)
-
-    y_by_q .= model.data["y"]  # GDP/income
-    ev_by_q .= calculate_expenditure(
-        sets = model.sets,
-        data0 = calibrated_data,
-        data1 = model.data,
-        parameters = model.parameters
-    ) .- calibrated_data["y"]
-
-    return (y_by_q = y_by_q, ev_by_q = ev_by_q)
+    shocks::Vector{ParameterShock})
+    return shock_gtap(model, shocks)
 end
 
 end
