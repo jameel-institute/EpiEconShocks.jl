@@ -8,4 +8,6 @@ using Test
     # tests for shock functions
     include("test_shock_gtap_example.jl")
     include("test_shock_gtap.jl")
+    # tests for structs
+    include("test_struct_paramShock.jl")
 end
