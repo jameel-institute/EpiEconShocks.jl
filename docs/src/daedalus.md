@@ -15,7 +15,7 @@ using Daedalus
 using EpiEconShocks
 using Plots
 
-output = daedalus("United Kingdom", 3.0, time_end=100.0);
+output = daedalus("United Kingdom", "influenza 2009", time_end=100.0);
 horizon = 100
 
 workers = sum(Daedalus.DataLoader.get_country("United Kingdom").workers)
@@ -42,7 +42,11 @@ Next we pass the proportional losses in labour supply to the function `shock_gta
 # assumes equal shocks to all regions
 example_model = EpiEconShocks.Example.get_example_model();
 
-gtap_output = EpiEconShocks.Example.shock_gtap_example(example_model, labour_available);
+labour_shock = ParameterShock(
+    "qe", ["skilled labor", "unskilled labor"], labour_available
+)
+
+gtap_output = EpiEconShocks.Example.shock_gtap_example(example_model, [labour_shock]);
 
 gtap_output.y_by_q
 ```

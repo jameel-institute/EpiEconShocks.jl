@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+## [0.0.2] - 2026-03-17
+
+### Features
+- Add `ParameterShock` struct to enable flexible, multi-parameter economic shocks with validation
+- Add `_apply_shocks!` internal helper to apply vector of parameter shocks to model data
+
+### Changed
+- Refactor `shock_gtap()` signature: now accepts `Vector{ParameterShock}` instead of `labour_scaling::Float64` for flexible parameter targeting
+
+### Documentation
+- Add comprehensive docstring to `ParameterShock` struct with field descriptions and usage examples
+- Add docstring to `shock_gtap()` function with example of using `ParameterShock` vector
+
+### Tests
+- Add validation tests for `ParameterShock` struct in `test/test_shock_gtap.jl` (valid construction, boundary values, ArgumentError cases)
+- Update `shock_gtap()` test to use new `ParameterShock` vector API
+
 ## [0.0.1] - 2026-03-13
 
 ### Features
@@ -26,7 +45,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Align function docstrings and examples with keyword-only argument signatures
 - Update `cluster_regions()` docstring to reflect `get_eu_states()` usage
 - Document `initial_gtap_model()` with detailed workflow explanation and deepcopy rationale
-- Add comprehensive docstring to `shock_gtap()` function explaining labour shock mechanism and return values
 - Add docstrings to `cluster_commodities()` and `cluster_endowments()` functions to enable Documenter.jl cross-references in setup guide
 
 ### Tests

@@ -32,7 +32,8 @@ using EpiEconShocks
 example_model = EpiEconShocks.Example.get_example_model();
 
 # run the single function shock_gtap_example() applying a 5% labour shock
-EpiEconShocks.Example.shock_gtap_example(example_model, 0.05)
+shock = EpiEconShocks.ParameterShock("qe", ["skilled labor", "unskilled labor"], 0.05)
+EpiEconShocks.Example.shock_gtap_example(example_model, [shock])
 ```
 
 ## Related projects

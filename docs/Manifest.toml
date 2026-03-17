@@ -326,11 +326,11 @@ version = "4.1.1"
 
 [[deps.Daedalus]]
 deps = ["CSV", "DataFrames", "DiffEqCallbacks", "LinearAlgebra", "OrdinaryDiffEq", "SciMLBase", "StaticArrays", "Statistics"]
-git-tree-sha1 = "c43c45f15ea38a574693a10b7219adb2db513bd3"
+git-tree-sha1 = "916cd52e2d8e3d41dec0792ba42aa332f6934c27"
 repo-rev = "main"
 repo-url = "https://github.com/pratikunterwegs/Daedalus.jl.git"
 uuid = "05fc9732-d2bf-478b-9a56-f88318f7a02f"
-version = "0.0.5"
+version = "0.0.6"
 
 [[deps.DataAPI]]
 git-tree-sha1 = "abe83f3a2f1b857aac70ef8b269080af17764bbe"
@@ -1542,9 +1542,9 @@ version = "1.22.0"
 
 [[deps.OrdinaryDiffEqCore]]
 deps = ["ADTypes", "Accessors", "Adapt", "ArrayInterface", "ConcreteStructs", "DataStructures", "DiffEqBase", "DocStringExtensions", "EnumX", "EnzymeCore", "FastBroadcast", "FastClosures", "FastPower", "FillArrays", "FunctionWrappersWrappers", "InteractiveUtils", "LinearAlgebra", "Logging", "MacroTools", "MuladdMacro", "Polyester", "PrecompileTools", "Preferences", "Random", "RecursiveArrayTools", "Reexport", "SciMLBase", "SciMLLogging", "SciMLOperators", "SciMLStructures", "Static", "StaticArrayInterface", "StaticArraysCore", "SymbolicIndexingInterface", "TruncatedStacktraces"]
-git-tree-sha1 = "b0b386226690c23ebc771cd68a37d08c55b60924"
+git-tree-sha1 = "b4a8d9b96931c2fc69126233bbe6d1a11b053d77"
 uuid = "bbf590c4-e513-4bbe-9b18-05decba2e5d8"
-version = "3.21.0"
+version = "3.22.0"
 
     [deps.OrdinaryDiffEqCore.extensions]
     OrdinaryDiffEqCoreMooncakeExt = "Mooncake"
@@ -1994,9 +1994,9 @@ version = "0.2.0"
 
 [[deps.SciMLBase]]
 deps = ["ADTypes", "Accessors", "Adapt", "ArrayInterface", "CommonSolve", "ConstructionBase", "Distributed", "DocStringExtensions", "EnumX", "FunctionWrappersWrappers", "IteratorInterfaceExtensions", "LinearAlgebra", "Logging", "Markdown", "Moshi", "PreallocationTools", "PrecompileTools", "Preferences", "Printf", "RecipesBase", "RecursiveArrayTools", "Reexport", "RuntimeGeneratedFunctions", "SciMLLogging", "SciMLOperators", "SciMLPublic", "SciMLStructures", "StaticArraysCore", "Statistics", "SymbolicIndexingInterface"]
-git-tree-sha1 = "8787e28326c99b0c9c706b51da525ad09d03c56f"
+git-tree-sha1 = "0be0208add9b6836a701e0ac3ad30bda72fee51d"
 uuid = "0bca4576-84f4-4d90-8ffe-ffa030f20462"
-version = "2.149.0"
+version = "2.150.0"
 
     [deps.SciMLBase.extensions]
     SciMLBaseChainRulesCoreExt = "ChainRulesCore"
@@ -2149,9 +2149,9 @@ version = "1.11.0"
 
 [[deps.SparseMatrixColorings]]
 deps = ["ADTypes", "DocStringExtensions", "LinearAlgebra", "PrecompileTools", "Random", "SparseArrays"]
-git-tree-sha1 = "7b2263c87aa890bf6d18ae05cedbe259754e3f34"
+git-tree-sha1 = "fa43a02c01e3e3cb065c89bf9b648b89e3c06f18"
 uuid = "0a514795-09f3-496d-8182-132a7b665d35"
-version = "0.4.24"
+version = "0.4.25"
 
     [deps.SparseMatrixColorings.extensions]
     SparseMatrixColoringsCUDAExt = "CUDA"
