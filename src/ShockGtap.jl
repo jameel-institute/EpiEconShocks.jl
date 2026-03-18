@@ -9,7 +9,8 @@ using NamedArrays
 
 Internal helper that applies a vector of parameter shocks to model data.
 
-Mutates `data` in place, scaling values from `base_data` according to each shock's scale factor.
+Mutates `data` in place, scaling values from `base_data` according to each
+shock's scale factor.
 
 # Arguments
 - `data`: The mutable model data dictionary to be modified
@@ -33,18 +34,25 @@ end
 """
     shock_gtap(model::GTAP.model_container_struct, shocks::Vector{ParameterShock})
 
-Apply parameter shocks to a GTAP economic model and compute the resulting economic outcomes.
+Apply parameter shocks to a GTAP economic model and compute the resulting
+economic outcomes.
 
-This function applies a vector of parameter shocks to the model data and runs the GTAP model to compute the equilibrium response. Each shock scales a specified parameter by a scale factor.
+This function applies a vector of parameter shocks to the model data and runs
+the GTAP model to compute the equilibrium response. Each shock scales a
+specified parameter by a scale factor.
 
 # Arguments
-- `model::GTAP.model_container_struct`: A GTAP model container with initialized data, sets, and parameters
+- `model::GTAP.model_container_struct`: A GTAP model container with initialized
+    data, sets, and parameters
 - `shocks::Vector{ParameterShock}`: Vector of parameter shocks to apply
 
 # Returns
-A named tuple `(y_by_q, ev_by_q)` containing:
-- `y_by_q`: NamedArray of GDP/income by region
-- `ev_by_q`: NamedArray of equivalent variation (welfare change) by region relative to baseline
+A named tuple `(y, ev, delta_gdp)` containing:
+- `y`: NamedArray of GDP/income by region
+- `ev`: NamedArray of equivalent variation (welfare change) by region relative
+    to baseline
+- `delta_gdp`: NamedArray of change in GDP between original calibrated model and
+    new equilibrium.
 
 # Example
 
@@ -57,36 +65,40 @@ result = shock_gtap(model, shocks)
 function shock_gtap(model::GTAP.model_container_struct,
         shocks::Vector{ParameterShock}
 )
-    # TODO: check inputs?
+    # make a copy of the model data; this will be modified in place later
+    mod_data = model.data
+    mod_copy = deepcopy(model)
 
-    # Save the calibrated data
-    calibrated_data = deepcopy(model.data)
-
-    regions = model.sets["reg"]
+    regions = mod_copy.sets["reg"]
 
     # prepare storage for results
     # NOTE: no real reason to use NamedArray other than user convenience IMO
-    y_by_q = NamedArray(zeros(length(regions), 1), (regions, [1]))
-    ev_by_q = NamedArray(zeros(length(regions), 1), (regions, [1]))
+    y = NamedArray(zeros(length(regions), 1), (regions, [1]))
+    ev = NamedArray(zeros(length(regions), 1), (regions, [1]))
 
-    # Apply all shocks to model data
-    _apply_shocks!(model.data, calibrated_data, shocks)
+    # Apply all shocks to mod_copy data
+    _apply_shocks!(mod_copy.data, mod_data, shocks)
 
-    # get new equilibrium
-    GTAP.run_model!(model)
+    # get new equilibrium - operates on mod copy
+    GTAP.run_model!(mod_copy)
 
-    # save outputs
-    y_by_q .= model.data["y"]  # GDP/income
-    ev_by_q .= GTAP.calculate_expenditure(
-        sets = model.sets,
-        data0 = calibrated_data,
-        data1 = model.data,
-        parameters = model.parameters
-    ) .- calibrated_data["y"]
+    # save outputs; raw 'y', change in GDP, 'ev'
+    y .= mod_copy.data["y"]  # GDP/income
 
-    # examine gdp/income and expenditure
-    # NOTE: I don't understand the specifics of the internal calculations
-    # or the correct interpretation
+    # compare initial gdp with new equilibrium
+    qgdp1 = GTAP.calculate_gdp(sets = mod_copy.sets, data0 = mod_data,
+        data1 = mod_copy.data)
+    qgdp0 = GTAP.calculate_gdp(sets = mod_copy.sets, data0 = mod_data,
+        data1 = mod_data)
+    delta_gdp = qgdp1 ./ qgdp0 .- 1.0
 
-    return (y_by_q = y_by_q, ev_by_q = ev_by_q)
+    # so-called equivalent variation
+    ev .= GTAP.calculate_expenditure(
+        sets = mod_copy.sets,
+        data0 = mod_data,
+        data1 = mod_copy.data,
+        parameters = mod_copy.parameters
+    ) .- mod_data["y"]
+
+    return (y = y, ev = ev, delta_gdp = delta_gdp)
 end

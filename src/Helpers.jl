@@ -114,7 +114,8 @@ function cluster_regions(regions::NamedArray,
         groups = nothing
     end
 
-    return cluster_named_array(regions, preserve; fill_value = "row", groups = groups)
+    return cluster_named_array(
+        regions, preserve; fill_value = fill_value, groups = groups)
 end
 
 """
