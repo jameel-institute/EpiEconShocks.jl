@@ -25,5 +25,6 @@ makedocs(;
 
 deploydocs(;
     repo = "github.com/jameel-institute/EpiEconShocks.jl",
-    devbranch = "main"
+    devbranch = "main",
+    versions = "v^"
 )

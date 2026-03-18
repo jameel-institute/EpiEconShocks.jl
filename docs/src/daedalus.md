@@ -48,9 +48,13 @@ labour_shock = ParameterShock(
 
 gtap_output = EpiEconShocks.Example.shock_gtap_example(example_model, [labour_shock]);
 
-gtap_output.y_by_q
+gtap_output.y
 ```
 
 ```@example using_daedalus
-gtap_output.ev_by_q
+gtap_output.ev
+```
+
+```@example using_daedalus
+gtap_output.delta_gdp
 ```
