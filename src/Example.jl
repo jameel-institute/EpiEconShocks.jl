@@ -34,10 +34,12 @@ end
 Run an example of passing a (labour supply) shock to a GTAP model, using the
     example dataset provided in `GlobalTradeAnalysisProjectModelV7.jl`.
 
-This is a convenience function that delegates to `shock_gtap` but using example data.
+This is a convenience function that delegates to `shock_gtap` but using
+    example data. This function exists because the full GTAP data is used
+    under license and cannot be shared online.
 """
 function shock_gtap_example(model::model_container_struct,
-    shocks::Vector{ParameterShock})
+        shocks::Vector{ParameterShock})
     return shock_gtap(model, shocks)
 end
 
