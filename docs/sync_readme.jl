@@ -20,11 +20,22 @@ stripping out Documenter.jl-specific syntax. Inserts package version badge.
 """
 function sync_readme()
     src_file = joinpath(@__DIR__, "src", "index.md")
-    tmp_file = joinpath(@__DIR__, ".readme_tmp.md")
     dest_file = joinpath(dirname(@__DIR__), "README.md")
 
-    # Read source file
+    # Get version and generate badge
+    version = pkgversion(EpiEconShocks)
+    badge = generate_version_badge(version)
+
+    # Read source file - this is docs/src/index.md
     content = read(src_file, String)
+
+    # Insert version badge after the first badge line
+    content = replace(content,
+        r"(\n\[!\[Version\]\(.*?\)\]\(.*?\)\n)"s =>
+        "\n$badge\n")
+
+    # Update docs/src/index with correct version
+    write(src_file, content)
 
     # Remove @meta blocks
     content = replace(content, r"```@meta\n.*?\n```\n*"s => "")
@@ -32,23 +43,15 @@ function sync_readme()
     # Convert @example blocks to regular code blocks
     content = replace(content, r"```@example\s+\w+\n"s => "```julia\n")
 
-    # Get version and generate badge
-    version = pkgversion(EpiEconShocks)
-    badge = generate_version_badge(version)
-
     # Insert version badge after the first badge line
     content = replace(content,
         r"(\n\[!\[Version:.*?\]\(.*?\)\]\(.*?\)\n)"s =>
         "\n$badge\n")
 
     # Write to temporary file
-    write(tmp_file, content)
+    write(dest_file, content)
 
-    # Copy to README.md
-    run(`cp $tmp_file $dest_file`)
-    run(`rm $tmp_file`)
-
-    println("✓ README.md updated from docs/src/index.md with version badge")
+    println("✓ Readme and index updated with version $version")
 end
 
 sync_readme()
