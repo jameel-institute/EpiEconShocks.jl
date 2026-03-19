@@ -1,6 +1,3 @@
-using Test
-using EpiEconShocks
-
 @testset "shock_gtap_example" begin
     # Test that shock_gtap_example runs without error
     @test_skip begin

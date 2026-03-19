@@ -1,6 +1,3 @@
-using Test
-using EpiEconShocks
-
 @testset "shock_gtap" begin
     # Test that shock_gtap runs without error with ParameterShock vector
     @test_skip begin

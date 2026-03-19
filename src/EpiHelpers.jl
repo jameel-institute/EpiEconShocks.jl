@@ -56,7 +56,7 @@ function calc_indivs(data::DataFrame, scaling::Dict)
     end
 
     select!(df, Symbol.(keys(scaling)))
-    transform!(df, AsTable(:) =>  ByRow(sum))
+    transform!(df, AsTable(:) => ByRow(sum))
 
     return df[!, end] # last col is rowwise sum of cols
 end

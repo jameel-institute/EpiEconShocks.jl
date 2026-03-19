@@ -1,7 +1,3 @@
-using Test
-using NamedArrays
-using EpiEconShocks
-
 @testset "cluster_named_array" begin
     # Test basic clustering with multiple preserved indices
     @test begin

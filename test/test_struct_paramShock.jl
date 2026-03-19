@@ -1,6 +1,3 @@
-using Test
-using EpiEconShocks
-
 @testset "ParameterShock" begin
     # Test valid construction with vector indices
     shock = EpiEconShocks.ParameterShock("qe", ["skilled labor", "unskilled labor"], 0.5)

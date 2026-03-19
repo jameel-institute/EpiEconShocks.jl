@@ -1,4 +1,6 @@
+using DataFrames
 using EpiEconShocks
+using NamedArrays
 using Test
 
 @testset "EpiEconShocks.jl" begin
@@ -10,4 +12,6 @@ using Test
     include("test_shock_gtap.jl")
     # tests for structs
     include("test_struct_paramShock.jl")
+    # tests for EpiHelpers
+    include("test_epi_helpers.jl")
 end

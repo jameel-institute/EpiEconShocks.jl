@@ -1,7 +1,3 @@
-using Test
-using NamedArrays
-using EpiEconShocks
-
 # NOTE: we cannot yet handle having EU countries separately from the EU
 # NOTE: cluster_regions is specialised for GTAP data and expects the EU states
 
