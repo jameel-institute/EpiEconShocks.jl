@@ -326,11 +326,11 @@ version = "4.1.1"
 
 [[deps.Daedalus]]
 deps = ["CSV", "DataFrames", "DiffEqCallbacks", "LinearAlgebra", "OrdinaryDiffEq", "SciMLBase", "StaticArrays", "Statistics"]
-git-tree-sha1 = "916cd52e2d8e3d41dec0792ba42aa332f6934c27"
+git-tree-sha1 = "1fa76a125895bd292939d03102cf56b8741892c6"
 repo-rev = "main"
-repo-url = "https://github.com/pratikunterwegs/Daedalus.jl.git"
+repo-url = "https://github.com/jameel-institute/Daedalus.jl.git"
 uuid = "05fc9732-d2bf-478b-9a56-f88318f7a02f"
-version = "0.0.6"
+version = "0.0.7"
 
 [[deps.DataAPI]]
 git-tree-sha1 = "abe83f3a2f1b857aac70ef8b269080af17764bbe"
