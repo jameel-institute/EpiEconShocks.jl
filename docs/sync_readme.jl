@@ -31,8 +31,7 @@ function sync_readme()
 
     # Insert version badge after the first badge line
     content = replace(content,
-        r"(\n\[!\[Version\]\(.*?\)\]\(.*?\)\n)"s =>
-        "\n$badge\n")
+        r"(\n\[!\[Version\]\(.*?\)\]\(.*?\)\n)"s => "\n$badge\n")
 
     # Update docs/src/index with correct version
     write(src_file, content)
@@ -45,8 +44,7 @@ function sync_readme()
 
     # Insert version badge after the first badge line
     content = replace(content,
-        r"(\n\[!\[Version:.*?\]\(.*?\)\]\(.*?\)\n)"s =>
-        "\n$badge\n")
+        r"(\n\[!\[Version:.*?\]\(.*?\)\]\(.*?\)\n)"s => "\n$badge\n")
 
     # Write to temporary file
     write(dest_file, content)

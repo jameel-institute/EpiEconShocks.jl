@@ -531,7 +531,7 @@ weakdeps = ["Adapt", "ChainRulesCore"]
     EnzymeCoreChainRulesCoreExt = "ChainRulesCore"
 
 [[deps.EpiEconShocks]]
-deps = ["GlobalTradeAnalysisProjectModelV7", "HeaderArrayFile", "NamedArrays"]
+deps = ["DataFrames", "GlobalTradeAnalysisProjectModelV7", "HeaderArrayFile", "NamedArrays"]
 path = ".."
 uuid = "d5106ebc-8f76-4abe-9d9c-e2e957300c8c"
 version = "0.0.2"
