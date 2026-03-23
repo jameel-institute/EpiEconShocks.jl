@@ -13,6 +13,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Relax `ParameterShock` scale validation: accept any `scale > 0.0` instead of restricting to `[0.0, 1.0]`
 - Update `ParameterShock` docstring to reflect new validation rules
 - Enhance `_apply_shocks!` to support both 2D and 3D arrays
+- Fix spelling of labour in `cluster_endowments()`
+
+### Documentation
+- Expand setup guide with GTAP database source information
+- Document `ModelInit.initial_gtap_model` function and its default aggregation behavior
+- Add info boxes for commodity and endowment aggregation details
+- Clarify warnings about memory usage and aggregation recommendations
+- Update version badges in README and documentation to 0.0.5
 
 ## [0.0.4] - 2026-03-19
 - Add helper function `calc_indivs` in module `EpiHelpers`
