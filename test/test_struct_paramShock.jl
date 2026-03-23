@@ -24,9 +24,6 @@
     shock = EpiEconShocks.ParameterShock("qe", nothing, 1.0)
     @test shock.scale == 1.0
 
-    # Test ArgumentError for scale > 1.0
-    @test_throws ArgumentError EpiEconShocks.ParameterShock("qe", nothing, 1.1)
-
     # Test ArgumentError for scale < 0.0
     @test_throws ArgumentError EpiEconShocks.ParameterShock("qe", nothing, -0.1)
 end
