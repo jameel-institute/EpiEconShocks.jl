@@ -26,7 +26,14 @@ function _apply_shocks!(data, base_data, shocks::Vector{ParameterShock})
         else
             # Normalize String to Vector{String} to preserve 2-D slice semantics
             idx = shock.indices isa String ? [shock.indices] : shock.indices
-            data[shock.parameter][idx, :] .= base[idx, :] .* shock.scale
+
+            # only 2 and 3 dim arrays are expected for now
+            # consider using EllipsisNotation.jl
+            if ndims(base) == 3
+                data[shock.parameter][idx, :, :] .= base[idx, :, :] .* shock.scale
+            else
+                data[shock.parameter][idx, :] .= base[idx, :] .* shock.scale
+            end
         end
     end
 end
