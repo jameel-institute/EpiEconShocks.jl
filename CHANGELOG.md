@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.5] - 2026-03-23
+
+### Changed
+- Relax `ParameterShock` scale validation: accept any `scale > 0.0` instead of restricting to `[0.0, 1.0]`
+- Update `ParameterShock` docstring to reflect new validation rules
+- Enhance `_apply_shocks!` to support both 2D and 3D arrays
+
 ## [0.0.4] - 2026-03-19
 - Add helper function `calc_indivs` in module `EpiHelpers`
 
