@@ -174,8 +174,8 @@ function cluster_endowments(endowm::NamedArray)::NamedArray
     # Note: taken from GTAP example
     endow_agg[:] .= "other"
     endow_agg[1:1] .= "land"
-    endow_agg[[2, 5]] .= "skilled labor"
-    endow_agg[[3, 4, 6]] .= "unskilled labor"
+    endow_agg[[2, 5]] .= "skilled labour"
+    endow_agg[[3, 4, 6]] .= "unskilled labour"
     endow_agg["capital"] = "capital"
 
     return endow_agg
