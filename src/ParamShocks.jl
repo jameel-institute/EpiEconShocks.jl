@@ -12,7 +12,9 @@ A public struct encoding a perturbation to a GTAP model parameter.
   - `nothing`: Apply to all rows
   - `String`: Apply to a single row
   - `Vector{String}`: Apply to multiple rows
-- `scale::Float64`: The scaling factor in ``> 0.0`` to apply to the parameter values
+- `scale::Union{Float64, Vector{Float64}}`: The scaling factor ``> 0.0`` to
+    apply to the parameter values. Pass a vector of the same length as `indices`
+    to scale each index separately.
 
 # Constructor
 
@@ -33,12 +35,18 @@ ParameterShock("qe", nothing, 0.5)
 struct ParameterShock
     parameter::String
     indices::Union{Nothing, String, Vector{String}}
-    scale::Float64
+    scale::Union{Float64, Vector{Float64}}
 
     function ParameterShock(parameter, indices, scale)
-        if scale < 0.0
+        if isa(indices, Vector{String}) &&
+           (!isa(scale, Float64) && (length(scale) != length(indices)))
             throw(ArgumentError(
-                "scale must be > 0.0, got $scale"
+                "`scale` must be a scalar or the same length as `indices`"
+            ))
+        end
+        if any(scale .< 0.0)
+            throw(ArgumentError(
+                "All values of scale must be > 0.0, got $scale"
             ))
         end
 
