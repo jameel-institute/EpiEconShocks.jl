@@ -2,7 +2,7 @@
 module Helpers
 
 export get_eu_states, cluster_regions, cluster_named_array, cluster_commodities,
-       cluster_endowments
+       cluster_endowments, ROI
 
 using NamedArrays
 
@@ -14,25 +14,38 @@ function get_eu_states()::Vector{String}
 end
 
 """
+    ROI::Vector{String}
+
+A string vector of regions of interest. Includes the EU and some EU member
+states separately.
+"""
+const ROI::Vector{String} = ["gbr", "deu", "fra", "eur",
+    "usa", "chn", "jpn", "ind"];
+
+"""
     cluster_named_array(x::NamedArray, preserve::Union{String, Vector{String}};
         fill_value::String = "XYZ",
         groups::Union{Nothing, Dict{String, <:AbstractVector{String}}, NamedTuple} = nothing)
 
 Aggregate elements in a NamedArray by preserving specified indices and filling
-    the rest with a specified value. Optionally group non-preserved elements into named categories.
+    the rest with a specified value. Optionally group non-preserved elements
+    into named categories.
 
 # Arguments
 - `x::NamedArray`: Input NamedArray to cluster.
 - `preserve::Union{String, Vector{String}}`: Index or indices to keep unchanged.
-- `fill_value::String`: Value to assign to non-preserved elements. Defaults to "XYZ".
-- `groups::Union{Nothing, Dict, NamedTuple}`: Optional mapping of group names to member lists.
-    If provided, members of each group are set to the group name instead of `fill_value`.
-    Can be a `Dict{String, Vector{String}}` or a `NamedTuple` mapping group names to their members.
-    Defaults to `nothing` (no grouping, all non-preserved elements get `fill_value`).
+- `fill_value::String`: Value to assign to non-preserved elements. Defaults to
+    "XYZ".
+- `groups::Union{Nothing, Dict, NamedTuple}`: Optional mapping of group names to
+    member lists. If provided, members of each group are set to the group name
+    instead of `fill_value`. Can be a `Dict{String, Vector{String}}` or a
+    `NamedTuple` mapping group names to their members. Defaults to `nothing`
+    (no grouping, all non-preserved elements get `fill_value`).
 
 # Returns
-- `NamedArray`: New array with preserved elements unchanged. Non-preserved elements are assigned
-    to their group name (if in `groups`) or to `fill_value` otherwise.
+- `NamedArray`: New array with preserved elements unchanged.
+    Non-preserved elements are assigned to their group name (if in `groups`)
+    or to `fill_value` otherwise.
 
 # Examples
 ```julia
@@ -56,17 +69,22 @@ function cluster_named_array(x::NamedArray,
         preserve::Union{String, Vector{String}};
         fill_value::String = "XYZ",
         groups::Union{Nothing, Dict{String, <:AbstractVector{String}}, NamedTuple} = nothing)
-    y = deepcopy(x[preserve])
+    preserve = isa(preserve, String) ? [preserve] : preserve;
+
+    # NOTE: allow users to pass `preserve` values that might not be in `x`
+    y = deepcopy(filter(ix -> ix in preserve, x))
     z = deepcopy(x)
 
     z .= fill_value
-    z[preserve] .= y
 
     if !isnothing(groups)
         for (name, members) in pairs(groups)
             z[collect(members)] .= string(name)
         end
     end
+
+    # preserve values after grouping, this helps preserve EU states
+    z[y] .= y
 
     return z
 end
@@ -82,9 +100,10 @@ Aggregate regions in a NamedArray by clustering non-preserved regions into a
 - `regions::NamedArray`: Input array of region codes.
 - `preserve::Union{String, Vector{String}}`: Region(s) to keep separate from
     aggregation. Defaults to ["gbr", "usa", "chn", "eur"].
-  - If "eur" is specified, it is expanded to all EU member states (via `get_eu_states()`)
-    and removed from the preserve list, then uses the `groups` mechanism in `cluster_named_array`
-    to map individual EU member states to "eur".
+  - If "eur" is specified, it is expanded to all EU member states
+    (via `get_eu_states()`) unless it is on the preserve list, then uses the
+    `groups` mechanism in `cluster_named_array` to map individual EU member
+    states to "eur".
 - `fill_value::String`: Value to assign to non-preserved, non-grouped regions.
     Defaults to "row" (rest of world).
 
@@ -102,13 +121,12 @@ result = cluster_regions(regions, ["gbr", "usa"])
 ```
 """
 function cluster_regions(regions::NamedArray,
-        preserve::Union{String, Vector{String}} =
-        ["gbr", "usa", "chn", "eur"];
+        preserve::Union{String, Vector{String}} = ROI,
         fill_value::String = "row")::NamedArray
     if length(preserve) > 1 && any(occursin.("eur", preserve))
         # more verbose but less brittle than providing a numeric range
         eu_states = get_eu_states()
-        filter!(x -> x ≠ "eur", preserve)
+        preserve = deepcopy(filter(x -> x ≠ "eur", preserve))
         groups = Dict("eur" => eu_states)
     else
         groups = nothing
