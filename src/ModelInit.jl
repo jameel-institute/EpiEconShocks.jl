@@ -11,7 +11,7 @@ using NamedArrays
 
 """
     initial_gtap_model(datadir::String;
-        roi::Union{String, Vector{String}} = ["gbr", "usa", "chn"])::GTAP.model_container_struct
+        roi::Union{String, Vector{String}} = ROI)::GTAP.model_container_struct
 
 Initialize and calibrate a GTAP (Global Trade Analysis Project) economic model.
 
@@ -25,8 +25,8 @@ interest (roi), building the model structure, and running calibration to ensure 
   - `gsdfdat.har`: Economic data (bilateral trade flows, domestic transactions, value added)
   - `gsdfpar.har`: Parameters (elasticities, behavioral coefficients)
 - `roi::Union{String, Vector{String}}`: Regions of interest to preserve in aggregation.
-  Defaults to ["gbr", "usa", "chn", "eur"]. All other regions are aggregated to
-  "row" (rest of world).
+  Defaults to ROI (see Helpers.ROI). All other regions are aggregated to
+  "row" (rest of world) or "eur" for EU member states.
 
 # Returns
 - `model_container_struct`: A calibrated GTAP model ready for scenario analysis.
@@ -41,7 +41,7 @@ interest (roi), building the model structure, and running calibration to ensure 
 7. Returns the calibrated model container
 """
 function initial_gtap_model(datadir::String;
-        roi::Union{String, Vector{String}} = ["gbr", "usa", "chn", "eur"])::GTAP.model_container_struct
+        roi::Union{String, Vector{String}} = ROI)::GTAP.model_container_struct
 
     # TODO: add checks on datadir and files therein
 

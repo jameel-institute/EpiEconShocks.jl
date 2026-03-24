@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improve `cluster_named_array()` implementation to handle preserve values that may not exist in input array
 - Refactor `cluster_regions()` to use `ROI` constant as default preserve list instead of hardcoded values
 - Enhance `ParameterShock` constructor validation to support per-index scaling factors
+- Refactor `initial_gtap_model()` to use `ROI` constant from Helpers module for default regions of interest
+- Add special commodity category for transport, hospitality, and leisure in `cluster_commodities()`
 
 ### Documentation
 - Clarify `cluster_regions()` behavior with EU member state aggregation

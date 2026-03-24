@@ -145,8 +145,10 @@ Aggregate commodities in a NamedArray by clustering into major commodity groups.
 - `commodities::NamedArray`: Input array of commodity codes.
 
 # Returns
-- `NamedArray`: New array with commodities clustered into groups: crops, animals, extract,
-  processed food, manuf (manufacturing), and svces (services).
+- `NamedArray`: New array with commodities clustered into groups: crop products,
+    animal-derived products, extractive-industry products, processed food,
+    manuf (manufacturing), transport, hospitality, and leisure, and other
+    svces (services).
 
 # Example
 ```julia
@@ -157,13 +159,17 @@ result = cluster_commodities(commodities)
 function cluster_commodities(commodities::NamedArray)::NamedArray
     comm_agg = deepcopy(commodities)
 
-    # Note: not looking too closely into commodities aggregation
+    # TODO: needs tests
+    # NOTE: copied from https://github.com/mivanic/GlobalTradeAnalysisProjectModelV7.jl example
     comm_agg[1:8] .= "crops"
     comm_agg[9:12] .= "animals"
     comm_agg[13:18] .= "extract"
     comm_agg[19:26] .= "processed food"
     comm_agg[27:45] .= "manuf"
     comm_agg[46:65] .= "svces"
+
+    # special category for transport, hospitality, leisure
+    comm_agg[["afs", "otp", "wtp", "atp", "ros"]] .= "tpt_hosp_leis"
 
     return comm_agg
 end
@@ -189,7 +195,8 @@ result = cluster_endowments(endowments)
 function cluster_endowments(endowm::NamedArray)::NamedArray
     endow_agg = deepcopy(endowm)
 
-    # Note: taken from GTAP example
+    # TODO: needs tests
+    # Note: taken from https://github.com/mivanic/GlobalTradeAnalysisProjectModelV7.jl example
     endow_agg[:] .= "other"
     endow_agg[1:1] .= "land"
     endow_agg[[2, 5]] .= "skilled labour"
