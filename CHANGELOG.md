@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.0.6] - 2026-03-24
 
-### Added
+### Features
 - Export `ROI` constant from `Helpers` module for regions of interest
 - Support vector scaling in `ParameterShock` struct: `scale` field now accepts `Union{Float64, Vector{Float64}}`
 
