@@ -26,6 +26,9 @@ The function simply needs to be pointed at the directory holding GTAP data, and 
 All other regions, and the EU countries are aggregated into a 'rest of world' and 'EU states' category, respectively.
 This default behaviour is because the package is currently aimed at a U.K. context.
 
+!!! info "Region aggregation"
+    _EpiEconShocks.jl_ currently aggregates GTAP regions into the United Kingdom, some major global economies, EU states, and all other regions. Countries modelled separately are the USA, China, France, Germany, China, India, and Japan.
+
 !!! info "Commodity aggregation"
     _EpiEconShocks.jl_ currently aggregates commodities into agricultural plant products ("crops"), animal products ("animals"), extractive products ("extract"), processed food products ("processed food"), manufactured goods ("manuf"), and services ("svces").
 
