@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.6] - 2026-03-24
+
+### Added
+- Export `ROI` constant from `Helpers` module for regions of interest
+- Support vector scaling in `ParameterShock` struct: `scale` field now accepts `Union{Float64, Vector{Float64}}`
+
+### Changed
+- Improve `cluster_named_array()` implementation to handle preserve values that may not exist in input array
+- Refactor `cluster_regions()` to use `ROI` constant as default preserve list instead of hardcoded values
+- Enhance `ParameterShock` constructor validation to support per-index scaling factors
+
+### Documentation
+- Clarify `cluster_regions()` behavior with EU member state aggregation
+
+### Tests
+- Add comprehensive tests for vector scaling in `ParameterShock` struct
+
 ## [0.0.5] - 2026-03-23
 
 ### Changed
