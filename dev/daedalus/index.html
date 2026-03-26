@@ -28,9 +28,11 @@ labour_shock = ParameterShock(
     &quot;qe&quot;, [&quot;skilled labor&quot;, &quot;unskilled labor&quot;], labour_available
 )
 
-gtap_output = EpiEconShocks.Example.shock_gtap_example(example_model, [labour_shock]);
+output = EpiEconShocks.Example.shock_gtap_example(example_model, [labour_shock]);
 
-gtap_output.y</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">7×1 Named Matrix{Float64}
+comparisons = compare_gtaps(example_model, output)
+
+comparisons.y</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">7×1 Named Matrix{Float64}
              A ╲ B │         1
 ───────────────────┼──────────
 oceania            │ 1.42881e6
@@ -39,7 +41,7 @@ americas           │ 2.44092e7
 eu                 │ 1.32398e7
 other europe       │ 5.48657e6
 mena               │ 3.73011e6
-sub-saharan africa │ 1.58478e6</code></pre><pre><code class="language-julia hljs">gtap_output.ev</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">7×1 Named Matrix{Float64}
+sub-saharan africa │ 1.58478e6</code></pre><pre><code class="language-julia hljs">comparisons.ev</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">7×1 Named Matrix{Float64}
              A ╲ B │          1
 ───────────────────┼───────────
 oceania            │   -6546.96
@@ -48,7 +50,7 @@ americas           │ -1.10408e5
 eu                 │   -57260.9
 other europe       │   -24271.8
 mena               │   -14458.0
-sub-saharan africa │   -6257.97</code></pre><pre><code class="language-julia hljs">gtap_output.delta_gdp</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">7-element Named NamedArrays.NamedVector{Float64, Vector{Float64}, Tuple{OrderedCollections.OrderedDict{String, Int64}}}
+sub-saharan africa │   -6257.97</code></pre><pre><code class="language-julia hljs">comparisons.delta_gdp</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">7-element Named NamedArrays.NamedVector{Float64, Vector{Float64}, Tuple{OrderedCollections.OrderedDict{String, Int64}}}
 A                  │ 
 ───────────────────┼────────────
 oceania            │ -0.00437253
@@ -57,4 +59,4 @@ americas           │ -0.00452007
 eu                 │ -0.00440987
 other europe       │ -0.00432656
 mena               │ -0.00337801
-sub-saharan africa │ -0.00373156</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../setup/">« Setting up GTAP</a><a class="docs-footer-nextpage" href="../pkg_index/">Index »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Tuesday 24 March 2026 15:32">Tuesday 24 March 2026</span>. Using Julia version 1.12.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+sub-saharan africa │ -0.00373156</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../setup/">« Setting up GTAP</a><a class="docs-footer-nextpage" href="../pkg_index/">Index »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Thursday 26 March 2026 20:57">Thursday 26 March 2026</span>. Using Julia version 1.12.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
