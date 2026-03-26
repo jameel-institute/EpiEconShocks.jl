@@ -160,17 +160,19 @@ function cluster_commodities(commodities::NamedArray)::NamedArray
     comm_agg = deepcopy(commodities)
 
     # TODO: needs tests
-    # NOTE: copied from https://github.com/mivanic/GlobalTradeAnalysisProjectModelV7.jl example
-    comm_agg[1:8] .= "crops"
-    comm_agg[9:12] .= "animals"
-    comm_agg[13:18] .= "extract"
-    comm_agg[19:26] .= "processed food"
-    comm_agg[27:45] .= "manuf"
-    comm_agg[46:65] .= "svces"
-
-    # special category for transport, hospitality, leisure
-    comm_agg[["afs", "otp", "wtp", "atp", "ros"]] .= "tpt_hosp_leis"
-
+    # using ten sector configuration based on ISIC v4
+    comm_agg[1:18]  .= "allprimary";#ISIC AB
+    comm_agg[19:45] .= "manufac";#ISIC C
+    comm_agg[46:48] .= "utilities";#ISIC DE
+    comm_agg[49]    .= "constr";#ISIC F
+    comm_agg[50]    .= "retail";#ISIC G
+    comm_agg[52:55] .= "transport";#ISIC H
+    comm_agg[51]    .= "hosp";#ISIC I
+    comm_agg[56:60] .= "ict_prof_serv";#ISIC JKLMN
+    comm_agg[65]    .= "ict_prof_serv";#ISIC JKLMN
+    comm_agg[62:64] .= "pubadm";#ISIC OPQ & U
+    comm_agg[61]    .= "arts_rec_other";#ISIC RST
+    
     return comm_agg
 end
 
