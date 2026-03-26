@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Features
+- Add region-specific scaling support to `ParameterShock` struct via new `regions` and `region_scale` fields
+- Enable applying different scaling factors to different regions in GTAP models
+
+### Changed
+- Enhance `ParameterShock` constructor to accept optional `regions` and `region_scale` keyword arguments
+- Update `ParameterShock` validation to enforce consistency between `regions` and `region_scale`
+- Refactor `_apply_shocks!()` to support both commodity-level and region-level scaling simultaneously
+- Update `_apply_shocks!()` documentation to clarify region-specific shock application
+
+### Tests
+- Add comprehensive test suite for `ParameterShock` region-specific scaling in `test/test_struct_paramShock.jl`
+- Add validation tests for region-specific shock combinations in `test/test_shock_gtap.jl`
+- Tests cover: region vector/scalar validation, region-scale length matching, boundary values, combined commodity/region shocks
+
 ## [0.0.7] - 2026-03-26
 
 ### Features

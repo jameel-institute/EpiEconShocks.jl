@@ -10,31 +10,68 @@ using NamedArrays
 Internal helper that applies a vector of parameter shocks to model data.
 
 Mutates `data` in place, scaling values from `base_data` according to each
-shock's scale factor.
+shock's scale and region-specific factors.
 
 # Arguments
 - `data`: The mutable model data dictionary to be modified
 - `base_data`: The calibrated baseline data (used as reference for scaling)
-- `shocks::Vector{ParameterShock}`: Vector of shocks to apply
+- `shocks::Vector{ParameterShock}`: Vector of shocks to apply (may include region-specific shocks)
+
+# Details
+Applies shocks in the following order:
+1. Commodity/endowment-specific scaling (via indices and scale)
+2. Region-specific scaling (via regions and region_scale, if provided)
+
+For region-specific shocks, scaling is applied to the last dimension(s) of the
+parameter array (assumed to be regions).
 """
 function _apply_shocks!(data, base_data, shocks::Vector{ParameterShock})
     for shock in shocks
         base = base_data[shock.parameter]
+
+        # First apply commodity/endowment-level shocks
         if isnothing(shock.indices)
             # Apply to all rows
-            data[shock.parameter] .= base .* shock.scale
+            scaled_base = base .* shock.scale
         else
             # Normalize String to Vector{String} to preserve 2-D slice semantics
             idx = shock.indices isa String ? [shock.indices] : shock.indices
 
+            # Make a copy to store intermediate results
+            scaled_base = copy(base)
+
             # only 2 and 3 dim arrays are expected for now
-            # consider using EllipsisNotation.jl
             if ndims(base) == 3
-                data[shock.parameter][idx, :, :] .= base[idx, :, :] .* shock.scale
+                scaled_base[idx, :, :] .= base[idx, :, :] .* shock.scale
             else
-                data[shock.parameter][idx, :] .= base[idx, :] .* shock.scale
+                scaled_base[idx, :] .= base[idx, :] .* shock.scale
             end
         end
+
+        # Then apply region-specific shocks if provided
+        if !isnothing(shock.regions)
+            region_idx = shock.regions isa String ? [shock.regions] : shock.regions
+            region_scales = shock.region_scale isa Float64 ?
+                fill(shock.region_scale, length(region_idx)) : shock.region_scale
+
+            # Apply region-specific scaling to each region
+            for (i, region) in enumerate(region_idx)
+                reg_scale = region_scales[i]
+                if ndims(scaled_base) == 3
+                    # For 3D arrays: [commodity, region, region]
+                    # Apply to both region dimensions
+                    scaled_base[:, region, :] .*= reg_scale
+                    scaled_base[:, :, region] .*= reg_scale
+                elseif ndims(scaled_base) == 2
+                    # For 2D arrays: [commodity, region]
+                    # Apply to region dimension (last)
+                    scaled_base[:, region] .*= reg_scale
+                end
+            end
+        end
+
+        # Assign the final scaled values
+        data[shock.parameter] .= scaled_base
     end
 end
 

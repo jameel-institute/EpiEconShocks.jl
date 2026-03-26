@@ -5,7 +5,7 @@ CurrentModule = EpiEconShocks
 # EpiEconShocks.jl
 
 [![Project Status: Concept – Minimal or no implementation has been done yet, or the repository is only intended to be a limited example, demo, or proof-of-concept.](https://www.repostatus.org/badges/latest/concept.svg)](https://www.repostatus.org/#concept)
-[![Version](https://img.shields.io/badge/version-0.0.6-aquamarine.svg)](https://jameel-institute.github.io/EpiEconShocks.jl/dev/)
+[![Version](https://img.shields.io/badge/version-0.0.7-aquamarine.svg)](https://jameel-institute.github.io/EpiEconShocks.jl/dev/)
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://jameel-institute.github.io/EpiEconShocks.jl/dev/)
 [![Build Status](https://github.com/jameel-institute/EpiEconShocks.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/jameel-institute/EpiEconShocks.jl/actions/workflows/CI.yml?query=branch%3Amain)
 [![Coverage](https://codecov.io/gh/jameel-institute/EpiEconShocks.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/jameel-institute/EpiEconShocks.jl)
@@ -50,7 +50,9 @@ output = EpiEconShocks.Example.shock_gtap_example(
     example_model, [labour_shock, svces_shock])
 
 # examine proportional change in GDP
-output.delta_gdp
+comparisons = compare_gtaps(example_model, output)
+
+comparisons.delta_gdp
 ```
 
 ## Further documentation
@@ -67,8 +69,6 @@ Future development may include the following:
 - More fine-scaled control over the scaling applied to each sector within the GTAP regions, commodities, and endowments sets; for example, the ability to model a pandemic shock in a single region to examine global impacts, and similar for commodity demand.
 
 - Better documentation of how epidemic shocks can be modelled in more details, for example to include long-term impacts such as reductions in population size or increases in epidemic-related disability.
-
-
 
 ## Related projects
 
