@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Features
+- Add `calc_labour_avail()` to convert epidemiological compartment data into daily labour availability fractions
+- Add `calc_consumption_avail()` to model consumption reduction from infection-avoidance behaviour driven by deaths
+- Add `integrate_shock()` to compute time-weighted average shocks from daily availability time series
+
+### Details
+- `calc_labour_avail()` reuses `calc_indivs()` for weighted person-equivalent calculation, then normalizes by workforce
+- `calc_consumption_avail()` models exponential decay in consumption based on daily new deaths
+- `integrate_shock()` uses trapezoidal integration to convert daily shocks to a scalar parameter suitable for `ParameterShock`
+- Together, these three functions implement the epidemiological-to-economic shock pipeline demonstrated in casestudy_02.jl
+
 ## [0.0.6] - 2026-03-24
 
 ### Features
