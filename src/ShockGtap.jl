@@ -37,7 +37,7 @@ function _apply_shocks!(data, base_data, shocks::Vector{ParameterShock})
             # Normalize String to Vector{String} to preserve 2-D slice semantics
             rows = shock.indices isa String ? [shock.indices] : shock.indices
             regions = isa(shock.scale, NamedArray) ? names(shock.scale, 2) :
-                      1:(size(data)[2])
+                      1:(size(data[shock.parameter])[2])
 
             # only 2 and 3 dim arrays are expected for now,
             # TODO: MUST SCALE INCOMING AND OUTGOING IN TRADE
