@@ -46,15 +46,17 @@ labour_shock = ParameterShock(
     "qe", ["skilled labor", "unskilled labor"], labour_available
 )
 
-gtap_output = EpiEconShocks.Example.shock_gtap_example(example_model, [labour_shock]);
+output = EpiEconShocks.Example.shock_gtap_example(example_model, [labour_shock]);
 
-gtap_output.y
+comparisons = compare_gtaps(example_model, output)
+
+comparisons.y
 ```
 
 ```@example using_daedalus
-gtap_output.ev
+comparisons.ev
 ```
 
 ```@example using_daedalus
-gtap_output.delta_gdp
+comparisons.delta_gdp
 ```
