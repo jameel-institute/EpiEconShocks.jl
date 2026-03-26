@@ -7,21 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Features
-- Add region-specific scaling support to `ParameterShock` struct via new `regions` and `region_scale` fields
-- Enable applying different scaling factors to different regions in GTAP models
-
-### Changed
-- Enhance `ParameterShock` constructor to accept optional `regions` and `region_scale` keyword arguments
-- Update `ParameterShock` validation to enforce consistency between `regions` and `region_scale`
-- Refactor `_apply_shocks!()` to support both commodity-level and region-level scaling simultaneously
-- Update `_apply_shocks!()` documentation to clarify region-specific shock application
-
-### Tests
-- Add comprehensive test suite for `ParameterShock` region-specific scaling in `test/test_struct_paramShock.jl`
-- Add validation tests for region-specific shock combinations in `test/test_shock_gtap.jl`
-- Tests cover: region vector/scalar validation, region-scale length matching, boundary values, combined commodity/region shocks
-
 ## [0.0.7] - 2026-03-26
 
 ### Features
@@ -29,22 +14,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add `calc_consumption_avail()` to model consumption reduction from infection-avoidance behaviour driven by deaths
 - Add `integrate_shock()` to compute time-weighted average shocks from daily availability time series
 - Export `compare_gtaps()` function for public use in extracting economic outcomes from GTAP model comparisons
+- Extend `ParameterShock` struct to support region-specific scaling via `NamedArray` scaling factors
+- Enable applying different scaling factors to different regions and commodities in GTAP models
 
 ### Changed
 - Update `shock_gtap()` docstring to accurately reflect return type (`GTAP.model_container_struct` instead of named tuple)
 - Enhance `shock_gtap()` documentation with workflow guidance pointing to `compare_gtaps()` for outcome extraction
 - Fix `compare_gtaps()` function implementation: initialize `y` and `ev` NamedArrays before use
 - Expand `compare_gtaps()` docstring with comprehensive documentation of return values and usage examples
+- Enhance `scale` field in `ParameterShock` to accept `Union{Float64, Vector{Float64}, NamedArray}`
+- Update `ParameterShock` validation to support NamedArray scaling with named dimensions for regions/commodities
+- Refactor `_apply_shocks!()` to handle NamedArray scaling factors
+- Improve `_apply_shocks!()` to extract region information from NamedArray dimension names
+- Simplify region-specific shock application by leveraging NamedArray's named dimensions
 
 ### Tests
 - Add comprehensive test suite for `compare_gtaps()` in `test/test_compare_gtaps.jl`
 - Tests cover: output structure validation, dimensional consistency, region name preservation, determinism, identity shocks
-
-### Details
-- `calc_labour_avail()` reuses `calc_indivs()` for weighted person-equivalent calculation, then normalizes by workforce
-- `calc_consumption_avail()` models exponential decay in consumption based on daily new deaths
-- `integrate_shock()` uses trapezoidal integration to convert daily shocks to a scalar parameter suitable for `ParameterShock`
-- Together, these three functions implement the epidemiological-to-economic shock pipeline demonstrated in casestudy_02.jl
+- Add tests for `ParameterShock` with NamedArray scaling in `test/test_struct_paramShock.jl`
+- Add validation tests for region-specific shock combinations in `test/test_shock_gtap.jl`
 
 ## [0.0.6] - 2026-03-24
 
