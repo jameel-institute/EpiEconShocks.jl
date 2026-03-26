@@ -18,7 +18,8 @@ function get_example_model()::GTAP.model_container_struct
     mc = GTAP.generate_initial_model(hSets = hSets, hData = hData, hParameters = hParameters)
 
     start_data = deepcopy(mc.data)
-    (; fixed_calibration, data_calibration) = GTAP.generate_calibration_inputs(mc, start_data)
+    (; fixed_calibration,
+        data_calibration) = GTAP.generate_calibration_inputs(mc, start_data)
 
     mc.data = deepcopy(data_calibration)
     mc.fixed = deepcopy(fixed_calibration)

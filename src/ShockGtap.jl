@@ -32,46 +32,23 @@ function _apply_shocks!(data, base_data, shocks::Vector{ParameterShock})
         # First apply commodity/endowment-level shocks
         if isnothing(shock.indices)
             # Apply to all rows
-            scaled_base = base .* shock.scale
+            data[shock.parameter] .= base .* shock.scale
         else
             # Normalize String to Vector{String} to preserve 2-D slice semantics
-            idx = shock.indices isa String ? [shock.indices] : shock.indices
+            rows = shock.indices isa String ? [shock.indices] : shock.indices
+            regions = isa(shock.scale, NamedArray) ? names(shock.scale, 2) :
+                      1:(size(data)[2])
 
-            # Make a copy to store intermediate results
-            scaled_base = copy(base)
-
-            # only 2 and 3 dim arrays are expected for now
+            # only 2 and 3 dim arrays are expected for now,
+            # TODO: MUST SCALE INCOMING AND OUTGOING IN TRADE
+            # CHANNELS DIFFERENTLY!! UNCLEAR WHAT IS SCALED NOW?
             if ndims(base) == 3
-                scaled_base[idx, :, :] .= base[idx, :, :] .* shock.scale
+                data[shock.parameter][rows, :, regions] .= base[rows, :, regions] .*
+                                                           shock.scale
             else
-                scaled_base[idx, :] .= base[idx, :] .* shock.scale
+                data[shock.parameter][rows, regions] .= base[rows, regions] .* shock.scale
             end
         end
-
-        # Then apply region-specific shocks if provided
-        if !isnothing(shock.regions)
-            region_idx = shock.regions isa String ? [shock.regions] : shock.regions
-            region_scales = shock.region_scale isa Float64 ?
-                fill(shock.region_scale, length(region_idx)) : shock.region_scale
-
-            # Apply region-specific scaling to each region
-            for (i, region) in enumerate(region_idx)
-                reg_scale = region_scales[i]
-                if ndims(scaled_base) == 3
-                    # For 3D arrays: [commodity, region, region]
-                    # Apply to both region dimensions
-                    scaled_base[:, region, :] .*= reg_scale
-                    scaled_base[:, :, region] .*= reg_scale
-                elseif ndims(scaled_base) == 2
-                    # For 2D arrays: [commodity, region]
-                    # Apply to region dimension (last)
-                    scaled_base[:, region] .*= reg_scale
-                end
-            end
-        end
-
-        # Assign the final scaled values
-        data[shock.parameter] .= scaled_base
     end
 end
 
