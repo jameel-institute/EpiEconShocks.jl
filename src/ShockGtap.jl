@@ -1,4 +1,4 @@
-export shock_gtap, ParameterShock
+export shock_gtap, ParameterShock, compare_gtaps
 
 import GlobalTradeAnalysisProjectModelV7 as GTAP
 using HeaderArrayFile
@@ -41,37 +41,41 @@ end
 """
     shock_gtap(model::GTAP.model_container_struct, shocks::Vector{ParameterShock})
 
-Apply parameter shocks to a GTAP economic model and compute the resulting
-economic outcomes.
+Apply parameter shocks to a GTAP economic model and compute a new equilibrium.
 
-This function applies a vector of parameter shocks to the model data and runs
-the GTAP model to compute the equilibrium response. Each shock scales a
-specified parameter by a scale factor.
+This function applies a vector of parameter shocks to a deep copy of the input model,
+runs the GTAP model to compute the new equilibrium response, and returns the modified
+model. The original model is left unchanged.
 
 # Arguments
 - `model::GTAP.model_container_struct`: A GTAP model container with initialized
     data, sets, and parameters
-- `shocks::Vector{ParameterShock}`: Vector of parameter shocks to apply
+- `shocks::Vector{ParameterShock}`: Vector of parameter shocks to apply. Each shock
+    scales a specified parameter value by a given scale factor.
 
 # Returns
-A named tuple `(y, ev, delta_gdp)` containing:
-- `y`: NamedArray of GDP/income by region
-- `ev`: NamedArray of equivalent variation (welfare change) by region relative
-    to baseline
-- `delta_gdp`: NamedArray of change in GDP between original calibrated model and
-    new equilibrium.
+`GTAP.model_container_struct`: A modified copy of the input model containing:
+- Updated data arrays reflecting the applied shocks
+- Solved equilibrium values for endogenous variables (e.g., model.data["y"] for income)
+- Original sets and parameters
+
+To extract economic outcomes from the result, use `compare_gtaps(original_model, result_model)`
+to get GDP changes, equivalent variation, and other comparisons.
 
 # Example
 
 ```julia
 # Apply a 50% reduction to skilled and unskilled labor
 shocks = [ParameterShock("qe", ["skilled labor", "unskilled labor"], 0.5)]
-result = shock_gtap(model, shocks)
+shocked_model = shock_gtap(model, shocks)
+
+# Compare with original to get economic outcomes
+outcomes = compare_gtaps(model, shocked_model)
 ```
 """
 function shock_gtap(model::GTAP.model_container_struct,
         shocks::Vector{ParameterShock}
-)
+)::GTAP.model_container_struct
     # make a copy of the model data; this will be modified in place later
     mod_data = model.data
     mod_copy = deepcopy(model)
@@ -89,23 +93,72 @@ function shock_gtap(model::GTAP.model_container_struct,
     # get new equilibrium - operates on mod copy
     GTAP.run_model!(mod_copy)
 
-    # save outputs; raw 'y', change in GDP, 'ev'
-    y .= mod_copy.data["y"]  # GDP/income
+    return mod_copy
+end
 
-    # compare initial gdp with new equilibrium
-    qgdp1 = GTAP.calculate_gdp(sets = mod_copy.sets, data0 = mod_data,
-        data1 = mod_copy.data)
-    qgdp0 = GTAP.calculate_gdp(sets = mod_copy.sets, data0 = mod_data,
-        data1 = mod_data)
+"""
+    compare_gtaps(initial::GTAP.model_container_struct, current::GTAP.model_container_struct)
+
+Compare baseline and shocked GTAP models to extract economic outcomes.
+
+Computes changes in economic indicators between two model states by calculating:
+1. Absolute income/GDP by region in the current (shocked) model
+2. Equivalent variation (welfare change relative to baseline) by region
+3. Proportional change in GDP by region between baseline and current equilibrium
+
+# Arguments
+- `initial::GTAP.model_container_struct`: Baseline model (typically the original or baseline equilibrium)
+- `current::GTAP.model_container_struct`: Shocked or alternative model (typically the result of `shock_gtap`)
+
+# Returns
+A named tuple `(y, ev, delta_gdp)` containing:
+- `y::NamedArray`: Absolute income/GDP by region in the current model
+- `ev::NamedArray`: Equivalent variation (change in expenditure function) by region, measuring
+    welfare change relative to the initial equilibrium
+- `delta_gdp::NamedArray`: Proportional change in GDP by region, calculated as
+    `(GDP_current / GDP_initial) - 1.0`
+
+# Details
+- `delta_gdp` is a proportional measure and can have negative values.
+- All results are indexed by region names from the model's region set.
+
+# Example
+
+```julia
+# Create a shocked model
+labour_shock = ParameterShock("qe", ["skilled labour", "unskilled labour"], 0.9)
+shocked_model = shock_gtap(baseline_model, [labour_shock])
+
+# Compare to extract outcomes
+outcomes = compare_gtaps(baseline_model, shocked_model)
+println("GDP change by region: \", outcomes.delta_gdp)
+println("Welfare change by region: \", outcomes.ev)
+```
+"""
+function compare_gtaps(initial::GTAP.model_container_struct, current::GTAP.model_container_struct)
+    regions = current.sets["reg"]
+
+    # Prepare storage for results
+    y = NamedArray(zeros(length(regions), 1), (regions, [1]))
+    ev = NamedArray(zeros(length(regions), 1), (regions, [1]))
+
+    # Save absolute income/GDP in current model
+    y .= current.data["y"]  # GDP/income
+
+    # Compare initial gdp with new equilibrium
+    qgdp1 = GTAP.calculate_gdp(sets = current.sets, data0 = initial.data,
+        data1 = current.data)
+    qgdp0 = GTAP.calculate_gdp(sets = current.sets, data0 = initial.data,
+        data1 = initial.data)
     delta_gdp = qgdp1 ./ qgdp0 .- 1.0
 
-    # so-called equivalent variation
+    # So-called equivalent variation (welfare change)
     ev .= GTAP.calculate_expenditure(
-        sets = mod_copy.sets,
-        data0 = mod_data,
-        data1 = mod_copy.data,
-        parameters = mod_copy.parameters
-    ) .- mod_data["y"]
+        sets = current.sets,
+        data0 = initial.data,
+        data1 = current.data,
+        parameters = current.parameters
+    ) .- initial.data["y"]
 
     return (y = y, ev = ev, delta_gdp = delta_gdp)
 end
