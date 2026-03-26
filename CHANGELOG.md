@@ -15,11 +15,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Defined ten new commodity categories for allprimary, manufac, utilities, constr, retail, transport, hosp, ict_prof_serv, pubadm, arts_rec_other in `cluster_commodities()`
 
-### Documentation
-- NA
-
-### Tests
-- NA
 
 ## [0.0.7] - 2026-03-26
 
