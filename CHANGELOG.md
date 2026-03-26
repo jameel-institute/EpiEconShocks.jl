@@ -7,10 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.7] - 2026-03-26
+
 ### Features
 - Add `calc_labour_avail()` to convert epidemiological compartment data into daily labour availability fractions
 - Add `calc_consumption_avail()` to model consumption reduction from infection-avoidance behaviour driven by deaths
 - Add `integrate_shock()` to compute time-weighted average shocks from daily availability time series
+- Export `compare_gtaps()` function for public use in extracting economic outcomes from GTAP model comparisons
+
+### Changed
+- Update `shock_gtap()` docstring to accurately reflect return type (`GTAP.model_container_struct` instead of named tuple)
+- Enhance `shock_gtap()` documentation with workflow guidance pointing to `compare_gtaps()` for outcome extraction
+- Fix `compare_gtaps()` function implementation: initialize `y` and `ev` NamedArrays before use
+- Expand `compare_gtaps()` docstring with comprehensive documentation of return values and usage examples
+
+### Tests
+- Add comprehensive test suite for `compare_gtaps()` in `test/test_compare_gtaps.jl`
+- Tests cover: output structure validation, dimensional consistency, region name preservation, determinism, identity shocks
 
 ### Details
 - `calc_labour_avail()` reuses `calc_indivs()` for weighted person-equivalent calculation, then normalizes by workforce
