@@ -169,7 +169,7 @@ shock = integrate_shock(t, avail)
 function integrate_shock(t::AbstractVector, avail::AbstractVector)
     # Trapezoidal integration
     dt = diff(t)
-    area = sum((avail[1:end-1] .+ avail[2:end]) ./ 2 .* dt)
+    area = sum((avail[1:(end - 1)] .+ avail[2:end]) ./ 2 .* dt)
     # Normalize by total time span (inclusive of first day)
     return area / (t[end] - (t[1] - 1.0))
 end
