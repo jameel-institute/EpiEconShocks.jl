@@ -30,7 +30,7 @@ This default behaviour is because the package is currently aimed at a U.K. conte
     _EpiEconShocks.jl_ currently aggregates GTAP regions into the United Kingdom, some major global economies, EU states, and all other regions. Countries modelled separately are the USA, China, France, Germany, China, India, and Japan.
 
 !!! info "Commodity aggregation"
-    _EpiEconShocks.jl_ currently aggregates commodities into agricultural plant products ("crops"), animal products ("animals"), extractive products ("extract"), processed food products ("processed food"), manufactured goods ("manuf"), and services ("svces").
+    _EpiEconShocks.jl_ currently aggregates GTAP commodities based on the [International Standard Industrial Classification of All Economic Activities (ISIC) revision 4](https://ilostat.ilo.org/methods/concepts-and-definitions/classification-economic-activities/) into all primary sectors ("allprimary", ISIC AB), manufacturing ("manufac", ISIC C), utilities ("utilities", ISIC DE), construction ("constr", ISIC F), retail ("retail", ISIC F), transport ("transport", ISIC H), hospitality ("hosp", ISIC I), information and computing-related services ("ict_prof_serv", ISIC JKLMN), publishing and administration ("pubadm", ISIC OPQ, U), and arts, recreation and others ("arts_rec_other", ISIC RST).
 
 !!! info "Endowments aggregation"
     _EpiEconShocks.jl_ currently aggregates endowments into "land", "skilled labour", "unskilled labour", "capital", and "other",
