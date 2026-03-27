@@ -1,7 +1,7 @@
 name = "EpiEconShocks"
 uuid = "d5106ebc-8f76-4abe-9d9c-e2e957300c8c"
 authors = ["Imperial College London"]
-version = "0.0.8"
+version = "0.0.9"
 
 [deps]
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
