@@ -161,18 +161,18 @@ function cluster_commodities(commodities::NamedArray)::NamedArray
 
     # TODO: needs tests
     # using ten sector configuration based on ISIC v4
-    comm_agg[1:18]  .= "allprimary";#ISIC AB
+    comm_agg[1:18] .= "allprimary";#ISIC AB
     comm_agg[19:45] .= "manufac";#ISIC C
     comm_agg[46:48] .= "utilities";#ISIC DE
-    comm_agg[49]    .= "constr";#ISIC F
-    comm_agg[50]    .= "retail";#ISIC G
+    comm_agg[49] = "constr";#ISIC F
+    comm_agg[50] = "retail";#ISIC G
     comm_agg[52:55] .= "transport";#ISIC H
-    comm_agg[51]    .= "hosp";#ISIC I
+    comm_agg[51] = "hosp";#ISIC I
     comm_agg[56:60] .= "ict_prof_serv";#ISIC JKLMN
-    comm_agg[65]    .= "ict_prof_serv";#ISIC JKLMN
+    comm_agg[65] = "ict_prof_serv";#ISIC JKLMN
     comm_agg[62:64] .= "pubadm";#ISIC OPQ & U
-    comm_agg[61]    .= "arts_rec_other";#ISIC RST
-    
+    comm_agg[61] = "arts_rec_other";#ISIC RST
+
     return comm_agg
 end
 
