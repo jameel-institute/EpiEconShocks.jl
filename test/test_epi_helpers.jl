@@ -1,83 +1,109 @@
-@testset "EpiHelpers.calc_indivs" begin
-    # Test basic functionality with simple data
-    df = DataFrame(
-        infected = [100, 150, 200],
-        hospitalized = [10, 15, 20],
-        deceased = [1, 2, 3]
+@testset "EpiHelpers.calc_avail_labour" begin
+    # Long-format data: 2 sectors × 2 time steps = 4 rows
+    data = DataFrame(
+        sector = ["agri", "agri", "manuf", "manuf"],
+        date = [1, 2, 1, 2],
+        prev_mldi = [100.0, 200.0, 300.0, 400.0],
+        prev_sevi = [10.0, 20.0, 30.0, 40.0],
+        occupancy_hosp = [5.0, 10.0, 15.0, 20.0],
+        deaths = [1.0, 2.0, 2.0, 3.0]
     )
-    scaling = Dict("infected" => 0.1, "hospitalized" => 1.0, "deceased" => 5.0)
-    result = EpiEconShocks.EpiHelpers.calc_indivs(df, scaling)
-
-    # Test that result is a vector
-    @test isa(result, Vector)
-    @test length(result) == 3
-
-    # Test correct calculations: (infected * 0.1) + (hospitalized * 1.0) + (deceased * 5.0)
-    # Time 1: (100 * 0.1) + (10 * 1.0) + (1 * 5.0) = 10 + 10 + 5 = 25
-    # Time 2: (150 * 0.1) + (15 * 1.0) + (2 * 5.0) = 15 + 15 + 10 = 40
-    # Time 3: (200 * 0.1) + (20 * 1.0) + (3 * 5.0) = 20 + 20 + 15 = 55
-    @test result[1] ≈ 25.0
-    @test result[2] ≈ 40.0
-    @test result[3] ≈ 55.0
-
-    # Test with single scaling factor
-    df_single = DataFrame(compartment = [10, 20, 30])
-    scaling_single = Dict("compartment" => 2.0)
-    result_single = EpiEconShocks.EpiHelpers.calc_indivs(df_single, scaling_single)
-
-    @test length(result_single) == 3
-    @test result_single[1] ≈ 20.0
-    @test result_single[2] ≈ 40.0
-    @test result_single[3] ≈ 60.0
-
-    # Test with scaling factor of 1.0 (no scaling)
-    df_unscaled = DataFrame(a = [5, 10, 15], b = [3, 6, 9])
-    scaling_one = Dict("a" => 1.0, "b" => 1.0)
-    result_unscaled = EpiEconShocks.EpiHelpers.calc_indivs(df_unscaled, scaling_one)
-
-    @test result_unscaled[1] ≈ 8.0
-    @test result_unscaled[2] ≈ 16.0
-    @test result_unscaled[3] ≈ 24.0
-
-    # Test that only scaled columns are included
-    df_extra = DataFrame(
-        scaled_col = [10, 20, 30],
-        unscaled_col = [100, 200, 300]  # Should be ignored
+    scaling = Dict(
+        :prev_mldi => 1.0,
+        :prev_sevi => 1.0,
+        :occupancy_hosp => 1.0,
+        :deaths => 1.0
     )
-    scaling_partial = Dict("scaled_col" => 0.5)
-    result_partial = EpiEconShocks.EpiHelpers.calc_indivs(df_extra, scaling_partial)
 
-    @test result_partial[1] ≈ 5.0
-    @test result_partial[2] ≈ 10.0
-    @test result_partial[3] ≈ 15.0
-
-    # Test with floating point values
-    df_float = DataFrame(
-        compartment1 = [1.5, 2.5, 3.5],
-        compartment2 = [0.5, 1.5, 2.5]
+    # --- scalar parameters (no WFH, no furlough) ---
+    result_base = EpiEconShocks.EpiHelpers.calc_avail_labour(
+        data, scaling, 10_000.0, 0.0, 0.0
     )
-    scaling_float = Dict("compartment1" => 0.3, "compartment2" => 0.7)
-    result_float = EpiEconShocks.EpiHelpers.calc_indivs(df_float, scaling_float)
+    @test isa(result_base, Vector{Float64})
+    @test length(result_base) == 4
 
-    @test result_float[1] ≈ 0.8 atol = 1e-10
-    @test result_float[2] ≈ 1.8 atol = 1e-10
-    @test result_float[3] ≈ 2.8 atol = 1e-10
+    # Row 1 (agri, t=1): absence = 100+10+5+1 = 116, wfh=0 → no adjustment
+    # avail = (1 − 116/10000) × (1 − 0) = 0.9884
+    @test result_base[1] ≈ 0.9884
 
-    # Test that original dataframe is not modified
-    df_original = DataFrame(x = [1, 2, 3], y = [4, 5, 6])
-    df_copy = deepcopy(df_original)
-    scaling_test = Dict("x" => 0.5, "y" => 2.0)
-    _ = EpiEconShocks.EpiHelpers.calc_indivs(df_original, scaling_test)
+    # Row 4 (manuf, t=2): absence = 400+40+20+3 = 463
+    # avail = 1 − 463/10000 = 0.9537
+    @test result_base[4] ≈ 0.9537
 
-    @test df_original == df_copy
+    # --- per-sector WFH via vector (sorted sector order: ["agri", "manuf"]) ---
+    # agri (idx=1): wfh=0.0 (office-only), manuf (idx=2): wfh=1.0 (fully remote capable)
+    # productivity_mild=0.5 (default)
+    wfh_vec = [0.0, 1.0]
+    result_wfh = EpiEconShocks.EpiHelpers.calc_avail_labour(
+        data, scaling, 10_000.0, wfh_vec, 0.0
+    )
 
-    # Test with zero scaling
-    df_zero = DataFrame(a = [10, 20], b = [5, 10])
-    scaling_zero = Dict("a" => 0.0, "b" => 1.0)
-    result_zero = EpiEconShocks.EpiHelpers.calc_indivs(df_zero, scaling_zero)
+    # agri rows unchanged (wfh=0 → eff_mild = 1.0*(1-0*0.5) = 1.0)
+    @test result_wfh[1] ≈ result_base[1]
+    @test result_wfh[2] ≈ result_base[2]
 
-    @test result_zero[1] ≈ 5.0  # (10 * 0.0) + (5 * 1.0) = 5
-    @test result_zero[2] ≈ 10.0  # (20 * 0.0) + (10 * 1.0) = 10
+    # manuf row 1 (t=1): eff_mild = 1.0*(1-1.0*0.5)=0.5
+    # absence = 0.5*300 + 30 + 15 + 2 = 197, avail = 1 − 197/10000 = 0.9803
+    @test result_wfh[3] ≈ 0.9803
+
+    # manuf row 2 (t=2): eff_mild = 0.5
+    # absence = 0.5*400 + 40 + 20 + 3 = 263, avail = 1 − 263/10000 = 0.9737
+    @test result_wfh[4] ≈ 0.9737
+
+    # --- per-sector furlough via vector (sorted sector order: ["agri", "manuf"]) ---
+    # manuf (idx=2) has 20% furloughed; agri (idx=1) has none
+    p_furl_vec = [0.0, 0.2]
+    result_furl = EpiEconShocks.EpiHelpers.calc_avail_labour(
+        data, scaling, 10_000.0, 0.0, p_furl_vec
+    )
+
+    # agri rows unaffected by furlough
+    @test result_furl[1] ≈ result_base[1]
+
+    # manuf row 1: avail_illness = 1 − 347/10000 = 0.9653; × (1−0.2) = 0.77224
+    # absence = 300+30+15+2 = 347
+    @test result_furl[3] ≈ 0.9653 * 0.8
+
+    # --- zero epidemic → availability equals (1 − p_furl) ---
+    data_zero = DataFrame(
+        sector = ["agri", "manuf"],
+        prev_mldi = [0.0, 0.0],
+        prev_sevi = [0.0, 0.0],
+        occupancy_hosp = [0.0, 0.0],
+        deaths = [0.0, 0.0]
+    )
+    result_zero = EpiEconShocks.EpiHelpers.calc_avail_labour(
+        data_zero, scaling, 10_000.0, 0.5, 0.25
+    )
+    # absence=0 → avail_illness=1.0 → avail = 1*(1−0.25) = 0.75 for both sectors
+    @test result_zero[1] ≈ 0.75
+    @test result_zero[2] ≈ 0.75
+
+    # --- custom productivity_mild ---
+    # With productivity_mild=1.0, full WFH eliminates mild absence entirely
+    result_fullwfh = EpiEconShocks.EpiHelpers.calc_avail_labour(
+        data, scaling, 10_000.0, 1.0, 0.0; productivity_mild = 1.0
+    )
+    # All sectors: eff_mild = 1.0*(1-1.0*1.0) = 0.0 → mild doesn't count
+    # Row 1 (agri, t=1): absence = 0+10+5+1 = 16, avail = 1 − 16/10000 = 0.9984
+    @test result_fullwfh[1] ≈ 0.9984
+
+    # --- per-sector N_work via vector (sorted sector order: ["agri", "manuf"]) ---
+    N_work_vec = [5_000.0, 50_000.0]   # agri (idx=1), manuf (idx=2)
+    result_nw = EpiEconShocks.EpiHelpers.calc_avail_labour(
+        data, scaling, N_work_vec, 0.0, 0.0
+    )
+    # Row 1 (agri): absence=116, N_work=5000 → avail = 1 − 116/5000 = 0.9768
+    @test result_nw[1] ≈ 0.9768
+    # Row 3 (manuf): absence=347, N_work=50000 → avail = 1 − 347/50000 = 0.99306
+    @test result_nw[3] ≈ 0.99306
+
+    # --- original DataFrame not modified ---
+    data_copy = deepcopy(data)
+    _ = EpiEconShocks.EpiHelpers.calc_avail_labour(
+        data, scaling, 10_000.0, 0.0, 0.0
+    )
+    @test data == data_copy
 end
 
 @testset "EpiHelpers.calc_labour_avail" begin
