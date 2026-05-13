@@ -3,102 +3,183 @@ module EpiHelpers
 
 using DataFrames
 
-export calc_indivs, calc_labour_avail, calc_consumption_avail, integrate_shock
+export calc_avail_labour, calc_labour_avail, calc_consumption_avail, integrate_shock
 
 """
-    calc_indivs(data::DataFrame, scaling::Dict)
+    calc_avail_labour(
+        data, scaling, N_work, wfh, p_furl;
+        col_sector, col_mild, productivity_mild
+    ) -> Vector{Float64}
 
-Calculate person-equivalents over time from epidemiological compartment data.
+Compute available labour supply for each row of a sector-stratified epidemiological
+time series, accounting for illness absence, partial work-from-home (WFH) by mildly
+symptomatic workers, and furlough.
 
-This function converts epidemiological model outputs (such as compartmental prevalence
-counts from disease states like infected, hospitalized, or deceased) into weighted
-person-equivalents by applying scaling factors and summing across compartments.
+Returns a `Vector{Float64}` of length `nrow(data)`. Each element is the fraction of
+the sector's workforce available at that time step, typically in `[0, 1]`.
 
-# Arguments
-- `data::DataFrame`: Input DataFrame containing epidemiological compartment data with
-  rows representing time points and columns representing disease compartments.
-- `scaling::Dict`: Dictionary mapping column names (as `String` or `Symbol`) to scaling
-  factors. Scaling factors are applied to weight the relative impact of each compartment.
-  For example, `Dict("infected" => 0.1, "hospitalized" => 1.0)` represents that
-  hospitalized individuals have 10x the impact of infected individuals.
+# Formula
 
-# Returns
-`Vector`: A vector of person-equivalents at each time point, calculated as the row-wise
-sum of scaled compartment values.
+For each row `(t, s)`:
 
-# Example
-```julia
-df = DataFrame(
-    infected = [100, 150, 200],
-    hospitalized = [10, 15, 20],
-    deceased = [1, 2, 3]
-)
-scaling = Dict("infected" => 0.1, "hospitalized" => 1.0, "deceased" => 5.0)
-person_equiv = calc_indivs(df, scaling)
-# Returns: [101.1, 151.7, 203.3]
+```
+absence(t, s)  = Σ_k [ base_scale_k × epi_k(t, s) ]
+                 where the mild column uses effective scale:
+                   base_scale_mild × (1 − wfh_s × productivity_mild)
+
+avail(t, s)    = ( 1 − absence(t, s) / N_work_s ) × ( 1 − p_furl_s )
 ```
 
-# Details
-The function performs the following steps:
-1. Deep copies the input DataFrame to avoid modifying the original
-2. Scales specified columns in-place by their corresponding scaling factors
-3. Selects only the scaled columns (drops unscaled columns)
-4. Sums across columns for each row to obtain person-equivalents
-5. Returns the vector of row sums
+The mild-column adjustment models the fact that mildly symptomatic workers can
+perform `wfh_s × productivity_mild` of their normal output remotely; only the
+remaining fraction counts as an absence. `productivity_mild` (default 0.5) is the
+proportion of WFH capacity accessible to a mildly ill worker.
 
-Only columns specified in the `scaling` dictionary are included in the final calculation.
+Furloughed workers are assumed to be economically inactive regardless of epidemic
+state, so `p_furl` is applied as a multiplicative reduction on top of illness
+availability.
+
+# Sector conventions
+
+The function operates on **long-format** data: one row per `(time, sector)` pair.
+
+When `N_work`, `wfh`, or `p_furl` is a vector, element `j` corresponds to the `j`-th
+sector in the **sorted** order of the unique values in `col_sector`. For example, if
+the sector column contains `["agri", "manuf"]`, sorted order is `["agri", "manuf"]`,
+so index 1 → `"agri"` and index 2 → `"manuf"`. All vector arguments must have length
+equal to the number of unique sectors in the data.
+
+A scalar value applies the same parameter to all sectors.
+
+# Arguments
+- `data::DataFrame`: Long-format time series with one row per `(time, sector)` pair.
+  Must contain the columns named in `scaling` and `col_sector`.
+- `scaling::Dict`: Maps compartment column names (`Symbol` or `String`) to their base
+  absence weights (all values must be scalar `Real`). Typical usage:
+  `Dict(:prev_mldi => 1.0, :prev_sevi => 1.0, :occupancy_hosp => 1.0, :deaths => 1.0)`.
+- `N_work::Union{Real, AbstractVector}`: Total workforce per sector. A scalar applies
+  the same value to all sectors; a vector gives per-sector values in sorted sector order.
+- `wfh::Union{Real, AbstractVector}`: WFH capability per sector — fraction of tasks
+  performable remotely (0 = no WFH, 1 = fully remote). Same scalar/vector convention
+  as `N_work`.
+- `p_furl::Union{Real, AbstractVector}`: Proportion of the workforce furloughed per
+  sector (0 = none, 1 = entire sector). Applied multiplicatively on top of illness
+  availability. Same scalar/vector convention as `N_work`.
+
+# Keyword arguments
+- `col_sector::Symbol = :sector`: Column in `data` holding the sector identifier.
+- `col_mild::Symbol = :prev_mldi`: Column in `scaling` for mildly symptomatic workers;
+  the only compartment whose absence weight is modulated by `wfh`. If absent from
+  `scaling`, WFH has no effect.
+- `productivity_mild::Float64 = 0.5`: Fraction of WFH capacity accessible to a mildly
+  ill worker. Effective absence weight for mild workers in sector `s` is
+  `scaling[col_mild] × (1 − wfh_s × productivity_mild)`.
+
+# Examples
+
+Uniform parameters across all sectors:
+```julia
+data = DataFrame(
+    sector        = ["agri", "agri", "manuf", "manuf"],
+    date          = [1, 2, 1, 2],
+    prev_mldi     = [100.0, 200.0, 300.0, 400.0],
+    prev_sevi     = [10.0,   20.0,  30.0,  40.0],
+)
+scaling = Dict(:prev_mldi => 1.0, :prev_sevi => 1.0)
+result = calc_avail_labour(data, scaling, 10_000.0, 0.0, 0.0)
+# Row 1: absence = 100 + 10 = 110 → avail = 1 − 110/10000 = 0.989
+```
+
+Per-sector WFH and furlough via vectors (sorted sector order: ["agri", "manuf"]):
+```julia
+N_work = [5_000.0, 20_000.0]   # agri, manuf
+wfh    = [0.1,     0.6]
+p_furl = [0.0,     0.15]
+result = calc_avail_labour(data, scaling, N_work, wfh, p_furl)
+```
 """
-function calc_indivs(data::DataFrame, scaling::Dict)
-    df = deepcopy(data)
+function calc_avail_labour(
+        data::DataFrame,
+        scaling::Dict,
+        N_work::Union{Real, AbstractVector},
+        wfh::Union{Real, AbstractVector},
+        p_furl::Union{Real, AbstractVector};
+        col_sector::Symbol = :sector,
+        col_mild::Symbol = :prev_mldi,
+        productivity_mild::Float64 = 0.5
+)
+    use_vec = N_work isa AbstractVector || wfh isa AbstractVector ||
+              p_furl isa AbstractVector
+    sector_idx = use_vec ?
+                 Dict(s => i for (i, s) in enumerate(sort(unique(data[!, col_sector])))) :
+                 Dict{Any, Int}()
 
-    for col in keys(scaling)
-        df[!, col] .*= scaling[col]
+    result = Vector{Float64}(undef, nrow(data))
+    col_mild_sym = Symbol(col_mild)
+
+    for i in 1:nrow(data)
+        s = data[i, col_sector]
+        idx = use_vec ? sector_idx[s] : 0
+        n_work_s = N_work isa AbstractVector ? Float64(N_work[idx]) : Float64(N_work)
+        wfh_s = wfh isa AbstractVector ? Float64(wfh[idx]) : Float64(wfh)
+        pfurl_s = p_furl isa AbstractVector ? Float64(p_furl[idx]) : Float64(p_furl)
+
+        absence = 0.0
+        for (col, base_scale) in scaling
+            val = Float64(data[i, Symbol(col)])
+            eff_scale = Symbol(col) == col_mild_sym ?
+                        Float64(base_scale) * (1.0 - wfh_s * productivity_mild) :
+                        Float64(base_scale)
+            absence += eff_scale * val
+        end
+
+        avail_illness = 1.0 - absence / n_work_s
+        result[i] = avail_illness * (1.0 - pfurl_s)
     end
 
-    select!(df, Symbol.(keys(scaling)))
-    transform!(df, AsTable(:) => ByRow(sum))
-
-    return df[!, end] # last col is rowwise sum of cols
+    return result
 end
 
 """
-    calc_labour_avail(epi_data::DataFrame, scaling::Dict, N_work::Real)
+    calc_labour_avail(epi_data::DataFrame, scaling::Dict, N_work::Real) -> Vector{Float64}
 
 Calculate daily labour availability from epidemiological compartment data.
 
-Computes the fraction of the workforce still available at each time point by:
-1. Calculating weighted person-equivalents (absent workers) using `calc_indivs`
-2. Normalizing by total workforce
-3. Returning availability as `1.0 - person_equiv / N_work`
+Computes the fraction of the workforce still available at each time point as
+`1 − weighted_absence / N_work`, where the weighted absence is the row-wise sum of
+each compartment column multiplied by its scalar weight from `scaling`.
+
+For sector-stratified data with per-sector WFH fractions and furlough rates, use
+`calc_avail_labour` instead.
 
 # Arguments
-- `epi_data::DataFrame`: Epidemiological time series with compartment columns (e.g., "mild", "severe", "hospitalized", "deceased")
-- `scaling::Dict`: Mapping of compartment column names to their productivity impact weights.
-  For example, mildly symptomatic workers might have weight `0.36` (i.e., 1 - 0.64 productivity)
-- `N_work::Real`: Total workforce size
+- `epi_data::DataFrame`: Epidemiological time series; rows are time steps, columns are
+  disease compartments. No sector column is expected.
+- `scaling::Dict`: Maps compartment column names (`Symbol` or `String`) to their absence
+  weights (all values must be scalar `Real`). For example, mildly symptomatic workers at
+  36% absence: `Dict("mild" => 0.36, "severe" => 1.0)`.
+- `N_work::Real`: Total workforce size used for normalisation.
 
 # Returns
-`Vector{Float64}`: Daily labour availability fractions (typically in [0.0, 1.0],
- though can exceed 1.0 or be negative if data is inconsistent)
+`Vector{Float64}`: Labour availability at each time step, typically in `[0.0, 1.0]`.
 
 # Example
 ```julia
 df = DataFrame(
-    mild = [100, 150, 200],
-    severe = [10, 15, 20],
-    hospitalized = [5, 7, 10],
-    deceased = [1, 2, 3]
+    mild = [100, 150, 200], severe = [10, 15, 20],
+    hosp = [5, 7, 10],      dead   = [1,  2,  3]
 )
-scaling = Dict("mild" => 0.36, "severe" => 1.0, "hospitalized" => 1.0, "deceased" => 1.0)
-N_work = 10000.0
-avail = calc_labour_avail(df, scaling, N_work)
-# Person-equivalents: [136.6, 207.8, 283]
-# Availability: [1 - 136.6/10000, 1 - 207.8/10000, ...] ≈ [0.9863, 0.9792, 0.9717]
+scaling = Dict("mild" => 0.36, "severe" => 1.0, "hosp" => 1.0, "dead" => 1.0)
+avail = calc_labour_avail(df, scaling, 10_000.0)
+# Row 1: absence = 36 + 10 + 5 + 1 = 52 → 1 − 52/10000 = 0.9948
 ```
 """
 function calc_labour_avail(epi_data::DataFrame, scaling::Dict, N_work::Real)
-    person_equiv = calc_indivs(epi_data, scaling)
-    return 1.0 .- person_equiv ./ N_work
+    absence = zeros(Float64, nrow(epi_data))
+    for (col, scale) in scaling
+        absence .+= Float64.(epi_data[!, Symbol(col)]) .* Float64(scale)
+    end
+    return 1.0 .- absence ./ N_work
 end
 
 """
