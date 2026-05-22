@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - `calc_avail_labour()` replaces `calc_indivs()`: takes long-format sector-stratified epidemiological data (one row per time–sector pair) and returns a `Vector{Float64}` of labour availability fractions. Adds explicit `wfh` and `p_furl` parameters (scalar or vector) for per-sector work-from-home capability and furlough rates. WFH modulates the absence contribution of mildly symptomatic workers via a `productivity_mild` keyword (default 0.5). Furlough is applied multiplicatively on top of illness availability.
+- Input validation for `calc_labour_avail()`: validates that `n_adults`, `n_school`, and `n_workers` are non-negative; that `n_workers` vector length matches number of sectors; and that all scaling parameters (`scaling_affected`, `scaling_wfh`, `scaling_care`, `scaling_furl`) are in [0.0, 1.0].
+- Comprehensive test suite for `calc_labour_avail()` using Daedalus epidemiological data, covering basic functionality, scalar and vector parameters, and input validation.
 
 ### Changed
 - `calc_avail_labour()`: `N_work`, `wfh`, and `p_furl` now accept `AbstractVector` instead of `Dict` for per-sector values. Vector element `j` corresponds to the `j`-th sector in sorted order of unique sector labels in the data. Scalar inputs are unchanged.

@@ -2,10 +2,12 @@
 module EpiHelpers
 
 using DataFrames
+using LinearAlgebra
+using Trapz
 
 export calc_labour_avail, calc_consumption_avail, integrate_shock
 
-validate_scaling = function (scaling_dict::Dict, n_sectors::Real)
+function validate_scaling(scaling_dict::Dict, n_sectors::Real)::Dict
     for (key, val) in scaling_dict
         if !isa(val, Vector{Float64})
             throw(
@@ -21,12 +23,20 @@ validate_scaling = function (scaling_dict::Dict, n_sectors::Real)
                 "Expected scaling for $key to be of length $n_sectors, got $len_scaling"
             ))
         end
+
+        for (i, v) in enumerate(val)
+            if v < 0.0 || v > 1.0
+                throw(ArgumentError(
+                    "scaling_affected[$key][$i] must be in [0.0, 1.0], got $v"
+                ))
+            end
+        end
     end
 
     return scaling_dict
 end
 
-default_labour_scaling = function (n_sectors::Real = 45)
+function default_labour_scaling(n_sectors::Real = 45)::Dict
     return Dict(
         "infect_symp" => repeat([1.0], n_sectors),
         "infect_asymp" => repeat([0.5], n_sectors),
@@ -36,61 +46,100 @@ default_labour_scaling = function (n_sectors::Real = 45)
     )
 end
 
+function count_epi_affected(df::DataFrame,
+        comp_affected::Union{String, Vector{String}} =
+        ["infect_symp", "infect_asymp", "dead", "hospitalised_recov",
+            "hospitalised_death"])::Vector{Float64}
+
+    # TODO: add input checks
+    comp_epi_affected = comp_affected[comp_affected .!= "dead"]
+
+    df_epi_affected = filter(row -> any(occursin.(comp_epi_affected, row.compartment)), df)
+    df_epi_affected = groupby(df_epi_affected, [:time, :econ_sector])
+    df_epi_affected = combine(df_epi_affected, :value => (x -> sum(x)) => :value)
+
+    # TODO: need to reshape to provide time x sector matrix
+    return df_epi_affected[:, :value]
+end
+
 """
     calc_labour_avail(epi_data::DataFrame, scaling::Dict, N_work::Real) -> Vector{Float64}
 
 Calculate daily labour availability from epidemiological compartment data.
 
 Computes the fraction of the workforce still available at each time point as
-`1 − weighted_absence / N_work`, where the weighted absence is the row-wise sum of
+`1 - weighted_absence / N_work`, where the weighted absence is the row-wise sum of
 each compartment column multiplied by its scalar weight from `scaling`.
-
-For sector-stratified data with per-sector WFH fractions and furlough rates, use
-`calc_avail_labour` instead.
-
-# Arguments
-- `epi_data::DataFrame`: Epidemiological time series; rows are time steps, columns are
-  disease compartments. No sector column is expected.
-- `scaling::Dict`: Maps compartment column names (`Symbol` or `String`) to their absence
-  weights (all values must be scalar `Real`). For example, mildly symptomatic workers at
-  36% absence: `Dict("mild" => 0.36, "severe" => 1.0)`.
-- `N_work::Real`: Total workforce size used for normalisation.
-
-# Returns
-`Vector{Float64}`: Labour availability at each time step, typically in `[0.0, 1.0]`.
-
-# Example
-```julia
-df = DataFrame(
-    mild = [100, 150, 200], severe = [10, 15, 20],
-    hosp = [5, 7, 10],      dead   = [1,  2,  3]
-)
-scaling = Dict("mild" => 0.36, "severe" => 1.0, "hosp" => 1.0, "dead" => 1.0)
-avail = calc_labour_avail(df, scaling, 10_000.0)
-# Row 1: absence = 36 + 10 + 5 + 1 = 52 → 1 − 52/10000 = 0.9948
-```
 """
 calc_labour_avail = function (df::DataFrame,
+        n_workers::Union{Float64, Vector{Float64}},
+        n_adults::Real,
+        n_school::Real,
         comp_affected::Union{String, Vector{String}} =
         ["infect_symp", "infect_asymp", "dead", "hospitalised_recov",
             "hospitalised_death"],
-        scaling_affected::Dict = default_labour_scaling(),
+        scaling_affected::Dict = default_labour_scaling();
         scaling_wfh::Union{Float64, Vector{Float64}} = 0.5,
-        scaling_care::Union{Float64, Vector{Float64}} = 1.0,
-        scaling_furl::Union{Float64, Vector{Float64}} = 1.0,
+        scaling_care::Union{Float64, Vector{Float64}} = 0.27,
+        scaling_furl::Union{Float64, Vector{Float64}} = 0.27,
         phi_eco::Float64 = 1.0,
-        n_workers::Union{Float64, Vector{Float64}} = 1.0;
-        col_sector = "econ_sector",
-        combine_sectors::Bool = false
+        col_sector = "econ_sector"
 )
-    max_time = maximum(df.time) # expect time col
-    n_sectors = length(unique(df[:, col_sector]))
+    # Input validation
+    if n_adults < 0.0
+        throw(ArgumentError("n_adults must be >= 0.0, got $n_adults"))
+    end
+
+    if n_school < 0.0
+        throw(ArgumentError("n_school must be >= 0.0, got $n_school"))
+    end
+
+    if isa(n_workers, Vector)
+        for (i, val) in enumerate(n_workers)
+            if val < 0.0
+                throw(ArgumentError("n_workers[$i] must be >= 0.0, got $val"))
+            end
+        end
+    else
+        if n_workers < 0.0
+            throw(ArgumentError("n_workers must be >= 0.0, got $n_workers"))
+        end
+    end
+
+    times = unique(df[:, :time])
+    max_time = maximum(times) # expect time col
+
+    # compute derived qtys
+    # assume data includes a non-working sector
+    n_sectors = length(unique(df[:, col_sector])) - 1
+
+    # Check n_workers vector length matches n_sectors
+    if isa(n_workers, Vector) && length(n_workers) != n_sectors
+        throw(ArgumentError("n_workers vector length must equal n_sectors ($n_sectors), got $(length(n_workers))"))
+    end
+    workers_as_prop = n_workers / n_adults # sector-wise workers as prop adults
 
     scaling_affected = validate_scaling(scaling_affected, n_sectors)
 
-    # bit of a hash; should always have correct number of workers
-    # do method for daedalus_country class
-    n_workers = n_sectors > 1 ? repeat([n_workers], n_sectors) : n_workers
+    # Validate scaling parameters (must be in [0.0, 1.0])
+    for (name, scaling) in [
+        ("scaling_wfh", scaling_wfh), ("scaling_care", scaling_care), (
+            "scaling_furl", scaling_furl)]
+        if isa(scaling, Vector)
+            if length(scaling) != n_sectors
+                throw(ArgumentError("$name vector length must equal n_sectors ($n_sectors), got $(length(scaling))"))
+            end
+            for (i, val) in enumerate(scaling)
+                if val < 0.0 || val > 1.0
+                    throw(ArgumentError("$name[$i] must be in [0.0, 1.0], got $val"))
+                end
+            end
+        else
+            if scaling < 0.0 || scaling > 1.0
+                throw(ArgumentError("$name must be in [0.0, 1.0], got $scaling"))
+            end
+        end
+    end
 
     comp_affected = isa(comp_affected, Vector{String}) ? comp_affected : [comp_affected]
 
@@ -100,17 +149,35 @@ calc_labour_avail = function (df::DataFrame,
         vals = filter(row -> any(occursin.(comp, row.compartment)), df)[:, :value]
         vals = reshape(vals, (max_time + 1, n_sectors))
         scaling = diagm(scaling_affected[comp])
+
+        # labour available after scaling due to epi-state
         l_avail += (vals * scaling)
-        # prop of sector available
     end
 
-    l_avail *= diagm(1.0 ./ n_workers)
+    # labour availability due to indirect effects
+    ## furlough reduces economic loss
+    # TODO: need to include time of NPIs
+    l_avail *= isa(scaling_furl, Vector) ? diagm(1.0 .- scaling_furl) : 1.0 - scaling_furl
 
-    if combine_sectors
-        sum(l_avail, dims = (2))
-    else
-        l_avail
-    end
+    ## caring for infected
+    # count epi-affected
+    n_epi_affected = count_epi_affected(df, comp_affected)
+
+    # TODO: need to clarify intention on how scaling is applied
+    # TODO: needs to output a times x econ sectors matrix
+    l_notcar = 1.0 .-
+               workers_as_prop .* (1.0 .- scaling_care) .*
+               n_epi_affected ./ sum(n_workers)
+    l_avail .*= l_notcar # element wise
+
+    # TODO: need to include time of NPIs
+    # TODO: need to clarify intention on how scaling is applied
+    # TODO: check the output against workflow repo
+    l_notscl = 1.0 .- workers_as_prop * (1.0 .- scaling_wfh) .*
+                      n_school ./ sum(n_workers)
+    l_avail .*= l_notscl
+
+    return trapz(times, l_avail')' ./ (times[end] - times[begin])
 end
 
 """
