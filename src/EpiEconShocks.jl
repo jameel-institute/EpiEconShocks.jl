@@ -5,6 +5,7 @@ include("ModelInit.jl")
 include("ParamShocks.jl")
 include("ShockGtap.jl")
 include("Example.jl")
+include("Tools.jl")
 include("EpiHelpers.jl")
 
 end
