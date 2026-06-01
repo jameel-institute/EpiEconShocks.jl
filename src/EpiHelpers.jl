@@ -49,17 +49,46 @@ end
 function count_epi_affected(df::DataFrame,
         comp_affected::Union{String, Vector{String}} =
         ["infect_symp", "infect_asymp", "dead", "hospitalised_recov",
-            "hospitalised_death"])::Vector{Float64}
+            "hospitalised_death"];
+        scaling_affected::Union{Dict, Nothing} = nothing,
+        exclude_deaths = false)
 
     # TODO: add input checks
-    comp_epi_affected = comp_affected[comp_affected .!= "dead"]
+    comp_epi_affected = exclude_deaths ?
+                        comp_affected[comp_affected .!= "dead"] : comp_affected
 
-    df_epi_affected = filter(row -> any(occursin.(comp_epi_affected, row.compartment)), df)
-    df_epi_affected = groupby(df_epi_affected, [:time, :econ_sector])
-    df_epi_affected = combine(df_epi_affected, :value => (x -> sum(x)) => :value)
+    # reshaping
+    timepoints = length(unique(df[:, "time"]))
+    econ_sectors = length(unique(df[:, "econ_sector"]))
+    reshape_dims = (econ_sectors, timepoints)
 
-    # TODO: need to reshape to provide time x sector matrix
-    return df_epi_affected[:, :value]
+    # all epi affected are counted
+    if isnothing(scaling_affected)
+        df_epi_affected = filter(
+            row -> any(occursin.(comp_epi_affected, row.compartment)), df)
+        df_epi_affected = groupby(df_epi_affected, [:time, :econ_sector])
+        df_epi_affected = combine(df_epi_affected, :value => (x -> sum(x)) => :value)
+
+        # reshape to provide time x sector matrix
+        value = df_epi_affected[:, :value]
+        value = reshape(value, reshape_dims)'
+
+        return value
+    else
+        epi_affected = ones(timepoints, econ_sectors)
+
+        # explicit scaling of epi affected is provided
+        for comp in comp_epi_affected
+            vals = filter(row -> any(occursin.(comp, row.compartment)), df)[:, :value]
+            vals = reshape(vals, (timepoints, econ_sectors))
+            scaling = diagm(scaling_affected[comp])
+
+            # labour available after scaling due to epi-state
+            epi_affected += (vals * scaling)
+        end
+
+        return epi_affected
+    end
 end
 
 """
