@@ -31,6 +31,10 @@ julia> is_npi_active([1.0, 2.5, 5.0], [(1.0, 2.0), (4.0, 6.0)])
 """
 function is_npi_active(time::Vector{Float64}, bounds::Vector{Tuple{
         Float64, Float64}})::Vector{Float64}
+    if isempty(bounds)
+        throw(ArgumentError("`bounds` cannot be empty"))
+    end
+
     for (i, (t1, t2)) in enumerate(bounds)
         if t1 > t2
             throw(ArgumentError("bounds[$i]: lower bound ($t1) must be ≤ upper bound ($t2)"))
@@ -43,9 +47,7 @@ function is_npi_active(time::Vector{Float64}, bounds::Vector{Tuple{
     if max_time > 0 && max_bound > 0
         magnitude_diff = abs(log10(max_bound) - log10(max_time))
         if magnitude_diff >= 3
-            @warn "Bounds and time vector differ by
-            approximately $(round(Int, magnitude_diff)) orders of 
-            magnitude (time max: $max_time, bounds max: $max_bound)"
+            @warn "Bounds and time vector differ by approximately $(round(Int, magnitude_diff)) orders of magnitude (time max: $max_time, bounds max: $max_bound)"
         end
     end
 
