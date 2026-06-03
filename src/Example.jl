@@ -1,9 +1,11 @@
 
 module Example
 
-export shock_gtap_example, get_example_model
+export shock_gtap_example, get_example_model, get_example_epi_data
 
 import GlobalTradeAnalysisProjectModelV7 as GTAP
+import CSV
+using DataFrames
 
 import ..shock_gtap
 import ..ParameterShock
@@ -42,6 +44,16 @@ This is a convenience function that delegates to `shock_gtap` but using
 function shock_gtap_example(model::GTAP.model_container_struct,
         shocks::Vector{ParameterShock})
     return shock_gtap(model, shocks)
+end
+
+"""
+    get_example_epi_data()::DataFrame
+
+Get epidemiological example data from Daedalus model outputs.
+"""
+function get_example_epi_data()::DataFrame
+    data_path = joinpath(dirname(@__DIR__), "data", "data_daedalus.csv")
+    return CSV.read(data_path, DataFrame)
 end
 
 end

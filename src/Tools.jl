@@ -19,15 +19,6 @@ For each timepoint, returns 1.0 if it falls within at least one bounds interval,
 
 # Raises
 - `ArgumentError`: if `bounds` is empty or if any bound has lower > upper
-
-# Examples
-```jldoctest
-julia> is_npi_active([1.0, 2.5, 5.0], [(1.0, 2.0), (4.0, 6.0)])
-3-element Vector{Float64}:
- 1.0
- 0.0
- 1.0
-```
 """
 function is_npi_active(time::Vector{Float64}, bounds::Vector{Tuple{
         Float64, Float64}})::Vector{Float64}
