@@ -1,7 +1,7 @@
 # EpiEconShocks.jl
 
 [![Project Status: Concept – Minimal or no implementation has been done yet, or the repository is only intended to be a limited example, demo, or proof-of-concept.](https://www.repostatus.org/badges/latest/concept.svg)](https://www.repostatus.org/#concept)
-[![Version](https://img.shields.io/badge/version-0.0.9-aquamarine.svg)](https://jameel-institute.github.io/EpiEconShocks.jl/dev/)
+[![Version](https://img.shields.io/badge/version-0.0.10-aquamarine.svg)](https://jameel-institute.github.io/EpiEconShocks.jl/dev/)
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://jameel-institute.github.io/EpiEconShocks.jl/dev/)
 [![Build Status](https://github.com/jameel-institute/EpiEconShocks.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/jameel-institute/EpiEconShocks.jl/actions/workflows/CI.yml?query=branch%3Amain)
 [![Coverage](https://codecov.io/gh/jameel-institute/EpiEconShocks.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/jameel-institute/EpiEconShocks.jl)
@@ -11,7 +11,11 @@ _EpiEconShocks.jl_ is a proof-of-concept package that demonstrates how to transl
 
 _EpiEconShocks.jl_ is developed at the [Jameel Institute](https://www.imperial.ac.uk/jameel-institute/) at Imperial College London as part of the [Jameel Institute-Kenneth C. Griffin Initiative for the Economics of Pandemic Preparedness (EPPI)](https://new.express.adobe.com/webpage/TXLBkz1sN9FI5?), in collaboration with the [RESIDE research software engineering team](https://reside-ic.github.io/about/).
 
-_EpiEconShocks.jl_ is currently a thin wrapper around the [_GlobalTradeAnalysisProjectModelV7.jl_ package](https://mivanic.github.io/GlobalTradeAnalysisProjectModelV7.jl/dev/) which implements the GTAP trade model, with wrappers around other economic models under consideration.
+_EpiEconShocks.jl_ currently has two parallel functionalities:
+
+- Working with the [_GlobalTradeAnalysisProjectModelV7.jl_ package](https://mivanic.github.io/GlobalTradeAnalysisProjectModelV7.jl/dev/) which implements the GTAP trade model;
+
+- Estimating labour productivity and consumption over the course of a disease outbreak;
 
 ## Installation
 
@@ -23,6 +27,8 @@ Pkg.add(url="git@github.com:jameel-institute/EpiEconShocks.jl.git")
 ```
 
 ## Quick start
+
+### Linking epidemic outcomes to GTAP
 
 Here is a basic example of the current functionality using example GTAP data.
 A more detailed example may be provided once more detailed data can be shared online.
@@ -50,6 +56,10 @@ comparisons = compare_gtaps(example_model, output)
 
 comparisons.delta_gdp
 ```
+
+### Calculating labour and consumption over an epidemic
+
+WIP.
 
 ## Further documentation
 

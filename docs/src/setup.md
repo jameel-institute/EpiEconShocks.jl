@@ -2,9 +2,9 @@
 CurrentModule = EpiEconShocks
 ```
 
-This page shows the steps needed to set up a calibrated Global Trade Analysis Project (GTAP) model, using a GTAP database.
-
 ## Getting GTAP data from the GTAP database
+
+This page shows the steps needed to set up a calibrated Global Trade Analysis Project (GTAP) model, using a GTAP database.
 
 The GTAP data is licensed for use, and can be acquired from [the GTAP website](https://www.gtap.agecon.purdue.edu/).
 A user account is required to log in before data can be accessed.

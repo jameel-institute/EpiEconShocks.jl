@@ -16,8 +16,13 @@ makedocs(;
     checkdocs = :exports,
     pages = [
         "Home" => "index.md",
-        "Setting up GTAP" => "setup.md",
-        "Use with an epidemic model" => "daedalus.md",
+        "Working with epi outputs" => [
+            "Estimating labour and consumption over an epidemic" => "estim_lab_consump.md"
+        ],
+        "Working with GTAP" => [
+            "Setting up a GTAP model" => "setup.md",
+            "Using epi model outputs with GTAP" => "daedalus.md"
+        ],        
         "Index" => "pkg_index.md",
         "Function Reference" => "reference.md"
     ]
