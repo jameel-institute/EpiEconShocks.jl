@@ -6,5 +6,5 @@ CurrentModule = EpiEconShocks
 
 ```@autodocs
 Modules = [EpiEconShocks, EpiEconShocks.ModelInit, EpiEconShocks.Helpers,
-    EpiEconShocks.Example, EpiEconShocks.EpiHelpers]
+    EpiEconShocks.Example, EpiEconShocks.EpiHelpers, EpiEconShocks.Tools]
 ```
