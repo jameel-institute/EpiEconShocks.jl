@@ -52,10 +52,10 @@
 
     # Test zero epidemic scenario
     df_zero = DataFrame(
-        (time = t, compartment = comp, econ_sector = "sector_" * esec) for 
-            t in 0:1 for comp in ["a", "b"] for esec in ["a", "b"])
+        (time = t, compartment = comp, econ_sector = "sector_" * esec) for
+    t in 0:1 for comp in ["a", "b"] for esec in ["a", "b"])
     df_zero.value .= 0.0
-    
+
     n_workers = fill(1000.0, 2)
     scaling_dummy = Dict(
         "a" => [1.0, 1.0],
@@ -78,10 +78,10 @@ end
     # Load daedalus data
     # Test zero epidemic scenario
     df_zero = DataFrame(
-        (time = t, compartment = comp, econ_sector = "sector_" * esec) for 
-            t in 0:1 for comp in ["a", "b"] for esec in ["a", "b"])
+        (time = t, compartment = comp, econ_sector = "sector_" * esec) for
+    t in 0:1 for comp in ["a", "b"] for esec in ["a", "b"])
     df_zero.value .= 0.0
-    
+
     n_workers = fill(1000.0, 2)
     scaling_dummy = Dict(
         "a" => [1.0, 1.0],
@@ -121,7 +121,8 @@ end
 
     # scaling_wfh outside [0, 1] (too small)
     @test_throws ArgumentError("scaling_wfh must be in [0.0, 1.0], got -0.1") EpiEconShocks.EpiHelpers.calc_labour_avail(
-        df_zero, n_workers, n_adults, n_school; scaling_affected = scaling_dummy, scaling_wfh = -0.1
+        df_zero, n_workers, n_adults, n_school;
+        scaling_affected = scaling_dummy, scaling_wfh = -0.1
     )
 
     # scaling_wfh outside [0, 1] (too large)
@@ -132,13 +133,15 @@ end
     # scaling_care vector with invalid values
     bad_care_vec = [0.5, 1.5]  # 1.5 is out of range
     @test_throws ArgumentError("scaling_care[2] must be in [0.0, 1.0], got 1.5") EpiEconShocks.EpiHelpers.calc_labour_avail(
-        df_zero, n_workers, n_adults, n_school; scaling_affected = scaling_dummy, scaling_care = bad_care_vec
+        df_zero, n_workers, n_adults, n_school;
+        scaling_affected = scaling_dummy, scaling_care = bad_care_vec
     )
 
     # scaling_furl vector length mismatch
     wrong_furl_vec = fill(0.3, n_sectors + 1)
     @test_throws ArgumentError("scaling_furl vector length must equal n_sectors ($n_sectors), got $(length(wrong_furl_vec))") EpiEconShocks.EpiHelpers.calc_labour_avail(
-        df_zero, n_workers, n_adults, n_school; scaling_affected = scaling_dummy, scaling_furl = wrong_furl_vec
+        df_zero, n_workers, n_adults, n_school;
+        scaling_affected = scaling_dummy, scaling_furl = wrong_furl_vec
     )
 
     # scaling_affected with out-of-range values
@@ -150,33 +153,44 @@ end
 end
 
 @testset "EpiHelpers.calc_consumption_avail" begin
-    # Test with constant zero new deaths
-    deaths_const = [0.0, 0.0, 0.0, 0.0]
     phi = 0.01
-    result = EpiEconShocks.EpiHelpers.calc_consumption_avail(deaths_const, phi)
 
-    @test isa(result, Vector)
+    # Helper: build a single-sector DataFrame with given cumulative deaths
+    function make_deaths_df(cum_deaths::Vector{Float64}, sector = "sector_a",
+            comp = "dead")
+        n = length(cum_deaths)
+        DataFrame(
+            time = collect(0:(n - 1)),
+            compartment = fill(comp, n),
+            econ_sector = fill(sector, n),
+            value = cum_deaths
+        )
+    end
+
+    # All new deaths zero → all availability 1.0
+    df_zero = make_deaths_df([0.0, 0.0, 0.0, 0.0])
+    result = EpiEconShocks.EpiHelpers.calc_consumption_avail(df_zero, phi)
+
+    @test isa(result, Vector{Float64})
     @test length(result) == 4
-    # All new deaths are zero, so exp(0) = 1.0
     @test all(result .≈ 1.0)
 
-    # Test with single death spike
-    deaths_spike = [0.0, 0.0, 1.0, 1.0, 1.0]
-    result_spike = EpiEconShocks.EpiHelpers.calc_consumption_avail(deaths_spike, phi)
+    # Single death spike: cumulative [0, 0, 1, 1, 1] → new [0, 0, 1, 0, 0]
+    df_spike = make_deaths_df([0.0, 0.0, 1.0, 1.0, 1.0])
+    result_spike = EpiEconShocks.EpiHelpers.calc_consumption_avail(df_spike, phi)
 
     @test length(result_spike) == 5
-    @test result_spike[1] ≈ exp(0.0)  # new_deaths[1] = 0
-    @test result_spike[2] ≈ exp(0.0)  # new_deaths[2] = 0
-    @test result_spike[3] ≈ exp(-phi * 1.0)  # new_deaths[3] = 1
-    @test result_spike[4] ≈ exp(0.0)  # new_deaths[4] = 0
-    @test result_spike[5] ≈ exp(0.0)  # new_deaths[5] = 0
+    @test result_spike[1] ≈ exp(0.0)
+    @test result_spike[2] ≈ exp(0.0)
+    @test result_spike[3] ≈ exp(-phi * 1.0)
+    @test result_spike[4] ≈ exp(0.0)
+    @test result_spike[5] ≈ exp(0.0)
 
-    # Test with multiple deaths
-    deaths_multi = [0.0, 1.0, 3.0, 5.0, 5.0, 6.0]
-    result_multi = EpiEconShocks.EpiHelpers.calc_consumption_avail(deaths_multi, phi)
+    # Multiple deaths: cumulative [0, 1, 3, 5, 5, 6] → new [0, 1, 2, 2, 0, 1]
+    df_multi = make_deaths_df([0.0, 1.0, 3.0, 5.0, 5.0, 6.0])
+    result_multi = EpiEconShocks.EpiHelpers.calc_consumption_avail(df_multi, phi)
 
     @test length(result_multi) == 6
-    # new_deaths: [0, 1, 2, 2, 0, 1]
     @test result_multi[1] ≈ exp(-0.01 * 0.0)
     @test result_multi[2] ≈ exp(-0.01 * 1.0)
     @test result_multi[3] ≈ exp(-0.01 * 2.0)
@@ -184,21 +198,48 @@ end
     @test result_multi[5] ≈ exp(-0.01 * 0.0)
     @test result_multi[6] ≈ exp(-0.01 * 1.0)
 
-    # Test with zero phi (no avoidance)
-    deaths_any = [0.0, 1.0, 2.0, 3.0]
-    result_zero_phi = EpiEconShocks.EpiHelpers.calc_consumption_avail(deaths_any, 0.0)
-
-    # exp(-0.0 * x) = exp(0) = 1.0 for all x
+    # Zero phi → no avoidance, all availability 1.0
+    df_any = make_deaths_df([0.0, 1.0, 2.0, 3.0])
+    result_zero_phi = EpiEconShocks.EpiHelpers.calc_consumption_avail(df_any, 0.0)
     @test all(result_zero_phi .≈ 1.0)
 
-    # Test with large phi (strong avoidance)
-    # deaths_any = [0, 1, 2, 3], so new_deaths = [0, 1, 1, 1]
-    phi_large = 1.0
-    result_large_phi = EpiEconShocks.EpiHelpers.calc_consumption_avail(deaths_any, phi_large)
-
+    # Large phi → strong avoidance
+    # cumulative [0, 1, 2, 3] → new [0, 1, 1, 1]
+    result_large_phi = EpiEconShocks.EpiHelpers.calc_consumption_avail(df_any, 1.0)
     @test result_large_phi[1] ≈ exp(0.0)
-    @test result_large_phi[2] ≈ exp(-1.0)  # 1 new death on day 2
-    @test result_large_phi[3] ≈ exp(-1.0)  # 1 new death on day 3
+    @test result_large_phi[2] ≈ exp(-1.0)
+    @test result_large_phi[3] ≈ exp(-1.0)
+
+    # Deaths summed across sectors: two sectors with half the deaths each
+    # sector_a cumulative: [0, 0.5, 1.0, 1.0]
+    # sector_b cumulative: [0, 0.5, 2.0, 2.0]
+    # total cumulative:    [0, 1.0, 3.0, 3.0] → new [0, 1, 2, 0]
+    df_two_sectors = DataFrame(
+        time = [0, 0, 1, 1, 2, 2, 3, 3],
+        compartment = fill("dead", 8),
+        econ_sector = repeat(["sector_a", "sector_b"], 4),
+        value = [0.0, 0.0, 0.5, 0.5, 1.0, 2.0, 1.0, 2.0]
+    )
+    result_two = EpiEconShocks.EpiHelpers.calc_consumption_avail(df_two_sectors, phi)
+    @test length(result_two) == 4
+    @test result_two[1] ≈ exp(0.0)
+    @test result_two[2] ≈ exp(-phi * 1.0)
+    @test result_two[3] ≈ exp(-phi * 2.0)
+    @test result_two[4] ≈ exp(0.0)
+
+    # Custom compartment name via comp_deaths keyword
+    df_custom = make_deaths_df([0.0, 2.0, 2.0], "sector_a", "mortality")
+    result_custom = EpiEconShocks.EpiHelpers.calc_consumption_avail(
+        df_custom, phi; comp_deaths = "mortality")
+    @test result_custom[1] ≈ exp(0.0)
+    @test result_custom[2] ≈ exp(-phi * 2.0)
+    @test result_custom[3] ≈ exp(0.0)
+
+    # Integration test with Daedalus example data
+    df_daedalus = CSV.read(joinpath(@__DIR__, "data", "data_daedalus.csv"), DataFrame)
+    result_daedalus = EpiEconShocks.EpiHelpers.calc_consumption_avail(df_daedalus, phi)
+    @test isa(result_daedalus, Vector{Float64})
+    @test all(0.0 .<= result_daedalus .<= 1.0)
 end
 
 @testset "EpiHelpers.integrate_shock" begin
