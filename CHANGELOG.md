@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.0.10] - 2026-03-27
+## [0.0.10] - 2026-06-08
 
 ### Added
 - `calc_avail_labour()` replaces `calc_indivs()`: takes long-format sector-stratified epidemiological data (one row per time–sector pair) and returns a `Vector{Float64}` of labour availability fractions. Adds explicit `wfh` and `p_furl` parameters (scalar or vector) for per-sector work-from-home capability and furlough rates. WFH modulates the absence contribution of mildly symptomatic workers via a `productivity_mild` keyword (default 0.5). Furlough is applied multiplicatively on top of illness availability.
@@ -17,7 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - `calc_avail_labour()`: `N_work`, `wfh`, and `p_furl` now accept `AbstractVector` instead of `Dict` for per-sector values. Vector element `j` corresponds to the `j`-th sector in sorted order of unique sector labels in the data. Scalar inputs are unchanged.
-- `calc_labour_avail()` no longer calls the removed `calc_indivs()`; weighted absence is now computed directly. Behaviour is unchanged.
+- `calc_labour_avail()` no longer calls the removed `calc_indivs()`; weighted absence is now computed directly.
+- `calc_consumption_avail()`: signature changed from `(deaths::AbstractVector, phi)` to `(df::DataFrame, phi; comp_deaths, col_sector)`. Deaths are now read from a long-format epidemiological DataFrame, filtered by the `comp_deaths` compartment name(s) (default `"dead"`), summed across all sectors, and differenced internally to derive new deaths before applying the exponential decay.
 
 ## [0.0.9] - 2026-03-27
 
