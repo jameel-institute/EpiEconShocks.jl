@@ -45,20 +45,20 @@ Shocks should be represented as scaling factors in the range ``[0.0, 1.0]``; use
 ```@example basic_use
 using EpiEconShocks
 
-example_model = EpiEconShocks.Example.get_example_model();
+# example_model = EpiEconShocks.Example.get_example_model();
 
-# run the single function shock_gtap_example() applying a 5% labour shock,
-# and a 20% shock to consumption of services
-labour_shock = EpiEconShocks.ParameterShock("qe", ["skilled labor", "unskilled labor"], 0.05)
-svces_shock = EpiEconShocks.ParameterShock("qpa", "svces", 0.2)
+# # run the single function shock_gtap_example() applying a 5% labour shock,
+# # and a 20% shock to consumption of services
+# labour_shock = EpiEconShocks.ParameterShock("qe", ["skilled labor", "unskilled labor"], 0.05)
+# svces_shock = EpiEconShocks.ParameterShock("qpa", "svces", 0.2)
 
-output = EpiEconShocks.Example.shock_gtap_example(
-    example_model, [labour_shock, svces_shock])
+# output = EpiEconShocks.Example.shock_gtap_example(
+#     example_model, [labour_shock, svces_shock])
 
-# examine proportional change in GDP
-comparisons = compare_gtaps(example_model, output)
+# # examine proportional change in GDP
+# comparisons = compare_gtaps(example_model, output)
 
-comparisons.delta_gdp
+# comparisons.delta_gdp
 ```
 
 ### Calculating labour and consumption over an epidemic

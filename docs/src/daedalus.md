@@ -2,7 +2,7 @@
 CurrentModule = EpiEconShocks
 ```
 
-## Using EpiEconShocks.jl with realistic epidemic outcomes
+# Using EpiEconShocks.jl with realistic epidemic outcomes
 
 This example shows how to use EpiEconShocks.jl with realistic epidemic model outputs.
 
@@ -40,23 +40,23 @@ Next we pass the proportional losses in labour supply to the function `shock_gta
 ```@example using_daedalus
 # pass a shock to a model using example data and view outputs
 # assumes equal shocks to all regions
-example_model = EpiEconShocks.Example.get_example_model();
+# example_model = EpiEconShocks.Example.get_example_model();
 
-labour_shock = ParameterShock(
-    "qe", ["skilled labor", "unskilled labor"], labour_available
-)
+# labour_shock = ParameterShock(
+#     "qe", ["skilled labor", "unskilled labor"], labour_available
+# )
 
-output = EpiEconShocks.Example.shock_gtap_example(example_model, [labour_shock]);
+# output = EpiEconShocks.Example.shock_gtap_example(example_model, [labour_shock]);
 
-comparisons = compare_gtaps(example_model, output)
+# comparisons = compare_gtaps(example_model, output)
 
-comparisons.y
+# comparisons.y
 ```
 
 ```@example using_daedalus
-comparisons.ev
+# comparisons.ev
 ```
 
 ```@example using_daedalus
-comparisons.delta_gdp
+# comparisons.delta_gdp
 ```

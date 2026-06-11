@@ -22,7 +22,7 @@ makedocs(;
         "Working with GTAP" => [
             "Setting up a GTAP model" => "setup.md",
             "Using epi model outputs with GTAP" => "daedalus.md"
-        ],        
+        ],
         "Index" => "pkg_index.md",
         "Function Reference" => "reference.md"
     ]

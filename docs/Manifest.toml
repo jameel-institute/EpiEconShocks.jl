@@ -423,9 +423,9 @@ version = "6.218.0"
 
 [[deps.DiffEqCallbacks]]
 deps = ["ConcreteStructs", "DataStructures", "DiffEqBase", "DifferentiationInterface", "LinearAlgebra", "Markdown", "PrecompileTools", "RecipesBase", "RecursiveArrayTools", "SciMLBase", "StaticArraysCore"]
-git-tree-sha1 = "51f445c25b80c26c83c61520cde214adf8c05227"
+git-tree-sha1 = "450217b2cc2fe3396de5452ca315952573f0d452"
 uuid = "459566f4-90b8-5000-8ac3-15dfb0a30def"
-version = "4.17.0"
+version = "4.18.0"
 
     [deps.DiffEqCallbacks.extensions]
     DiffEqCallbacksFunctorsExt = "Functors"
