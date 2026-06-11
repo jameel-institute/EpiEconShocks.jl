@@ -168,6 +168,47 @@ function count_epi_affected(df::DataFrame,
 end
 
 """
+    count_epi_affected(df::DataFrame, comp_affected) -> Vector{Float64}
+
+Count epidemiologically affected individuals by time only.
+
+Aggregates epidemiological data across all sectors and returns a time-indexed
+vector of affected counts. This simplified version does not support sector-specific
+or compartment-specific scaling; all affected individuals are counted equally.
+
+# Arguments
+- `df::DataFrame`: Long-format epidemiological data with columns `time`,
+    `compartment`, and `value`
+- `comp_affected::Union{String, Vector{String}}`: Compartments to include
+    (default: infectious and hospitalised states, plus deaths)
+
+# Returns
+- `Vector{Float64}`: Time-indexed vector of shape (n_timepoints,) with total
+    count of affected individuals across all sectors at each timepoint.
+
+# Examples
+
+```julia
+df = get_example_epi_data()
+total_affected = count_epi_affected(df)  # returns vector of daily totals
+```
+"""
+function count_epi_affected(df::DataFrame,
+        comp_affected::Union{String, Vector{String}} =
+        ["infect_symp", "infect_asymp", "dead", "hospitalised_recov",
+            "hospitalised_death"])
+    comp_epi_affected = isa(comp_affected, Vector{String}) ? comp_affected : [comp_affected]
+
+    df_epi_affected = filter(
+        row -> any(occursin.(comp_epi_affected, row.compartment)), df)
+    df_epi_affected = groupby(df_epi_affected, [:time])
+    df_epi_affected = combine(df_epi_affected, :value => (x -> sum(x)) => :value)
+
+    value = df_epi_affected[:, :value]
+    return value
+end
+
+"""
     calc_labour_avail(df::DataFrame, n_workers, n_adults, n_school,
                       comp_affected; scaling_affected, times_econ_closures,
                       times_school_closures, scaling_wfh, scaling_care,
@@ -200,12 +241,12 @@ work-from-home capability, care responsibilities, and economic closures.
 - `times_school_closures::Union{nothing, Vector{Tuple{Float64, Float64}}}`: Time
     intervals of school closures. `nothing` means no closures
 - `scaling_wfh::Union{Float64, Vector{Float64}}`: Work-from-home capability
-    (scalar or per-sector), must be in [0.0, 1.0] (default: 0.27)
+    (scalar or per-sector), must be in `[0.0, 1.0]` (default: 0.27)
 - `scaling_care::Union{Float64, Vector{Float64}}`: Fraction of workers
-    unavailable due to care duties (scalar or per-sector), must be in [0.0, 1.0]
+    unavailable due to care duties (scalar or per-sector), must be in `[0.0, 1.0]`
     (default: 0.27)
 - `scaling_furl::Union{Float64, Vector{Float64}}`: Furlough rate reducing
-    economic closure impact (scalar or per-sector), must be in [0.0, 1.0]
+    economic closure impact (scalar or per-sector), must be in `[0.0, 1.0]`
     (default: 0.28)
 - `col_sector::String`: Name of sector column in `df` (default: `"econ_sector"`)
 
@@ -215,7 +256,7 @@ work-from-home capability, care responsibilities, and economic closures.
 # Validation
 - `n_adults`, `n_school`, and `n_workers` must be non-negative
 - Vector `n_workers` length must match number of working sectors in data
-- `scaling_wfh`, `scaling_care`, `scaling_furl` must be in [0.0, 1.0]
+- `scaling_wfh`, `scaling_care`, `scaling_furl` must be in `[0.0, 1.0]`
 - Vector scaling parameters must match number of sectors
 """
 calc_labour_avail = function (df::DataFrame,
@@ -355,8 +396,9 @@ This function is set up to deal with Daedalus-model type outputs.
 # Arguments
 - `df::DataFrame`: Long-format epidemiological data with columns `time`,
     `compartment`, `value`, and a sector column (default `"econ_sector"`)
-- `phi::Real`: Infection-avoidance scaling parameter. Larger values mean stronger
-  consumption reduction in response to deaths (dimensionally, 1/deaths)
+- `phi::Union{Real, Vector{Real}}`: Infection-avoidance scaling parameter. May
+    be a single value that applies across all economic sectors, or a vector of
+    values that gives the infection-avoidance per sector.
 
 # Keyword Arguments
 - `comp_deaths::Union{String, Vector{String}}`: Compartment name(s) representing
@@ -364,9 +406,8 @@ This function is set up to deal with Daedalus-model type outputs.
 - `col_sector::String`: Name of the sector column in `df` (default: `"econ_sector"`)
 
 # Returns
-`Vector{Float64}`: Daily consumption availability fractions of length n_timepoints,
-calculated as `exp(-phi * new_deaths)` where `new_deaths = [0; diff(cumulative_deaths)]`
-and `cumulative_deaths` is the sum of the deaths compartment(s) across all sectors.
+`Vector{Float64}`: Daily consumption availability fractions of length
+`n_timepoints`.
 
 # Example
 ```julia
@@ -375,17 +416,17 @@ phi = 0.01
 avail = calc_consumption_avail(df, phi)
 ```
 """
-function calc_consumption_avail(df::DataFrame, phi::Real;
+function calc_consumption_avail(df::DataFrame, phi::Union{Real, Vector{Real}};
         comp_deaths::Union{String, Vector{String}} = "dead",
         col_sector::String = "econ_sector")
     comp_deaths_vec = isa(comp_deaths, String) ? [comp_deaths] : comp_deaths
 
     # count_epi_affected returns (n_timepoints × n_sectors); sum across sectors
-    deaths_matrix = count_epi_affected(df, comp_deaths_vec, col_sector = col_sector)
-    cumulative_deaths = vec(sum(deaths_matrix, dims = 2))
+    cumulative_deaths = count_epi_affected(df, comp_deaths_vec, col_sector = col_sector)
 
-    new_deaths = [0; diff(cumulative_deaths)]
-    return exp.(-phi .* new_deaths)
+    new_deaths = [0.0; diff(cumulative_deaths)]
+
+    return exp.(-phi' .* new_deaths)
 end
 
 """
