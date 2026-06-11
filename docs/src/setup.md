@@ -2,7 +2,7 @@
 CurrentModule = EpiEconShocks
 ```
 
-## Getting GTAP data from the GTAP database
+# Getting GTAP data from the GTAP database
 
 This page shows the steps needed to set up a calibrated Global Trade Analysis Project (GTAP) model, using a GTAP database.
 
