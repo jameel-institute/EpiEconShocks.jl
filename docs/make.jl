@@ -1,7 +1,13 @@
 using EpiEconShocks
 using Documenter
+using DocumenterCitations
 
 DocMeta.setdocmeta!(EpiEconShocks, :DocTestSetup, :(using EpiEconShocks); recursive = true)
+
+bib = CitationBibliography(
+    joinpath(@__DIR__, "src", "refs.bib");
+    style = :numeric
+)
 
 makedocs(;
     modules = [EpiEconShocks],
@@ -25,7 +31,8 @@ makedocs(;
         ],
         "Index" => "pkg_index.md",
         "Function Reference" => "reference.md"
-    ]
+    ],
+    plugins = [bib]
 )
 
 deploydocs(;
