@@ -356,11 +356,13 @@ calc_labour_avail = function (df::DataFrame,
 
     ## furlough reduces economic loss
     econ_closures_col = reshape(econ_closures, :, 1)
-    scaling_furl_effect = isa(scaling_furl, Vector) ? (1.0 .- scaling_furl)' :
-                          (1.0 .- scaling_furl)
-    l_notecl = 1.0 .- econ_closures_col .* scaling_furl_effect
+    l_notecl = 1.0 .-
+               econ_closures_col .* (isa(scaling_furl, Vector) ? scaling_furl' :
+                scaling_furl)
 
     ## caring for infected
+    # TODO: allow for compartment-wise productivity scaling
+    # TODO: Make scaling_care a Dict
     # scale epi_affected by caregiving productivity coeff
     scaling_affected["infect_asymp"] = scaling_care
     n_epi_affected = count_epi_affected(df, comp_affected,
@@ -384,7 +386,7 @@ calc_labour_avail = function (df::DataFrame,
 end
 
 """
-    calc_consumption_avail(df::DataFrame, phi::Real;
+    calc_consumption_avail(df::DataFrame, phi::Union{Real, Vector{Float64}};
                            comp_deaths, col_sector) -> Vector{Float64}
 
 Calculate daily consumption availability from infection-avoidance behaviour.
@@ -396,9 +398,9 @@ This function is set up to deal with Daedalus-model type outputs.
 # Arguments
 - `df::DataFrame`: Long-format epidemiological data with columns `time`,
     `compartment`, `value`, and a sector column (default `"econ_sector"`)
-- `phi::Union{Real, Vector{Real}}`: Infection-avoidance scaling parameter. May
-    be a single value that applies across all economic sectors, or a vector of
-    values that gives the infection-avoidance per sector.
+- `phi::Union{Real, Vector{Float64}}`: Infection-avoidance scaling parameter.
+    May be a single value that applies across all economic sectors, or a vector
+    of values that gives the infection-avoidance per sector.
 
 # Keyword Arguments
 - `comp_deaths::Union{String, Vector{String}}`: Compartment name(s) representing
@@ -416,17 +418,21 @@ phi = 0.01
 avail = calc_consumption_avail(df, phi)
 ```
 """
-function calc_consumption_avail(df::DataFrame, phi::Union{Real, Vector{Real}};
+function calc_consumption_avail(df::DataFrame,
+        phi::Union{Real, Vector{Float64}};
         comp_deaths::Union{String, Vector{String}} = "dead",
         col_sector::String = "econ_sector")
+    times = float.(unique(df[:, :time]))
     comp_deaths_vec = isa(comp_deaths, String) ? [comp_deaths] : comp_deaths
 
     # count_epi_affected returns (n_timepoints × n_sectors); sum across sectors
-    cumulative_deaths = count_epi_affected(df, comp_deaths_vec, col_sector = col_sector)
+    cumulative_deaths = count_epi_affected(df, comp_deaths_vec)
 
     new_deaths = [0.0; diff(cumulative_deaths)]
 
-    return exp.(-phi' .* new_deaths)
+    c_avl = exp.(-phi' .* new_deaths)
+
+    return trapz(times, c_avl')' ./ (times[end] - times[begin]);
 end
 
 """
