@@ -1,0 +1,26 @@
+# Configuration for Codecov coverage reporting.
+# See https://docs.codecov.com/docs/codecov-yaml for all available options.
+
+codecov:
+  require_ci_to_pass: false
+
+coverage:
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 1%
+        informational: true
+    patch:
+      default:
+        target: auto
+        threshold: 1%
+        informational: true
+
+comment:
+  layout: "reach, diff, flags, files"
+  behavior: default
+  require_changes: false
+
+ignore:
+  - "docs/**"

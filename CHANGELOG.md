@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Comprehensive test suite for `calc_labour_avail()` using Daedalus epidemiological data, covering basic functionality, scalar and vector parameters, and input validation.
 - `get_example_epi_data()`: loads example epidemiological data from Daedalus model outputs for use in examples and testing.
 
+- Added `codecov.yml` for Codecov.io
+
 ### Changed
 - `calc_avail_labour()`: `N_work`, `wfh`, and `p_furl` now accept `AbstractVector` instead of `Dict` for per-sector values. Vector element `j` corresponds to the `j`-th sector in sorted order of unique sector labels in the data. Scalar inputs are unchanged.
 - `calc_labour_avail()` no longer calls the removed `calc_indivs()`; weighted absence is now computed directly.
