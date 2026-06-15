@@ -156,7 +156,7 @@ L_k^{\text{avail}} (t) = \sum_{s, j} (1 - \lambda_k (t)) p_s N_{s,j,k} (t)
 **Note that** it is important to structure the labour availability due to infection and mitigation policies so as to avoid double counting the labour reduction.
 
 !!! info "Including mitigation measures in calc_labour_avail"
-    In [`EpiHelpers.calc_labour_avail`](@ref), the closure coefficient is interpreted as the proportion of workers furloughed, and should be passed either a single `Float64` or a `Vector{Float64}` (for sector-specific scaling) to the keyword argument `scaling_furl`. The start and end times of mitigation measures should be passed as a vector of float tuples, with one tuple per policy period. For eaxmple, `[(30, 90), (180, 270)]` for two closure periods.
+    In [`EpiHelpers.calc_labour_avail`](@ref), the closure coefficient is interpreted as the proportion of workers furloughed, and should be passed either a single `Float64` or a `Vector{Float64}` (for sector-specific scaling) to the keyword argument `scaling_furl`. The start and end times of mitigation measures should be passed as a vector of float tuples, with one tuple per policy period. For example, `[(30, 90), (180, 270)]` for two closure periods.
 
 ### Labour availaibility due to caring responsibilities
 
@@ -172,7 +172,7 @@ L_k(t) = \left[1 -\sigma(t)\right] (1 - c \xi_k) L_k^{\text{avail}} (t)
 ```
 
 !!! info "Including childcare due to school closures in calc_labour_avail"
-    In [`EpiHelpers.calc_labour_avail`](@ref), the productivity of workers constrained by childcare due to school closures should be passed either a single `Float64` or a `Vector{Float64}` (for sector-specific scaling) to the keyword argument `scaling_wfh`. This naming convention remains for historical reasonas and may be revised. The start and end times of school closures should be passed as a vector of float tuples, with one tuple per closure period. For eaxmple, `[(30, 90), (180, 270)]` for two closure periods.
+    In [`EpiHelpers.calc_labour_avail`](@ref), the productivity of workers constrained by childcare due to school closures should be passed either a single `Float64` or a `Vector{Float64}` (for sector-specific scaling) to the keyword argument `scaling_wfh`. This naming convention remains for historical reasons and may be revised. The start and end times of school closures should be passed as a vector of float tuples, with one tuple per closure period. For example, `[(30, 90), (180, 270)]` for two closure periods.
     **Note also** that the argument `n_adults` can be used to scale the childcare responsibility of workers; when `n_adults` is greater than `sum(n_workers)`, the assumption is that not all childcare responsibility is borne by workers.
 
 Workers may also have caring responsibilities towards infected individuals, and a similar operation is applied to care for individuals who are infected.
