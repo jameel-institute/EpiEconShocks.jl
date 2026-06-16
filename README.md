@@ -59,7 +59,8 @@ comparisons.delta_gdp
 
 ### Calculating labour and consumption over an epidemic
 
-WIP.
+_EpiEconShocks_ can also be used to calculate reductions in labour productivity and consumption.
+See further documentation at the link below.
 
 ## Further documentation
 
