@@ -5,6 +5,8 @@ using NamedArrays
 using Test
 
 @testset "EpiEconShocks.jl" begin
+    # tests for package exports
+    include("test_exports.jl")
     # tests for NamedArray helpers
     include("test_cluster_named_array.jl")
     include("test_cluster_gtap.jl")
@@ -16,4 +18,5 @@ using Test
     include("test_struct_paramShock.jl")
     # tests for EpiHelpers
     include("test_epi_helpers.jl")
+    include("test_epi_example.jl")
 end

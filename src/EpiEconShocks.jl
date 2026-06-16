@@ -1,5 +1,7 @@
 module EpiEconShocks
 
+using Reexport
+
 include("Helpers.jl")
 include("ModelInit.jl")
 include("ParamShocks.jl")
@@ -8,7 +10,9 @@ include("Example.jl")
 include("Tools.jl")
 include("EpiHelpers.jl")
 
+@reexport using .EpiHelpers
+
 # Re-export functions from submodules for top-level access
-export calc_labour_avail, calc_consumption_avail, get_example_epi_data
+export get_example_epi_data
 
 end
