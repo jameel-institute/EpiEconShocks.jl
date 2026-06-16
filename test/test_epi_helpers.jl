@@ -1,8 +1,71 @@
+@testset "Counting epi affected works: no scaling" begin
+    df = get_example_epi_data()
+    n_sectors = 45 # default for daedalus data
+    n_time = Int(length(unique(df.time)))
+    filter!(x -> x.age_group == "20-64" && x.econ_sector != "sector_00", df)
+
+    # overall sum is correct for a single compartment
+    count_manual = sum(
+        filter(x -> x.compartment == "dead", df)[:, "value"]
+    )
+
+    count = count_epi_affected(df, "dead")
+
+    @test isa(count, Matrix{Float64})
+    @test size(count) == (n_time, n_sectors)
+    @test all(isfinite.(count))
+    @test sum(count) ≈ count_manual
+
+    # timewise sums are correct
+    count_manual = sum(
+        filter(x -> x.compartment == "dead" &&
+                    x.time ≈ maximum(df.time), df)[:, "value"]
+    )
+    count = sum(count_epi_affected(df, "dead")[n_time, :])
+    known_val = n_sectors * (maximum(df.time) * 100.0 + 1.0)
+    @test count ≈ count_manual
+    @test count ≈ known_val
+end
+
+@testset "Counting epi affected works: scaling by epi compartment" begin
+    df = get_example_epi_data()
+    n_sectors = 45 # default for daedalus data
+    n_time = Int(length(unique(df.time)))
+    filter!(x -> x.age_group == "20-64" && x.econ_sector != "sector_00", df)
+
+    # manual - transformation is automatic in calc_labour_avail
+    scaling = Dict(
+        "dead" => repeat([1.0], n_sectors),
+        "infect_asymp" => repeat([0.0], n_sectors)
+    )
+    # overall sum is correct for a single compartment
+    count_manual = sum(
+        filter(x -> x.compartment in ("dead", "infect_asymp"), df)[:, "value"]
+    )
+
+    count = count_epi_affected(df, ["dead", "infect_asymp"], scaling_affected = scaling)
+
+    @test isa(count, Matrix{Float64})
+    @test size(count) == (n_time, n_sectors)
+    @test all(isfinite.(count))
+    @test sum(count) ≈ count_manual / 2.0 # manual count doubles value
+
+    # timewise sums are correct
+    count_manual = sum(
+        filter(
+        x -> x.compartment in ("dead", "infect_asymp") &&
+             x.time ≈ maximum(df.time), df)[:, "value"]
+    )
+    count = sum(count_epi_affected(df, ["dead", "infect_asymp"], scaling_affected = scaling)[n_time, :])
+    known_val = n_sectors * (maximum(df.time) * 100.0 + 1.0)
+    @test count ≈ count_manual / 2.0
+    @test count ≈ known_val
+end
+
 @testset "EpiHelpers.calc_labour_avail" begin
     # Load daedalus data
-    df = CSV.read(joinpath(@__DIR__, "data", "data_daedalus.csv"), DataFrame)
+    df = get_example_epi_data()
 
-    # Filter to working-age population and exclude non-working sectors
     df_work = filter(
         row -> row.age_group == "20-64" &&
                row.vaccine_group == "unvaccinated" &&
@@ -18,7 +81,7 @@
     n_adults = sum(n_workers)
 
     # Test basic functionality with default parameters
-    result = EpiEconShocks.EpiHelpers.calc_labour_avail(
+    result = calc_labour_avail(
         df_work, n_workers, n_adults, n_school
     )
 
@@ -30,7 +93,7 @@
     @test all(0.0 .<= result .<= 1.0)
 
     # Test with scalar scaling parameters
-    result = EpiEconShocks.EpiHelpers.calc_labour_avail(
+    result = calc_labour_avail(
         df_work, n_workers, n_adults, n_school,
         scaling_wfh = 0.8, scaling_care = 0.5, scaling_furl = 0.1
     )
@@ -42,7 +105,7 @@
     care_vec = fill(0.3, n_sectors)
     furl_vec = fill(0.2, n_sectors)
 
-    result = EpiEconShocks.EpiHelpers.calc_labour_avail(
+    result = calc_labour_avail(
         df_work, n_workers, n_adults, n_school;
         scaling_wfh = wfh_vec, scaling_care = care_vec, scaling_furl = furl_vec
     )
@@ -65,7 +128,7 @@
     n_school = 500.0
     n_sectors = length(unique(df_work.econ_sector))
 
-    result_zero = EpiEconShocks.EpiHelpers.calc_labour_avail(
+    result_zero = calc_labour_avail(
         df_zero, n_workers, n_adults, n_school, ["a", "b"];
         scaling_affected = scaling_dummy, scaling_wfh = 0.0, scaling_care = 0.0
     )
@@ -73,7 +136,59 @@
     @test all(result_zero .≈ 1.0)
 end
 
-@testset "Labour availability errors" begin
+@testset "EpiHelpers.calc_labour_avail with NPI timing" begin
+    df = get_example_epi_data()
+    df_work = filter(
+        row -> row.age_group == "20-64" &&
+               row.vaccine_group == "unvaccinated" &&
+               row.econ_sector != "sector_00",
+        df
+    )
+
+    n_school = 5_000_000.0
+    n_workers = filter(
+        row -> row.time == minimum(df_work[:, "time"]) &&
+               row.compartment == "susceptible", df_work
+    )[:, "value"]
+    n_adults = sum(n_workers)
+
+    # Test with economic closures
+    econ_closures = [(5.0, 10.0), (20.0, 25.0)]
+    result = calc_labour_avail(
+        df_work, n_workers, n_adults, n_school;
+        times_econ_closures = econ_closures
+    )
+    @test isa(result, Matrix{Float64})
+    @test all(0.0 .<= result .<= 1.0)
+
+    # Test with school closures
+    school_closures = [(10.0, 15.0)]
+    result = calc_labour_avail(
+        df_work, n_workers, n_adults, n_school;
+        times_school_closures = school_closures
+    )
+    @test isa(result, Matrix{Float64})
+    @test all(0.0 .<= result .<= 1.0)
+
+    # Test with both economic and school closures
+    result = calc_labour_avail(
+        df_work, n_workers, n_adults, n_school;
+        times_econ_closures = econ_closures,
+        times_school_closures = school_closures
+    )
+    @test isa(result, Matrix{Float64})
+    @test all(0.0 .<= result .<= 1.0)
+
+    # Test with no closures (should match default behaviour)
+    result_no_closures = calc_labour_avail(
+        df_work, n_workers, n_adults, n_school;
+        times_econ_closures = nothing,
+        times_school_closures = nothing
+    )
+    @test isa(result_no_closures, Matrix{Float64})
+end
+
+@testset "Labour availabilisty errors" begin
     # Input validation tests
     # Load daedalus data
     # Test zero epidemic scenario
@@ -93,61 +208,61 @@ end
     n_sectors = length(unique(df_zero.econ_sector))
 
     # Negative n_adults
-    @test_throws ArgumentError("n_adults must be >= 0.0, got -1000.0") EpiEconShocks.EpiHelpers.calc_labour_avail(
+    @test_throws ArgumentError("n_adults must be >= 0.0, got -1000.0") calc_labour_avail(
         df_zero, n_workers, -1000.0, n_school
     )
 
     # Negative n_school
-    @test_throws ArgumentError("n_school must be >= 0.0, got -100.0") EpiEconShocks.EpiHelpers.calc_labour_avail(
+    @test_throws ArgumentError("n_school must be >= 0.0, got -100.0") calc_labour_avail(
         df_zero, n_workers, n_adults, -100.0
     )
 
     # Negative n_workers (scalar)
-    @test_throws ArgumentError("n_workers[1] must be >= 0.0, got -100.0") EpiEconShocks.EpiHelpers.calc_labour_avail(
+    @test_throws ArgumentError("n_workers[1] must be >= 0.0, got -100.0") calc_labour_avail(
         df_zero, [-100.0], n_adults, n_school
     )
 
     # Negative n_workers (vector element)
     bad_nw_vec = [-1.0; fill(10000.0, n_sectors - 1)]
-    @test_throws ArgumentError("n_workers[1] must be >= 0.0, got -1.0") EpiEconShocks.EpiHelpers.calc_labour_avail(
+    @test_throws ArgumentError("n_workers[1] must be >= 0.0, got -1.0") calc_labour_avail(
         df_zero, bad_nw_vec, n_adults, n_school
     )
 
     # n_workers vector length mismatch
     wrong_length_nw = fill(1000.0, n_sectors + 1)
-    @test_throws ArgumentError("n_workers vector length must equal n_sectors ($n_sectors), got $(length(wrong_length_nw))") EpiEconShocks.EpiHelpers.calc_labour_avail(
+    @test_throws ArgumentError("n_workers vector length must equal n_sectors ($n_sectors), got $(length(wrong_length_nw))") calc_labour_avail(
         df_zero, wrong_length_nw, n_adults, n_school
     )
 
     # scaling_wfh outside [0, 1] (too small)
-    @test_throws ArgumentError("scaling_wfh must be in [0.0, 1.0], got -0.1") EpiEconShocks.EpiHelpers.calc_labour_avail(
+    @test_throws ArgumentError("scaling_wfh must be in [0.0, 1.0], got -0.1") calc_labour_avail(
         df_zero, n_workers, n_adults, n_school;
         scaling_affected = scaling_dummy, scaling_wfh = -0.1
     )
 
     # scaling_wfh outside [0, 1] (too large)
-    @test_throws ArgumentError("scaling_wfh must be in [0.0, 1.0], got 1.5") EpiEconShocks.EpiHelpers.calc_labour_avail(
+    @test_throws ArgumentError("scaling_wfh must be in [0.0, 1.0], got 1.5") calc_labour_avail(
         df_zero, n_workers, n_adults, n_school; scaling_affected = scaling_dummy, scaling_wfh = 1.5
     )
 
     # scaling_care vector with invalid values
     bad_care_vec = [0.5, 1.5]  # 1.5 is out of range
-    @test_throws ArgumentError("scaling_care[2] must be in [0.0, 1.0], got 1.5") EpiEconShocks.EpiHelpers.calc_labour_avail(
+    @test_throws ArgumentError("scaling_care[2] must be in [0.0, 1.0], got 1.5") calc_labour_avail(
         df_zero, n_workers, n_adults, n_school;
         scaling_affected = scaling_dummy, scaling_care = bad_care_vec
     )
 
     # scaling_furl vector length mismatch
     wrong_furl_vec = fill(0.3, n_sectors + 1)
-    @test_throws ArgumentError("scaling_furl vector length must equal n_sectors ($n_sectors), got $(length(wrong_furl_vec))") EpiEconShocks.EpiHelpers.calc_labour_avail(
+    @test_throws ArgumentError("scaling_furl vector length must equal n_sectors ($n_sectors), got $(length(wrong_furl_vec))") calc_labour_avail(
         df_zero, n_workers, n_adults, n_school;
         scaling_affected = scaling_dummy, scaling_furl = wrong_furl_vec
     )
 
     # scaling_affected with out-of-range values
-    bad_scaling = EpiEconShocks.EpiHelpers.default_labour_scaling(n_sectors)
+    bad_scaling = default_labour_scaling(n_sectors)
     bad_scaling["infect_symp"][1] = 1.5  # Out of range
-    @test_throws ArgumentError("scaling_affected[infect_symp][1] must be in [0.0, 1.0], got 1.5") EpiEconShocks.EpiHelpers.calc_labour_avail(
+    @test_throws ArgumentError("scaling_affected[infect_symp][1] must be in [0.0, 1.0], got 1.5") calc_labour_avail(
         df_zero, n_workers, n_adults, n_school; scaling_affected = bad_scaling
     )
 end
@@ -169,7 +284,7 @@ end
 
     # All new deaths zero → all availability 1.0
     df_zero = make_deaths_df([0.0, 0.0, 0.0, 0.0])
-    result = EpiEconShocks.EpiHelpers.calc_consumption_avail(df_zero, phi)
+    result = calc_consumption_avail(df_zero, phi)
 
     @test isa(result, Matrix{Float64})
     @test length(result) == length(phi)
@@ -177,133 +292,27 @@ end
 
     # non zero deaths
     df_spike = make_deaths_df([0.0, 0.0, 1.0, 1.0, 1.0])
-    result = EpiEconShocks.EpiHelpers.calc_consumption_avail(df_spike, phi)
+    result = calc_consumption_avail(df_spike, phi)
 
     # TODO: check tests
     @test all(result .< 1.0)
 
     # Zero phi → no avoidance, all availability 1.0
     df_any = make_deaths_df([0.0, 1.0, 2.0, 3.0])
-    result_zero_phi = EpiEconShocks.EpiHelpers.calc_consumption_avail(df_any, 0.0)
+    result_zero_phi = calc_consumption_avail(df_any, 0.0)
     @test all(result_zero_phi .≈ 1.0)
 
     # Large phi → strong avoidance
-    result_small_phi = EpiEconShocks.EpiHelpers.calc_consumption_avail(df_any, 0.01)
-    result_large_phi = EpiEconShocks.EpiHelpers.calc_consumption_avail(df_any, 1.0)
+    result_small_phi = calc_consumption_avail(df_any, 0.01)
+    result_large_phi = calc_consumption_avail(df_any, 1.0)
 
     @test all(result_large_phi .< result_small_phi)
 
     # Custom compartment name via comp_deaths keyword
     df_custom = make_deaths_df([0.0, 2.0, 2.0], "sector_a", "mortality")
-    result_custom = EpiEconShocks.EpiHelpers.calc_consumption_avail(
+    result_custom = calc_consumption_avail(
         df_custom, phi; comp_deaths = "mortality")
     @test isa(result_custom, Matrix)
-end
-
-@testset "EpiHelpers.integrate_shock" begin
-    # Test with constant availability of 1.0
-    t_const = [1.0, 2.0, 3.0, 4.0]
-    avail_const = [1.0, 1.0, 1.0, 1.0]
-    result_const = EpiEconShocks.EpiHelpers.integrate_shock(t_const, avail_const)
-
-    # Trapz area: (1+1)/2*1 + (1+1)/2*1 + (1+1)/2*1 = 3
-    # Span: 4 - (1-1) = 4
-    # Result: 3/4 = 0.75
-    @test isa(result_const, Float64)
-    @test result_const ≈ 0.75
-
-    # Test with linear ramp from 1 to 0
-    t_ramp = [1.0, 2.0, 3.0, 4.0]
-    avail_ramp = [1.0, 2.0/3.0, 1.0/3.0, 0.0]
-    result_ramp = EpiEconShocks.EpiHelpers.integrate_shock(t_ramp, avail_ramp)
-
-    # Area under ramp (trapz): (1 + 2/3)/2 + (2/3 + 1/3)/2 + (1/3 + 0)/2
-    #                        = 5/6 + 1/2 + 1/6 = 5/6 + 3/6 + 1/6 = 9/6 = 1.5
-    # Time span: 4 - (1 - 1) = 4
-    # Average: 1.5 / 4 = 0.375
-    @test result_ramp ≈ 0.375 atol = 1e-10
-
-    # Test with two-point line (trivial case)
-    t_two = [1.0, 2.0]
-    avail_two = [1.0, 0.5]
-    result_two = EpiEconShocks.EpiHelpers.integrate_shock(t_two, avail_two)
-
-    # Area: (1 + 0.5) / 2 * 1 = 0.75
-    # Time span: 2 - 0 = 2
-    # Average: 0.75 / 2 = 0.375
-    @test result_two ≈ 0.375
-
-    # Test with integer time values
-    t_int = [100, 101, 102, 103]
-    avail_int = [0.8, 0.8, 0.7, 0.7]
-    result_int = EpiEconShocks.EpiHelpers.integrate_shock(t_int, avail_int)
-
-    # Area: (0.8 + 0.8)/2 * 1 + (0.8 + 0.7)/2 * 1 + (0.7 + 0.7)/2 * 1 = 0.8 + 0.75 + 0.7 = 2.25
-    # Time span: 103 - (100 - 1) = 4
-    # Average: 2.25 / 4 = 0.5625
-    @test result_int ≈ 0.5625 atol = 1e-10
-
-    # Test with varying time steps
-    t_vary = [1.0, 3.0, 4.0]
-    avail_vary = [1.0, 0.5, 0.5]
-    result_vary = EpiEconShocks.EpiHelpers.integrate_shock(t_vary, avail_vary)
-
-    # Area: (1.0 + 0.5)/2 * 2 + (0.5 + 0.5)/2 * 1 = 1.5 + 0.5 = 2.0
-    # Time span: 4 - (1 - 1) = 4
-    # Average: 2.0 / 4 = 0.5
-    @test result_vary ≈ 0.5
-end
-
-@testset "EpiHelpers.calc_labour_avail with NPI timing" begin
-    df = CSV.read(joinpath(@__DIR__, "data", "data_daedalus.csv"), DataFrame)
-    df_work = filter(
-        row -> row.age_group == "20-64" &&
-               row.vaccine_group == "unvaccinated" &&
-               row.econ_sector != "sector_00",
-        df
-    )
-
-    n_school = 5_000_000.0
-    n_workers = filter(
-        row -> row.time == minimum(df_work[:, "time"]) &&
-               row.compartment == "susceptible", df_work
-    )[:, "value"]
-    n_adults = sum(n_workers)
-
-    # Test with economic closures
-    econ_closures = [(5.0, 10.0), (20.0, 25.0)]
-    result = EpiEconShocks.EpiHelpers.calc_labour_avail(
-        df_work, n_workers, n_adults, n_school;
-        times_econ_closures = econ_closures
-    )
-    @test isa(result, Matrix{Float64})
-    @test all(0.0 .<= result .<= 1.0)
-
-    # Test with school closures
-    school_closures = [(10.0, 15.0)]
-    result = EpiEconShocks.EpiHelpers.calc_labour_avail(
-        df_work, n_workers, n_adults, n_school;
-        times_school_closures = school_closures
-    )
-    @test isa(result, Matrix{Float64})
-    @test all(0.0 .<= result .<= 1.0)
-
-    # Test with both economic and school closures
-    result = EpiEconShocks.EpiHelpers.calc_labour_avail(
-        df_work, n_workers, n_adults, n_school;
-        times_econ_closures = econ_closures,
-        times_school_closures = school_closures
-    )
-    @test isa(result, Matrix{Float64})
-    @test all(0.0 .<= result .<= 1.0)
-
-    # Test with no closures (should match default behaviour)
-    result_no_closures = EpiEconShocks.EpiHelpers.calc_labour_avail(
-        df_work, n_workers, n_adults, n_school;
-        times_econ_closures = nothing,
-        times_school_closures = nothing
-    )
-    @test isa(result_no_closures, Matrix{Float64})
 end
 
 @testset "Tools.is_npi_active" begin
