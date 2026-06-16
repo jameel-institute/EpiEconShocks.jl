@@ -1,7 +1,8 @@
 
 module EpiHelpers
 
-export calc_labour_avail, calc_consumption_avail, integrate_shock
+export calc_labour_avail, calc_consumption_avail, integrate_shock,
+       count_epi_affected, default_labour_scaling
 
 using ..Tools
 
@@ -160,13 +161,18 @@ function count_epi_affected(df::DataFrame,
         df_epi_affected = combine(df_epi_affected, :value => (x -> sum(x)) => :value)
 
         value = df_epi_affected[:, :value]
-        return reshape(value, timepoints, econ_sectors)
+        return reshape(value, econ_sectors, timepoints)' # time wanted as rows
     else
+        # check scaling values
+
         epi_affected = zeros(timepoints, econ_sectors)
 
         for comp in comp_epi_affected
-            vals = filter(row -> any(occursin.(comp, row.compartment)), df)[:, :value]
-            vals = reshape(vals, (timepoints, econ_sectors))
+            df_comp = filter(row -> row.compartment == comp, df)
+            df_comp = groupby(df_comp, [:time, Symbol(col_sector)])
+            df_comp = combine(df_comp, :value => (x -> sum(x)) => :value)
+
+            vals = reshape(df_comp[:, :value], econ_sectors, timepoints)'
             scaling = diagm(scaling_affected[comp])
             epi_affected += (vals * scaling)
         end
@@ -226,7 +232,7 @@ work-from-home capability, care responsibilities, and economic closures.
 - `scaling_wfh`, `scaling_care`, `scaling_furl` must be in `[0.0, 1.0]`
 - Vector scaling parameters must match number of sectors
 """
-calc_labour_avail = function (df::DataFrame,
+function calc_labour_avail(df::DataFrame,
         n_workers::Vector{Float64},
         n_adults::Real,
         n_school::Real,
@@ -240,7 +246,7 @@ calc_labour_avail = function (df::DataFrame,
         scaling_care::Union{Float64, Vector{Float64}} = 0.27,
         scaling_furl::Union{Float64, Vector{Float64}} = 0.28,
         col_sector::String = "econ_sector"
-)
+)::Matrix{Float64}
     # Input validation
     if n_adults < 0.0
         throw(ArgumentError("n_adults must be >= 0.0, got $n_adults"))
@@ -388,7 +394,7 @@ avail = calc_consumption_avail(df, phi)
 function calc_consumption_avail(df::DataFrame,
         phi::Union{Real, Vector{Float64}};
         comp_deaths::Union{String, Vector{String}} = "dead",
-        col_sector::String = "econ_sector")
+        col_sector::String = "econ_sector")::Matrix{Float64}
     times = float.(unique(df[:, :time]))
     comp_deaths_vec = isa(comp_deaths, String) ? [comp_deaths] : comp_deaths
 
@@ -396,8 +402,8 @@ function calc_consumption_avail(df::DataFrame,
     cumulative_deaths = count_epi_affected(df, comp_deaths_vec)
     cumulative_deaths = sum(cumulative_deaths, dims = 2)
 
-    new_deaths = [0.0; 
-        diff(reshape(cumulative_deaths, length(cumulative_deaths)))]
+    new_deaths = [0.0;
+                  diff(reshape(cumulative_deaths, length(cumulative_deaths)))]
 
     c_avl = exp.(-phi' .* new_deaths)
 

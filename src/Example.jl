@@ -53,7 +53,23 @@ Get epidemiological example data from Daedalus model outputs.
 """
 function get_example_epi_data()::DataFrame
     data_path = joinpath(dirname(@__DIR__), "data", "data_daedalus.csv")
-    return CSV.read(data_path, DataFrame)
+    data = CSV.read(data_path, DataFrame)
+
+    # bump number of infected, hospitalised, and dead for this example
+    transform!(data,
+        [:compartment,
+            :time,
+            :vaccine_group,
+            :value] => ByRow(
+            (comp,
+            time,
+            vax,
+            val) -> comp in ("infect_symp", "infect_asymp", "hospitalised_recov",
+            "hospitalised_death", "dead") && vax == "unvaccinated" ? time * 1e2 + 1.0 :
+                    val
+        ) => :value)
+
+    return data
 end
 
 end
