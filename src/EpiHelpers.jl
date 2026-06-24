@@ -153,6 +153,8 @@ function count_epi_affected(df::DataFrame,
 
     timepoints = length(unique(df[:, "time"]))
     econ_sectors = length(unique(df[:, col_sector]))
+    scaling_sectors = isnothing(scaling_affected) ? 1.0 :
+                      length(scaling_affected[first(keys(scaling_affected))])
 
     if isnothing(scaling_affected)
         df_epi_affected = filter(
@@ -165,7 +167,7 @@ function count_epi_affected(df::DataFrame,
     else
         # check scaling values
 
-        epi_affected = zeros(timepoints, econ_sectors)
+        epi_affected = zeros(timepoints, scaling_sectors)
 
         for comp in comp_epi_affected
             df_comp = filter(row -> row.compartment == comp, df)
@@ -173,8 +175,8 @@ function count_epi_affected(df::DataFrame,
             df_comp = combine(df_comp, :value => (x -> sum(x)) => :value)
 
             vals = reshape(df_comp[:, :value], econ_sectors, timepoints)'
-            scaling = diagm(scaling_affected[comp])
-            epi_affected += (vals * scaling)
+            scaling = scaling_affected[comp]
+            epi_affected += (vals .* scaling')
         end
 
         return epi_affected
@@ -185,7 +187,8 @@ end
     calc_labour_avail(df::DataFrame, n_workers, n_adults, n_school,
                       comp_affected; scaling_affected, times_econ_closures,
                       times_school_closures, scaling_wfh, scaling_care,
-                      scaling_furl, col_sector) -> Matrix{Float64}
+                      scaling_furl, age_group_working, age_group_children,
+                      col_sector, sector_non_working) -> Matrix{Float64}
 
 Calculate daily labour availability from epidemiological compartment data.
 
@@ -195,7 +198,8 @@ work-from-home capability, care responsibilities, and economic closures.
 
 # Arguments
 - `df::DataFrame`: Long-format epidemiological data with columns `time`, 
-    `compartment`, `value`, and a sector column (default "econ_sector")
+    `compartment`, `value`, `age_group`, and a sector column
+    (default "econ_sector")
 - `n_workers::Vector{Float64}`: Number of workers per sector.
     If scalar, applied uniformly; if vector, element `j` corresponds to sector
     `j` in sorted order
@@ -221,7 +225,13 @@ work-from-home capability, care responsibilities, and economic closures.
 - `scaling_furl::Union{Float64, Vector{Float64}}`: Furlough rate reducing
     economic closure impact (scalar or per-sector), must be in `[0.0, 1.0]`
     (default: 0.28)
+- `age_group_working::Vector{String}`: Age group label(s) treated as working-age
+    (default: `["20-64"]`)
+- `age_group_children::Vector{String}`: Age group label(s) treated as
+    school-age children (default: `["0-4", "5-19"]`)
 - `col_sector::String`: Name of sector column in `df` (default: `"econ_sector"`)
+- `sector_non_working::String`: Sector label excluded as non-working
+    (default: `"sector_00"`)
 
 # Returns
 `Matrix{Float64}`: Time-weighted average labour availability per sector, with shape (1, n_sectors)
@@ -231,6 +241,8 @@ work-from-home capability, care responsibilities, and economic closures.
 - Vector `n_workers` length must match number of working sectors in data
 - `scaling_wfh`, `scaling_care`, `scaling_furl` must be in `[0.0, 1.0]`
 - Vector scaling parameters must match number of sectors
+- `df` must contain columns `time`, `compartment`, `value`, `age_group`,
+    and `col_sector`
 """
 function calc_labour_avail(df::DataFrame,
         n_workers::Vector{Float64},
@@ -245,9 +257,18 @@ function calc_labour_avail(df::DataFrame,
         scaling_wfh::Union{Float64, Vector{Float64}} = 0.27,
         scaling_care::Union{Float64, Vector{Float64}} = 0.27,
         scaling_furl::Union{Float64, Vector{Float64}} = 0.28,
-        col_sector::String = "econ_sector"
+        age_group_working::Vector{String} = ["20-64"],
+        age_group_children::Vector{String} = ["0-4", "5-19"],
+        col_sector::String = "econ_sector",
+        sector_non_working::String = "sector_00"
 )::Matrix{Float64}
     # Input validation
+    for col in ["time", "compartment", "value", col_sector, "age_group"]
+        if !(col in names(df))
+            throw(ArgumentError("df must contain a column named \"$col\""))
+        end
+    end
+
     if n_adults < 0.0
         throw(ArgumentError("n_adults must be >= 0.0, got $n_adults"))
     end
@@ -276,8 +297,13 @@ function calc_labour_avail(df::DataFrame,
     max_time = Int(maximum(times)) # expect time col
 
     # compute derived qtys
-    # assume data only includes working-age indivs who are all in an econ sector
-    n_sectors = length(unique(df[:, col_sector]))
+    # get working age indivs to calc direct infection-related loss
+    df_work = filter(
+        row -> row.age_group in age_group_working &&
+               row.econ_sector != sector_non_working,
+        df
+    )
+    n_sectors = length(unique(df_work[:, col_sector]))
 
     # Check n_workers vector length matches n_sectors
     if isa(n_workers, Vector) && length(n_workers) != n_sectors
@@ -324,7 +350,7 @@ function calc_labour_avail(df::DataFrame,
     ## labour available after direct infection effect
     l_avail = ones(max_time + 1, n_sectors) -
               count_epi_affected(
-        df, comp_affected, scaling_affected = scaling_affected,
+        df_work, comp_affected, scaling_affected = scaling_affected,
         col_sector = col_sector) ./ reshape(n_workers, (1, n_sectors))
 
     ## furlough reduces economic loss
@@ -337,13 +363,14 @@ function calc_labour_avail(df::DataFrame,
     # TODO: allow for compartment-wise productivity scaling
     # TODO: Make scaling_care a Dict
     # scale epi_affected by caregiving productivity coeff
+    df_children = filter(row -> row.age_group in age_group_children, df)
     scaling_affected["infect_asymp"] = scaling_care
-    n_epi_affected = count_epi_affected(df, comp_affected,
-        exclude_deaths = true, scaling_affected = scaling_affected, col_sector = col_sector)
-    p_epi_affected = n_epi_affected / sum(n_workers)
+    children_infected = count_epi_affected(df_children, comp_affected,
+        exclude_deaths = true, scaling_affected = scaling_affected,
+        col_sector = col_sector)
 
     ## scaling due to caring for infected
-    l_notcar = 1.0 .- sum(workers_as_prop) .* p_epi_affected
+    l_notcar = 1.0 .- sum(workers_as_prop) .* children_infected / sum(n_workers)
 
     ## scaling due to caring for school-age children
     school_closures_col = reshape(school_closures, :, 1)
@@ -395,6 +422,11 @@ function calc_consumption_avail(df::DataFrame,
         phi::Union{Real, Vector{Float64}};
         comp_deaths::Union{String, Vector{String}} = "dead",
         col_sector::String = "econ_sector")::Matrix{Float64}
+    for col in ["time", "compartment", "value", col_sector]
+        if !(col in names(df))
+            throw(ArgumentError("df must contain a column named \"$col\""))
+        end
+    end
     times = float.(unique(df[:, :time]))
     comp_deaths_vec = isa(comp_deaths, String) ? [comp_deaths] : comp_deaths
 

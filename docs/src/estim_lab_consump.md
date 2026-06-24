@@ -55,7 +55,7 @@ Calculate labour availability over the epidemic, assuming an epidemic-mitigating
 ```@example estimating_labour
 # dummy closure is passed by keyword arg
 labour_avail = EpiEconShocks.EpiHelpers.calc_labour_avail(
-    df_work, n_workers, n_adults, n_school,
+    df, n_workers, n_adults, n_school,
     times_econ_closures = [(3.0, 8.0)]
 )
 
@@ -175,10 +175,10 @@ L_k(t) = \left[1 -\sigma(t)\right] (1 - c \xi_k) L_k^{\text{avail}} (t)
     In [`EpiHelpers.calc_labour_avail`](@ref), the productivity of workers constrained by childcare due to school closures should be passed either a single `Float64` or a `Vector{Float64}` (for sector-specific scaling) to the keyword argument `scaling_wfh`. This naming convention remains for historical reasons and may be revised. The start and end times of school closures should be passed as a vector of float tuples, with one tuple per closure period. For example, `[(30, 90), (180, 270)]` for two closure periods.
     **Note also** that the argument `n_adults` can be used to scale the childcare responsibility of workers; when `n_adults` is greater than `sum(n_workers)`, the assumption is that not all childcare responsibility is borne by workers.
 
-Workers may also have caring responsibilities towards infected individuals, and a similar operation is applied to care for individuals who are infected.
+Workers may also have caring responsibilities towards infected children, regardless of whether a school-closing mitigation is imposed.
 
-!!! info "Including care for infected individuals"
-    The relative scaling of productivty for each sector due to care for infected individuals is assumed ``\psi_k \in [0, 1]`` for individuals with mild infection (`"infect_asymp"` in Daedalus) , with the care responsibility per worker assumed to be the ratio of infected individuals to workers.
+!!! info "Including care for infected children"
+    The relative scaling of productivty for each sector due to care for infected children is assumed ``\psi_k \in [0, 1]`` for children with mild infection (`"infect_asymp"` in Daedalus) , with the care responsibility per worker assumed to be the ratio of infected children to workers.
     The `n_adults` argument scales the burden of care on workers as explained above.
 
 ### Consumption
