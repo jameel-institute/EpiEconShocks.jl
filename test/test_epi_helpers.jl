@@ -82,7 +82,7 @@ end
 
     # Test basic functionality with default parameters
     result = calc_labour_avail(
-        df_work, n_workers, n_adults, n_school
+        df, n_workers, n_adults, n_school
     )
 
     @test isa(result, Matrix{Float64})
@@ -94,7 +94,7 @@ end
 
     # Test with scalar scaling parameters
     result = calc_labour_avail(
-        df_work, n_workers, n_adults, n_school,
+        df, n_workers, n_adults, n_school,
         scaling_wfh = 0.8, scaling_care = 0.5, scaling_furl = 0.1
     )
     @test isa(result, Matrix{Float64})
@@ -106,7 +106,7 @@ end
     furl_vec = fill(0.2, n_sectors)
 
     result = calc_labour_avail(
-        df_work, n_workers, n_adults, n_school;
+        df, n_workers, n_adults, n_school;
         scaling_wfh = wfh_vec, scaling_care = care_vec, scaling_furl = furl_vec
     )
     @test isa(result, Matrix{Float64})
@@ -114,24 +114,14 @@ end
     @test all(0.0 .<= result .<= 1.0)
 
     # Test zero epidemic scenario
-    df_zero = DataFrame(
-        (time = t, compartment = comp, econ_sector = "sector_" * esec) for
-    t in 0:1 for comp in ["a", "b"] for esec in ["a", "b"])
-    df_zero.value .= 0.0
+    df_zero = copy(df)
+    transform!(df_zero,
+        [:compartment,
+            :value] => ByRow((comp,
+            val) -> comp in ("infect_symp", "infect_asymp", "hospitalised_recov",
+            "hospitalised_death", "dead") ? 0.0 : val) => :value)
 
-    n_workers = fill(1000.0, 2)
-    scaling_dummy = Dict(
-        "a" => [1.0, 1.0],
-        "b" => [0.27, 0.27]
-    )
-    n_adults = sum(n_workers)
-    n_school = 500.0
-    n_sectors = length(unique(df_work.econ_sector))
-
-    result_zero = calc_labour_avail(
-        df_zero, n_workers, n_adults, n_school, ["a", "b"];
-        scaling_affected = scaling_dummy, scaling_wfh = 0.0, scaling_care = 0.0
-    )
+    result_zero = calc_labour_avail(df_zero, n_workers, n_adults, n_school)
     # With zero epidemic and no indirect effects, availability should be 1.0
     @test all(result_zero .≈ 1.0)
 end
@@ -155,7 +145,7 @@ end
     # Test with economic closures
     econ_closures = [(5.0, 10.0), (20.0, 25.0)]
     result = calc_labour_avail(
-        df_work, n_workers, n_adults, n_school;
+        df, n_workers, n_adults, n_school;
         times_econ_closures = econ_closures
     )
     @test isa(result, Matrix{Float64})
@@ -164,7 +154,7 @@ end
     # Test with school closures
     school_closures = [(10.0, 15.0)]
     result = calc_labour_avail(
-        df_work, n_workers, n_adults, n_school;
+        df, n_workers, n_adults, n_school;
         times_school_closures = school_closures
     )
     @test isa(result, Matrix{Float64})
@@ -172,7 +162,7 @@ end
 
     # Test with both economic and school closures
     result = calc_labour_avail(
-        df_work, n_workers, n_adults, n_school;
+        df, n_workers, n_adults, n_school;
         times_econ_closures = econ_closures,
         times_school_closures = school_closures
     )
@@ -181,31 +171,32 @@ end
 
     # Test with no closures (should match default behaviour)
     result_no_closures = calc_labour_avail(
-        df_work, n_workers, n_adults, n_school;
+        df, n_workers, n_adults, n_school;
         times_econ_closures = nothing,
         times_school_closures = nothing
     )
     @test isa(result_no_closures, Matrix{Float64})
 end
 
-@testset "Labour availabilisty errors" begin
+@testset "Labour availability errors" begin
     # Input validation tests
     # Load daedalus data
     # Test zero epidemic scenario
     df_zero = DataFrame(
-        (time = t, compartment = comp, econ_sector = "sector_" * esec) for
-    t in 0:1 for comp in ["a", "b"] for esec in ["a", "b"])
+        (time = t, compartment = comp, age_group = age) for
+    t in 0:1 for comp in ["a", "b"] for age in ["working", "non-working"])
     df_zero.value .= 0.0
-
-    n_workers = fill(1000.0, 2)
-    scaling_dummy = Dict(
-        "a" => [1.0, 1.0],
-        "b" => [0.27, 0.27]
+    transform!(
+        df_zero, [:age_group] => ByRow((age) -> age == "working" ? "sector_01" :
+                                                "sector_00") => :econ_sector
     )
+
+    n_workers = [1000.0]
+    scaling_dummy = Dict("a" => [1.0], "b" => [0.27])
 
     n_adults = sum(n_workers)
     n_school = 500.0
-    n_sectors = length(unique(df_zero.econ_sector))
+    n_sectors = length(unique(df_zero.econ_sector)) - 1 # do not count non-working
 
     # Negative n_adults
     @test_throws ArgumentError("n_adults must be >= 0.0, got -1000.0") calc_labour_avail(
@@ -231,39 +222,44 @@ end
     # n_workers vector length mismatch
     wrong_length_nw = fill(1000.0, n_sectors + 1)
     @test_throws ArgumentError("n_workers vector length must equal n_sectors ($n_sectors), got $(length(wrong_length_nw))") calc_labour_avail(
-        df_zero, wrong_length_nw, n_adults, n_school
+        df_zero, wrong_length_nw, n_adults, n_school, age_group_working = ["working"]
     )
 
     # scaling_wfh outside [0, 1] (too small)
     @test_throws ArgumentError("scaling_wfh must be in [0.0, 1.0], got -0.1") calc_labour_avail(
         df_zero, n_workers, n_adults, n_school;
-        scaling_affected = scaling_dummy, scaling_wfh = -0.1
+        scaling_affected = scaling_dummy, scaling_wfh = -0.1,
+        age_group_working = ["working"]
     )
 
     # scaling_wfh outside [0, 1] (too large)
     @test_throws ArgumentError("scaling_wfh must be in [0.0, 1.0], got 1.5") calc_labour_avail(
-        df_zero, n_workers, n_adults, n_school; scaling_affected = scaling_dummy, scaling_wfh = 1.5
+        df_zero, n_workers, n_adults, n_school; scaling_affected = scaling_dummy, scaling_wfh = 1.5,
+        age_group_working = ["working"]
     )
 
     # scaling_care vector with invalid values
-    bad_care_vec = [0.5, 1.5]  # 1.5 is out of range
-    @test_throws ArgumentError("scaling_care[2] must be in [0.0, 1.0], got 1.5") calc_labour_avail(
+    bad_care_vec = [1.5]  # 1.5 is out of range
+    @test_throws ArgumentError("scaling_care[1] must be in [0.0, 1.0], got 1.5") calc_labour_avail(
         df_zero, n_workers, n_adults, n_school;
-        scaling_affected = scaling_dummy, scaling_care = bad_care_vec
+        scaling_affected = scaling_dummy, scaling_care = bad_care_vec,
+        age_group_working = ["working"]
     )
 
     # scaling_furl vector length mismatch
     wrong_furl_vec = fill(0.3, n_sectors + 1)
     @test_throws ArgumentError("scaling_furl vector length must equal n_sectors ($n_sectors), got $(length(wrong_furl_vec))") calc_labour_avail(
         df_zero, n_workers, n_adults, n_school;
-        scaling_affected = scaling_dummy, scaling_furl = wrong_furl_vec
+        scaling_affected = scaling_dummy, scaling_furl = wrong_furl_vec,
+        age_group_working = ["working"]
     )
 
     # scaling_affected with out-of-range values
     bad_scaling = default_labour_scaling(n_sectors)
     bad_scaling["infect_symp"][1] = 1.5  # Out of range
     @test_throws ArgumentError("scaling_affected[infect_symp][1] must be in [0.0, 1.0], got 1.5") calc_labour_avail(
-        df_zero, n_workers, n_adults, n_school; scaling_affected = bad_scaling
+        df_zero, n_workers, n_adults, n_school; scaling_affected = bad_scaling,
+        age_group_working = ["working"]
     )
 end
 
