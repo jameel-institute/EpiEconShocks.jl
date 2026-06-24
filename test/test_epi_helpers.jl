@@ -199,7 +199,7 @@ end
     n_sectors = length(unique(df_zero.econ_sector)) - 1 # do not count non-working
 
     # Negative n_adults
-    @test_throws ArgumentError("n_adults must be >= 0.0, got -1000.0") calc_labour_avail(
+    @test_throws ArgumentError("n_adults must be >= 1.0, got -1000.0") calc_labour_avail(
         df_zero, n_workers, -1000.0, n_school
     )
 
@@ -209,13 +209,13 @@ end
     )
 
     # Negative n_workers (scalar)
-    @test_throws ArgumentError("n_workers[1] must be >= 0.0, got -100.0") calc_labour_avail(
+    @test_throws ArgumentError("n_workers[1] must be >= 1.0, got -100.0") calc_labour_avail(
         df_zero, [-100.0], n_adults, n_school
     )
 
     # Negative n_workers (vector element)
     bad_nw_vec = [-1.0; fill(10000.0, n_sectors - 1)]
-    @test_throws ArgumentError("n_workers[1] must be >= 0.0, got -1.0") calc_labour_avail(
+    @test_throws ArgumentError("n_workers[1] must be >= 1.0, got -1.0") calc_labour_avail(
         df_zero, bad_nw_vec, n_adults, n_school
     )
 

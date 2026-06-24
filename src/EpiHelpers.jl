@@ -288,7 +288,7 @@ function calc_labour_avail(df::DataFrame,
     if isa(n_workers, Vector)
         for (i, val) in enumerate(n_workers)
             if val < 1.0
-                throw(ArgumentError("n_workers[$i] must be >= 0.0, got $val"))
+                throw(ArgumentError("n_workers[$i] must be >= 1.0, got $val"))
             end
         end
     else
