@@ -86,10 +86,10 @@ EpiEconShocks.EpiHelpers.calc_consumption_avail(df, phi)
 The coefficient of infection avoidance ``\phi`` may also be a vector of sector-specific values.
 Here we assume that there are 10 economic sectors; any number of sectors can be passed.
 
-Similar to [`EpiHelpers.calc_labour_avail`](@ref), the output is a matrix of dimensions $[1, N]$ with values in $[0, 1]$ indicating the consumption loss in each economic sector for $N$ economic sectors.
+Similar to [`EpiHelpers.calc_labour_avail`](@ref), the output is a matrix of dimensions $[1, N]$ with values in $[0, 1]$ indicating the consumption availability in each economic sector for $N$ economic sectors.
 
 ```@example estimating_consumption
-# assume a dummy value of phi for an arbitary number of 10 sectors
+# assume a dummy value of phi for an arbitrary number of 10 sectors
 phi = collect(1:10) / 1e3
 
 EpiEconShocks.EpiHelpers.calc_consumption_avail(df, phi)
@@ -123,7 +123,7 @@ N_{k}(t) = \sum_{s, j} N_{s,j,k}
 ```
 
 Individuals' ability to work productively may be assumed to vary over the different epidemiological states ``s``.
-For example the severely ill and dead may be assumed to have a productivity of zero, while some states (such as aymptomatic infection) may allow for substantial productivity.
+For example the severely ill and dead may be assumed to have a productivity of zero, while some states (such as asymptomatic infection) may allow for substantial productivity.
 
 The available labour at time ``t`` in any sector ``k`` is then the sum over ages and states of the number of individuals in each state ``s`` scaled by the state-specific productivity ``p_s \in [0, 1]`` (relative to that of healthy or pre-pandemic workers).
 
@@ -134,7 +134,7 @@ L_k^{\text{avail}} (t) = \sum_{s, j} p_s N_{s,j,k} (t)
 ```
 
 The function [`EpiHelpers.calc_labour_avail`](@ref) focuses on epidemiological compartments with ``p_s < 1``, which are to be passed as a `Vector{String}`, with corresponding scaling values passed as a keyword argument `scaling_affected`.
-`scaling_affected` expects a dictionary giving key-value pairs of compartment names and sector-specfic scaling vectors.
+`scaling_affected` expects a dictionary giving key-value pairs of compartment names and sector-specific scaling vectors.
 
 This allows for compartment- and sector-specific scaling, which may be useful in modelling variation in productivity within epidemiological states as a function of economic sector.
 
@@ -158,7 +158,7 @@ L_k^{\text{avail}} (t) = \sum_{s, j} (1 - \lambda_k (t)) p_s N_{s,j,k} (t)
 !!! info "Including mitigation measures in calc_labour_avail"
     In [`EpiHelpers.calc_labour_avail`](@ref), the closure coefficient is interpreted as the proportion of workers furloughed, and should be passed either a single `Float64` or a `Vector{Float64}` (for sector-specific scaling) to the keyword argument `scaling_furl`. The start and end times of mitigation measures should be passed as a vector of float tuples, with one tuple per policy period. For example, `[(30, 90), (180, 270)]` for two closure periods.
 
-### Labour availaibility due to caring responsibilities
+### Labour availability due to caring responsibilities
 
 Epidemic mitigation measures often include school closures.
 The effects on labour productivity may be modelled as a reduction due to the time-constraints of childcare.
@@ -178,7 +178,7 @@ L_k(t) = \left[1 -\sigma(t)\right] (1 - c \xi_k) L_k^{\text{avail}} (t)
 Workers may also have caring responsibilities towards infected children, regardless of whether a school-closing mitigation is imposed.
 
 !!! info "Including care for infected children"
-    The relative scaling of productivty for each sector due to care for infected children is assumed ``\psi_k \in [0, 1]`` for children with mild infection (`"infect_asymp"` in Daedalus) , with the care responsibility per worker assumed to be the ratio of infected children to workers.
+    The relative scaling of productivity for each sector due to care for infected children is assumed ``\psi_k \in [0, 1]`` for children with mild infection (`"infect_asymp"` in Daedalus) , with the care responsibility per worker assumed to be the ratio of infected children to workers.
     The `n_adults` argument scales the burden of care on workers as explained above.
 
 ### Consumption

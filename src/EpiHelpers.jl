@@ -199,19 +199,24 @@ work-from-home capability, care responsibilities, and economic closures.
 # Arguments
 - `df::DataFrame`: Long-format epidemiological data with columns `time`, 
     `compartment`, `value`, `age_group`, and a sector column
-    (default "econ_sector")
+    (default "econ_sector"). Column `time` must have contiguous times with
+    no missing values.
 - `n_workers::Vector{Float64}`: Number of workers per sector.
     If scalar, applied uniformly; if vector, element `j` corresponds to sector
-    `j` in sorted order
-- `n_adults::Real`: Total adult population (non-negative)
-- `n_school::Real`: School-age population (non-negative)
+    `j` in sorted order. All elements must be >= 1.0.
+- `n_adults::Real`: Total adult population (>= 1.0)
+- `n_school::Real`: School-age population (>= 1.0)
 - `comp_affected::Union{String, Vector{String}}`: Compartments representing
     workforce absence (default: `["infect_symp", "infect_asymp", "dead", 
     "hospitalised_recov", "hospitalised_death"]`)
 
 # Keyword Arguments
-- `scaling_affected::Dict`: Scaling weights for each compartment
-    (default: `default_labour_scaling()`)
+- `scaling_affected::Union{Nothing, Dict}`: Scaling weights for each compartment
+    as a named dictionary, with keys being compartment names and values being
+    scaling values in the range ``[0, 1]`` as either scalars or a vector of the
+    same length as the number of economic sectors.
+    (default: `nothing`, function `default_labour_scaling()` is called after the
+    number of economic sectors is counted from `df`).
 - `times_econ_closures::Union{nothing, Vector{Tuple{Float64, Float64}}}`: Time
     intervals of economic closures as (start, end) tuples. `nothing` means no
     closures
@@ -251,7 +256,7 @@ function calc_labour_avail(df::DataFrame,
         comp_affected::Union{String, Vector{String}} =
         ["infect_symp", "infect_asymp", "dead", "hospitalised_recov",
             "hospitalised_death"];
-        scaling_affected::Dict = default_labour_scaling(),
+        scaling_affected::Union{Nothing, Dict} = nothing,
         times_econ_closures::Union{Nothing, Vector{Tuple{Float64, Float64}}} = nothing,
         times_school_closures::Union{Nothing, Vector{Tuple{Float64, Float64}}} = nothing,
         scaling_wfh::Union{Float64, Vector{Float64}} = 0.27,
@@ -269,23 +274,26 @@ function calc_labour_avail(df::DataFrame,
         end
     end
 
-    if n_adults < 0.0
-        throw(ArgumentError("n_adults must be >= 0.0, got $n_adults"))
+    # NOTE: sensible minimum values are 1.0 for most cases
+    if n_adults < 1.0
+        throw(ArgumentError("n_adults must be >= 1.0, got $n_adults"))
     end
 
+    # theoretically, it should be fine to pass 0.0 children to shut off the
+    # childcare mechanisms
     if n_school < 0.0
         throw(ArgumentError("n_school must be >= 0.0, got $n_school"))
     end
 
     if isa(n_workers, Vector)
         for (i, val) in enumerate(n_workers)
-            if val < 0.0
+            if val < 1.0
                 throw(ArgumentError("n_workers[$i] must be >= 0.0, got $val"))
             end
         end
     else
-        if n_workers < 0.0
-            throw(ArgumentError("n_workers must be >= 0.0, got $n_workers"))
+        if n_workers < 1.0
+            throw(ArgumentError("n_workers must be >= 1.0, got $n_workers"))
         end
     end
 
@@ -313,7 +321,8 @@ function calc_labour_avail(df::DataFrame,
     workers_as_prop = n_workers / n_adults # sector-wise workers as prop adults
 
     # TODO: allow single sector but multiple scaling where uniform distribution across sectors assumed
-    scaling_affected = validate_scaling(scaling_affected, n_sectors)
+    scaling_affected = isnothing(scaling_affected) ? default_labour_scaling(n_sectors) :
+                       validate_scaling(scaling_affected, n_sectors)
 
     # Validate scaling parameters (must be in [0.0, 1.0])
     for (name, scaling) in [
@@ -364,9 +373,10 @@ function calc_labour_avail(df::DataFrame,
     # TODO: Make scaling_care a Dict
     # scale epi_affected by caregiving productivity coeff
     df_children = filter(row -> row.age_group in age_group_children, df)
-    scaling_affected["infect_asymp"] = scaling_care
+    care_scaling = copy(scaling_affected) # prevent modification of `scaling_affected`
+    care_scaling["infect_asymp"] = scaling_care
     children_infected = count_epi_affected(df_children, comp_affected,
-        exclude_deaths = true, scaling_affected = scaling_affected,
+        exclude_deaths = true, scaling_affected = care_scaling,
         col_sector = col_sector)
 
     ## scaling due to caring for infected
@@ -431,7 +441,7 @@ function calc_consumption_avail(df::DataFrame,
     comp_deaths_vec = isa(comp_deaths, String) ? [comp_deaths] : comp_deaths
 
     # only cumulative deaths needed
-    cumulative_deaths = count_epi_affected(df, comp_deaths_vec)
+    cumulative_deaths = count_epi_affected(df, comp_deaths_vec; col_sector = col_sector)
     cumulative_deaths = sum(cumulative_deaths, dims = 2)
 
     new_deaths = [0.0;
