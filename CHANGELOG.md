@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.11] - 2026-07-06
+
+### Added
+
+- Section in `estim_lab_consump.md` that show how the package can be used to estimate the labour productivity loss associated with long-term health impacts by scaling post-acute compartments.
+
 ## [0.0.10] - 2026-06-08
 
 ### Added
