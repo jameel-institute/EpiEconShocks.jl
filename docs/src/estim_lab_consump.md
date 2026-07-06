@@ -67,6 +67,59 @@ This can be easily reshaped into a 1-dimensional array or vector.
 
 **Note that** values are 1.0 or close to 1.0 over the early stages of the epidemic represented by the example data.
 
+## Modelling labour productivity loss due to long-term disability
+
+Infection may have long-term health effects that reduce worker productivity after recovery from acute symptoms.
+_EpiEconShocks_ allows the modelling of such effects by allowing the scaling of productivity for individuals in the 'recovered' compartment.
+
+This uses the same labour productivity scaling mechanism described above.
+
+Users should simply include the 'recovered' compartment (or any other compartments in the data considered to have reduced productivity in the long term) to the `comp_affected` argument, along with the scaling factor for this compartment passed to the `scaling_affected` argument (as a key-value pair in a `Dict`).
+
+This is shown in the example below.
+
+```@example modelling_disability
+using EpiEconShocks, DataFrames, RCall
+
+df = get_example_epi_data();
+
+df_work = filter(
+    row -> row.age_group == "20-64" &&
+           row.vaccine_group == "unvaccinated" &&
+           row.econ_sector != "sector_00",
+    df
+)
+
+# Extract worker counts by sector at baseline
+n_workers = filter(
+    row -> row.time == minimum(df_work.time) &&
+           row.compartment == "susceptible",
+    df_work
+)[:, "value"]
+
+n_adults = sum(n_workers)
+n_school = 5_000_000.0 # arbitrary assumption of number of school children
+```
+
+This example only considers long-term effects, and considers a uniform productivity reduction across economic sectors, to keep the code readable.
+Users can pass a data-informed vector of scaling coefficients to the `Dict` `scaling`.
+
+```@example modelling_disability
+# assume labour productivity is only reduced due to infection sequelae
+n_sectors = 45;
+recovered_scaling = 0.95
+scaling = Dict("recovered" => repeat([recovered_scaling], n_sectors))
+
+# dummy closure is passed by keyword arg
+labour_avail = calc_labour_avail(
+    df, n_workers, n_adults, n_school,
+    "recovered",
+    scaling_affected = scaling
+)
+
+labour_avail
+```
+
 ## Consumption
 
 This subsection shows how to calculate consumption over an epidemic given a `DataFrame` of epidemic outcomes.
@@ -127,7 +180,7 @@ For example the severely ill and dead may be assumed to have a productivity of z
 
 The available labour at time ``t`` in any sector ``k`` is then the sum over ages and states of the number of individuals in each state ``s`` scaled by the state-specific productivity ``p_s \in [0, 1]`` (relative to that of healthy or pre-pandemic workers).
 
-**Note that** we assume uniform scaling of productivity across age groups.
+**Note that** we assume uniform scaling of productivity across **age groups**.
 
 ```math
 L_k^{\text{avail}} (t) = \sum_{s, j} p_s N_{s,j,k} (t)
@@ -137,6 +190,9 @@ The function [`EpiHelpers.calc_labour_avail`](@ref) focuses on epidemiological c
 `scaling_affected` expects a dictionary giving key-value pairs of compartment names and sector-specific scaling vectors.
 
 This allows for compartment- and sector-specific scaling, which may be useful in modelling variation in productivity within epidemiological states as a function of economic sector.
+
+!!! info "Including long-term health effects on productivity"
+    Reduction in labour productivity due to long-term health effects arising from infection may be modelled as a scaling coefficient applied to all compartments that sit downstream of acute infection (typically, the 'recovered' compartment). This is only really valid for models where these downstream compartments no longer contribute to epidemic dynamics (or at least not the production of new infections). However, applying this method to models in which post-acute compartments have outflows to infection-capable compartments may be defensible when the mean transition period is large (e.g. a mean ``R \rightarrow S`` of 180 days), relative to the time horizon of the model projection. Users are advised to **carefully consider** whether their epidemiological model structure supports using _EpiEconShocks_ to estimate long-term health impacts on productivity.
 
 ### Labour availability due to mitigation measures
 
