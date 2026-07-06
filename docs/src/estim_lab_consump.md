@@ -79,7 +79,7 @@ Users should simply include the 'recovered' compartment (or any other compartmen
 This is shown in the example below.
 
 ```@example modelling_disability
-using EpiEconShocks, DataFrames, RCall
+using EpiEconShocks, DataFrames
 
 df = get_example_epi_data();
 
