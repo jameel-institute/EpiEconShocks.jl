@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- `calc_hca_cost()` in `src/LtCosts.jl` now accepts its previously hardcoded assumptions (`n_affected`, `wage`, `p_disab`, `p_death`, `p_lab_redn`, `t_ret`, `t_entry`, and `r`) as explicit arguments, with a docstring documenting each. Also fixes an undefined-variable bug (`disab`) by introducing `p_death` to compute the population of deaths. Not yet wired into the `EpiEconShocks` module or tested; further work tracked separately.
+- Updated the `calc_hca_cost()` docstring to match its current implementation: `n_recovered`/`n_dead` combine current and future (not-yet-working) age groups into a single matrix, and `t_ret`/`t_entry` are now documented as full `(n_age, n_sectors)` matrices rather than per-age vectors, following the usage shown in `scratch.jl`.
+- Added input validation to `calc_hca_cost()`: throws `ArgumentError` if `n_dead`, `t_ret`, `t_entry`, or `wage` (when provided) do not match the `(n_age, n_sectors)` size of `n_recovered`; if `p_disab` or `p_lab_redn` do not have length `n_age`; or if `p_emp` is a vector without length `n_age`.
+
 ## [0.0.10] - 2026-06-08
 
 ### Added
