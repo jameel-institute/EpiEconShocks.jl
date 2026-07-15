@@ -17,4 +17,6 @@ using Test
     # tests for EpiHelpers
     include("test_epi_helpers.jl")
     include("test_epi_example.jl")
+    # tests for LtCosts
+    include("test_hca_cost.jl")
 end

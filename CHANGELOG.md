@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated the `calc_hca_cost()` docstring to match its current implementation: `n_recovered`/`n_dead` combine current and future (not-yet-working) age groups into a single matrix, and `t_ret`/`t_entry` are now documented as full `(n_age, n_sectors)` matrices rather than per-age vectors, following the usage shown in `scratch.jl`.
 - Added input validation to `calc_hca_cost()`: throws `ArgumentError` if `n_dead`, `t_ret`, `t_entry`, or `wage` (when provided) do not match the `(n_age, n_sectors)` size of `n_recovered`; if `p_disab` or `p_lab_redn` do not have length `n_age`; or if `p_emp` is a vector without length `n_age`.
 
+### Added
+
+- Test suite for `calc_hca_cost()` in `test/test_hca_cost.jl`, covering: basic functionality against an independent brute-force reference for the discounting series, zero-population edge case, equivalence of `wage = nothing` to a matrix of ones, scalar vs. vector `p_emp`, heavier discounting of future (not-yet-working) age groups, and all `ArgumentError` input validation paths. Registered in `test/runtests.jl`.
+
 ## [0.0.10] - 2026-06-08
 
 ### Added
