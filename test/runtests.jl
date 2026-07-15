@@ -19,4 +19,5 @@ using Test
     include("test_epi_example.jl")
     # tests for LtCosts
     include("test_hca_cost.jl")
+    include("test_fca_cost.jl")
 end

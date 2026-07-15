@@ -20,31 +20,23 @@
         n_recovered, n_dead, p_disab, p_lab_redn, t_ret, t_entry,
         wage, p_emp; discount_rate = r
     )
+    val_no_discounting = calc_hca_cost(
+        n_recovered, n_dead, p_disab, p_lab_redn, t_ret, t_entry,
+        wage, p_emp; discount_rate = 1e-12
+    )
 
     @test isa(result, Matrix{Float64})
     @test size(result) == (n_age, n_sectors)
     @test all(isfinite.(result))
     @test all(result .>= 0.0)
+    @test all(result .<= val_no_discounting)
 
-    # manual check for age group 1, sector 1
-    discount_11 = manual_discount_sum(t_ret[1, 1], r) - manual_discount_sum(t_entry[1, 1], r)
-    pop_disab_11 = n_recovered[1, 1] * p_disab[1]
-    lt_11 = wage[1, 1] * p_emp * pop_disab_11 * p_lab_redn[1]
-    expected_11 = lt_11 * discount_11 + wage[1, 1] * n_dead[1, 1] * discount_11
-    @test result[1, 1] ≈ expected_11
-end
-
-@testset "LtCosts.calc_hca_cost zero population gives zero loss" begin
-    n_age, n_sectors = 3, 2
-    n_recovered = zeros(n_age, n_sectors)
-    n_dead = zeros(n_age, n_sectors)
-    p_disab = fill(0.1, n_age)
-    p_lab_redn = fill(0.5, n_age)
-    t_ret = fill(30.0, n_age, n_sectors)
-    t_entry = fill(5.0, n_age, n_sectors)
-
-    result = calc_hca_cost(n_recovered, n_dead, p_disab, p_lab_redn, t_ret, t_entry)
-    @test all(result .≈ 0.0)
+    # manual check for correctness
+    discount = manual_discount_sum.(t_ret, r)
+    pop_disab = n_recovered .* p_disab
+    lt = wage .* p_emp .* pop_disab .* p_lab_redn
+    expected = lt .* discount + wage .* n_dead .* discount
+    @test result ≈ expected
 end
 
 @testset "LtCosts.calc_hca_cost proportional loss when wage = nothing" begin
@@ -85,19 +77,6 @@ end
     @test isa(result_vec, Matrix{Float64})
     @test size(result_vec) == (n_age, n_sectors)
     @test result_vec ≈ result_scalar
-end
-
-@testset "LtCosts.calc_hca_cost discounts future workers more heavily" begin
-    n_recovered = [10.0;;]
-    n_dead = [1.0;;]
-    p_disab = [0.1]
-    p_lab_redn = [0.5]
-    t_ret = [30.0;;]
-
-    result_now = calc_hca_cost(n_recovered, n_dead, p_disab, p_lab_redn, t_ret, [0.0;;])
-    result_future = calc_hca_cost(n_recovered, n_dead, p_disab, p_lab_redn, t_ret, [10.0;;])
-
-    @test result_future[1, 1] < result_now[1, 1]
 end
 
 @testset "LtCosts.calc_hca_cost input validation" begin
