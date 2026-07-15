@@ -117,9 +117,10 @@ end
     df_zero = copy(df)
     transform!(df_zero,
         [:compartment,
-            :value] => ByRow((comp,
-            val) -> comp in ("infect_symp", "infect_asymp", "hospitalised_recov",
-            "hospitalised_death", "dead") ? 0.0 : val) => :value)
+            :value] =>
+            ByRow((comp,
+                val) -> comp in ("infect_symp", "infect_asymp", "hospitalised_recov",
+                "hospitalised_death", "dead") ? 0.0 : val) => :value)
 
     result_zero = calc_labour_avail(df_zero, n_workers, n_adults, n_school)
     # With zero epidemic and no indirect effects, availability should be 1.0
@@ -187,8 +188,9 @@ end
     t in 0:1 for comp in ["a", "b"] for age in ["working", "non-working"])
     df_zero.value .= 0.0
     transform!(
-        df_zero, [:age_group] => ByRow((age) -> age == "working" ? "sector_01" :
-                                                "sector_00") => :econ_sector
+        df_zero, [:age_group] =>
+            ByRow((age) -> age == "working" ? "sector_01" :
+                           "sector_00") => :econ_sector
     )
 
     n_workers = [1000.0]

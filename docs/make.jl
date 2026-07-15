@@ -23,7 +23,8 @@ makedocs(;
     pages = [
         "Home" => "index.md",
         "Working with epi outputs" => [
-            "Estimating labour and consumption over an epidemic" => "estim_lab_consump.md"
+            "Estimating labour and consumption over an epidemic" => "estim_lab_consump.md",
+            "Estimating costs of long-term disability" => "disability_costs.md"
         ],
         "Working with GTAP" => [
             "Setting up a GTAP model" => "setup.md",
