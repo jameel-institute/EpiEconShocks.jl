@@ -11,7 +11,7 @@
     p_disab = [0.1, 0.2]
     p_lab_redn = [0.5, 0.3]
     p_disab_replaced = [0.6, 0.4]
-    t_replacement = repeat([2.0, 1.0], 1, n_sectors)
+    t_replacement = [2.0, 1.0]
     wage = fill(100.0, n_age, n_sectors)
     p_emp = 0.8
     r = 0.03
@@ -22,7 +22,7 @@
     )
     val_no_discounting = calc_fca_cost(
         n_recovered, n_dead, p_disab, p_lab_redn, p_disab_replaced, t_replacement,
-        wage, p_emp; discount_rate = 0.0
+        wage, p_emp; discount_rate = 1e-12
     )
 
     @test isa(result, Matrix{Float64})
@@ -46,7 +46,7 @@ end
     p_disab = [0.1, 0.2]
     p_lab_redn = [0.4, 0.6]
     p_disab_replaced = [0.5, 0.5]
-    t_replacement = fill(0.5, n_age, n_sectors)
+    t_replacement = 0.5
 
     result_prop = calc_fca_cost(
         n_recovered, n_dead, p_disab, p_lab_redn, p_disab_replaced, t_replacement
@@ -66,7 +66,7 @@ end
     p_disab = [0.1, 0.2]
     p_lab_redn = [0.4, 0.6]
     p_disab_replaced = [0.5, 0.5]
-    t_replacement = fill(0.5, n_age, n_sectors)
+    t_replacement = 0.5
     p_emp_scalar = 0.8
     p_emp_vec = fill(p_emp_scalar, n_age)
 
@@ -89,7 +89,7 @@ end
     n_dead = [0.0;;] # isolate the disability term
     p_disab = [0.2]
     p_lab_redn = [0.5]
-    t_replacement = [0.5;;]
+    t_replacement = [0.5]
 
     result_none_replaced = calc_fca_cost(
         n_recovered, n_dead, p_disab, p_lab_redn, [0.0], t_replacement
@@ -113,10 +113,10 @@ end
     p_disab_replaced = [0.5]
 
     result_short = calc_fca_cost(
-        n_recovered, n_dead, p_disab, p_lab_redn, p_disab_replaced, [0.1;;]
+        n_recovered, n_dead, p_disab, p_lab_redn, p_disab_replaced, 0.1
     )
     result_long = calc_fca_cost(
-        n_recovered, n_dead, p_disab, p_lab_redn, p_disab_replaced, [2.0;;]
+        n_recovered, n_dead, p_disab, p_lab_redn, p_disab_replaced, 2.0
     )
 
     @test result_long[1, 1] > result_short[1, 1]
@@ -126,15 +126,17 @@ end
     # The FCA and HCA formulas coincide exactly when: there are no
     # non-working (future) age groups (t_entry = 0, so the HCA discount sum
     # is not truncated at the entry year); the FCA replacement time equals
-    # the HCA remaining working life (t_replacement = t_ret); and every
-    # disabled worker is assumed to be replaced (p_disab_replaced = 1.0), so
-    # the FCA's disabled population reduces to the HCA's.
+    # the HCA remaining working life (t_replacement = t_ret, per age group);
+    # and every disabled worker is assumed to be replaced
+    # (p_disab_replaced = 1.0), so the FCA's disabled population reduces to
+    # the HCA's.
     n_age, n_sectors = 2, 3
     n_recovered = [10.0 20.0 30.0; 5.0 15.0 25.0]
     n_dead = [1.0 2.0 3.0; 0.5 1.5 2.5]
     p_disab = [0.1, 0.2]
     p_lab_redn = [0.5, 0.3]
-    t_ret = repeat([20.0, 10.0], 1, n_sectors)
+    t_ret_vec = [20.0, 10.0]
+    t_ret = repeat(t_ret_vec, 1, n_sectors)
     t_entry = zeros(n_age, n_sectors) # no non-working (future) age groups
     p_disab_replaced = ones(n_age) # every disabled worker is replaced
     wage = fill(100.0, n_age, n_sectors)
@@ -146,7 +148,7 @@ end
         wage, p_emp; discount_rate = r
     )
     result_fca = calc_fca_cost(
-        n_recovered, n_dead, p_disab, p_lab_redn, p_disab_replaced, t_ret,
+        n_recovered, n_dead, p_disab, p_lab_redn, p_disab_replaced, t_ret_vec,
         wage, p_emp; discount_rate = r
     )
 
@@ -160,7 +162,7 @@ end
     p_disab = [0.1, 0.2]
     p_lab_redn = [0.4, 0.6]
     p_disab_replaced = [0.5, 0.5]
-    t_replacement = fill(0.5, n_age, n_sectors)
+    t_replacement = fill(0.5, n_age)
 
     # n_dead wrong size
     @test_throws ArgumentError calc_fca_cost(
@@ -168,10 +170,10 @@ end
         p_disab_replaced, t_replacement
     )
 
-    # t_replacement wrong size
+    # t_replacement wrong length
     @test_throws ArgumentError calc_fca_cost(
         n_recovered, n_dead, p_disab, p_lab_redn, p_disab_replaced,
-        fill(0.5, n_age, n_sectors + 1)
+        fill(0.5, n_age + 1)
     )
 
     # p_disab wrong length

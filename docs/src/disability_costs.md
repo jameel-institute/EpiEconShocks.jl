@@ -70,7 +70,7 @@ The friction cost method is similar to the human capital method, but only consid
 
 It does not account for the wages lost due to disability or death in the future workforce, as there is no present cost to replacing these individuals.
 
-For a fixed population size with no inflows, outflows, or aging of non-working individuals into working-age groups, the friction cost method and human capital method will give similar answers, as the assumption is that disabled workers cannot be replaced, and continue working at a lower productivity until retirement.
+For a fixed population size with no inflows, outflows, or ageing of non-working individuals into working-age groups, the friction cost method and human capital method will give similar answers, as the assumption is that disabled workers cannot be replaced, and continue working at a lower productivity until retirement.
 
 _EpiEconShocks.jl_ provides the function `calc_fca_cost` to get lost wages using the FC approach.
 
@@ -93,8 +93,8 @@ p_disab_replaced = repeat([0.2], n_age)
 # assume a uniform probability of employment
 p_emp = 0.8
 
-# assume a time for replacement
-t_replacement = ones(n_age, n_sectors) .* [0.25, 0.5, 0.67, 0.25]
+# assume a time for replacement, by age group
+t_replacement = [0.25, 0.5, 0.67, 0.25]
 
 # assume wages are unity to show losses in terms of current wages
 wage = 1.0
@@ -110,7 +110,7 @@ calc_fca_cost(
 
 ### Uncertainty in fixed parameters
 
-This example shows how to apply a disability cost function across a range of parameter values, using the probability as an example.
+This example shows how to apply a disability cost function across a range of parameter values, using the probability of disability in the human capital method as an example.
 
 ```@example param_uncertainty
 using Distributions, EpiEconShocks, Random, Statistics
@@ -166,4 +166,49 @@ result_quantiles = mapslices(x -> quantile(x, [0.025, 0.975]), result; dims = 3)
 
 The resulting age- and sector-specific summary statistics can be used to create figures or tables.
 
-### Stochasticity in time-varying parameters
+## Theory: Human capital approach
+
+The human capital method estimates the value of wages forgone due to the inability of disabled individuals to achieve full productivity in the labour market, and makes the following assumptions for age group ``j`` and economic sector ``k`` at time ``\tau``.
+
+- A proportion ``phi_j \in [0, 1]`` of individuals are recovered from infection and living with lifelong disability;
+- A proportion ``e_{j,t}`` are employed;
+- The labour productivity of disabled and employed individuals is scaled by ``\omega_j``;
+- The sector- and age-specific individual annual wage in real terms is ``W_{j,k,t}``;
+- Each age group has ``t^{\text{ret}}`` years of remaining employment after ``t^{\text{entry}}`` years until entry into the labour market, and ``t^{\text{ret}} = a^{\text{ret}} - a_j``, and ``t^{\text{entry}} = a^{\text{entry}} - a_j``, where ``a^{\text{ret}}`` is the age of retirement, ``a^{\text{entry}}`` is the age of labour market entry, and ``a_j`` is the representative age of each group;
+- The discount rate for the present value of future wages is ``r``.
+
+The present value of future productivity losses from both current and future workers' disability is:
+
+``V^{W+C} = \sum_{j \in J} \sum_{k} Z_{j,k} \sum_{\tau = t^{\text{entry}}}^{t^{\text{ret}}} \frac{e_{j,\tau} W_{j,k,\tau} \omega_j}{(1 + r)^\tau} ``
+
+Current workers may be considered to have a time until entry of zero, while future workers should have positive non-zero entry delays.
+
+The present value of future productivity losses due to premature deaths from infection at all ages is similar to that for disabled workers, except it removes productivity scaling and probability of being removed from the workforce (which is assumed 1.0 for deaths).
+
+``V^D = \sum_{j \in J} \sum_{k} \dot D_{j,k} \sum_{\tau = t^{\text{entry}}}^{t^{\text{ret}}} \frac{e_{j,\tau} W_{j,k,\tau}}{(1 + r)^\tau} ``
+
+The total present value of losses is then ``V^{W+C} + V^D``.
+
+## Theory: Friction cost approach
+
+The friction cost method estimates the value of wages forgone due to the delay in replacing disabled and dead individuals in the labour market, and makes the following assumptions for age group ``j`` and economic sector ``k`` at time ``\tau``.
+
+- A proportion ``phi_j \in [0, 1]`` of individuals are recovered from infection and living with lifelong disability;
+- A proportion ``e_{j,t} \in [0, 1]`` are employed;
+- The labour productivity of disabled and employed individuals is scaled by ``\omega_j \in [0, 1]``;
+- The sector- and age-specific individual annual wage in real terms is ``W_{j,k,t}``;
+- Each age group has a friction period ``d_{j}`` years needed to replace an individual in that age group; this may also be a single value applied to all age groups;
+- The proportion of workers in each age group and economic sector that are replaced is ``\rho_{j,k}``;
+- The discount rate for the present value of future wages is ``r``.
+
+The present value of future productivity losses from both current and future workers' disability is:
+
+``F^W = \sum_{j \in J} \sum_{k} Z_{j,k} \rho_{j,k} \sum_{\tau = 0}^{d_j} \frac{e_{j,\tau} W_{j,k,\tau} \omega_j}{(1 + r)^\tau} ``
+
+Current workers may be considered to have a time until entry of zero, while future workers should have positive non-zero entry delays.
+
+The present value of future productivity losses due to premature deaths from infection at all ages is similar to that for disabled workers, except it removes productivity scaling and probability of being removed from the workforce (which is assumed 1.0 for deaths).
+
+``F^D = \sum_{j \in J} \sum_{k} \dot D_{j,k} \sum_{\tau = 0}^{d_j} \frac{e_{j,\tau} W_{j,k,\tau}}{(1 + r)^\tau} ``
+
+The total present value of losses is then ``F^W + F^D``.

@@ -17,6 +17,6 @@ include("LtCosts.jl")
 
 # Re-export functions from submodules for top-level access
 export get_example_epi_data, calc_labour_avail, calc_consumption_avail,
-       count_epi_affected, default_labour_scaling, calc_hca_cost
+       count_epi_affected, default_labour_scaling, calc_hca_cost, calc_fca_cost
 
 end
