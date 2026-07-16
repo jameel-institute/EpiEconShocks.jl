@@ -163,8 +163,9 @@ require replacement, while all deaths are assumed to require replacement.
     productivity for disabled individuals, by age group (length `n_age`).
 - `p_disab_replaced::Vector{Float64}`: Proportion of long-term disabled
     workers who are assumed to be replaced, by age group (length `n_age`).
-- `t_replacement::Matrix{Float64}`: Time in years taken to replace a worker,
-    by age group and economic sector, of size `(n_age, n_sectors)`.
+- `t_replacement::Union{Float64, Vector{Float64}}`: Time in years taken to
+    replace a worker. May be a single value applied to all age groups or a
+    vector by age group (length `n_age`).
 - `wage::Union{Matrix{Float64}, Nothing}`: Annual wage, by age group and
     economic sector, of size `(n_age, n_sectors)`. If `nothing` (default),
     losses are computed as a proportion of wage (`wage` is treated as
@@ -181,10 +182,10 @@ require replacement, while all deaths are assumed to require replacement.
     and economic sector, of size `(n_age, n_sectors)`.
 
 # Raises
-- `ArgumentError`: if `n_dead`, `t_replacement`, or `wage` (when provided)
-    do not share the size `(n_age, n_sectors)` of `n_recovered`; if
-    `p_disab`, `p_lab_redn`, or `p_disab_replaced` do not have length
-    `n_age`; or if `p_emp` is a vector without length `n_age`.
+- `ArgumentError`: if `n_dead` or `wage` (when provided) do not share the
+    size `(n_age, n_sectors)` of `n_recovered`; if `p_disab`, `p_lab_redn`,
+    `p_disab_replaced`, or `t_replacement` (when a vector) do not have
+    length `n_age`; or if `p_emp` is a vector without length `n_age`.
 """
 function calc_fca_cost(
         n_recovered::Matrix{Float64},
@@ -192,27 +193,31 @@ function calc_fca_cost(
         p_disab::Vector{Float64},
         p_lab_redn::Vector{Float64},
         p_disab_replaced::Vector{Float64},
-        t_replacement::Matrix{Float64},
+        t_replacement::Union{Float64, Vector{Float64}},
         wage::Union{Float64, Matrix{Float64}, Nothing} = nothing,
         p_emp::Union{Float64, Vector{Float64}} = 0.8;
         discount_rate::Real = 0.01
 )
     n_age, n_sectors = size(n_recovered)
 
-    for (name, m) in ((:n_dead, n_dead), (:t_replacement, t_replacement))
-        if size(m) != (n_age, n_sectors)
-            throw(ArgumentError(
-                "`$name` must have size ($n_age, $n_sectors), got $(size(m))"
-            ))
-        end
+    if size(n_dead) != (n_age, n_sectors)
+        throw(ArgumentError(
+            "`n_dead` must have size ($n_age, $n_sectors), got $(size(n_dead))"
+        ))
     end
 
     for (name, v) in (
-        (:p_disab, p_disab), (:p_lab_redn, p_lab_redn), (
-        :p_disab_replaced, p_disab_replaced))
+        (:p_disab, p_disab), (:p_lab_redn, p_lab_redn),
+        (:p_disab_replaced, p_disab_replaced))
         if length(v) != n_age
             throw(ArgumentError("`$name` must have length $n_age, got $(length(v))"))
         end
+    end
+
+    if t_replacement isa AbstractVector && length(t_replacement) != n_age
+        throw(ArgumentError(
+            "`t_replacement` must have length $n_age, got $(length(t_replacement))"
+        ))
     end
 
     if !isnothing(wage) && !isa(wage, Float64) && size(wage) != (n_age, n_sectors)

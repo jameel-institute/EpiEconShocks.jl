@@ -60,15 +60,14 @@ function get_example_epi_data()::DataFrame
         [:compartment,
             :time,
             :vaccine_group,
-            :value] =>
-            ByRow(
-                (comp,
-                time,
-                vax,
-                val) -> comp in ("infect_symp", "infect_asymp", "hospitalised_recov",
-                "hospitalised_death", "dead") && vax == "unvaccinated" ? time * 1e2 + 1.0 :
-                        val
-            ) => :value)
+            :value] => ByRow(
+            (comp,
+            time,
+            vax,
+            val) -> comp in ("infect_symp", "infect_asymp", "hospitalised_recov",
+            "hospitalised_death", "dead") && vax == "unvaccinated" ? time * 1e2 + 1.0 :
+                    val
+        ) => :value)
 
     return data
 end

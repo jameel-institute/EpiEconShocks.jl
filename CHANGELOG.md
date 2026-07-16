@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.11] - 2026-07-16
+
 ### Added
 
 - Module LtCosts with functions for calculating the cost in terms of lost wages of long-term infection-related disability and death, using the Human Capital Approach and Friction Cost Approach;
