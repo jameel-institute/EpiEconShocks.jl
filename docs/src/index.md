@@ -5,7 +5,7 @@ CurrentModule = EpiEconShocks
 # EpiEconShocks.jl
 
 [![Project Status: Concept – Minimal or no implementation has been done yet, or the repository is only intended to be a limited example, demo, or proof-of-concept.](https://www.repostatus.org/badges/latest/concept.svg)](https://www.repostatus.org/#concept)
-[![Version](https://img.shields.io/badge/version-0.0.10-aquamarine.svg)](https://jameel-institute.github.io/EpiEconShocks.jl/dev/)
+[![Version](https://img.shields.io/badge/version-0.0.11-aquamarine.svg)](https://jameel-institute.github.io/EpiEconShocks.jl/dev/)
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://jameel-institute.github.io/EpiEconShocks.jl/dev/)
 [![Build Status](https://github.com/jameel-institute/EpiEconShocks.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/jameel-institute/EpiEconShocks.jl/actions/workflows/CI.yml?query=branch%3Amain)
 [![Coverage](https://codecov.io/gh/jameel-institute/EpiEconShocks.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/jameel-institute/EpiEconShocks.jl)

@@ -24,20 +24,20 @@ The example below shows how to use this function.
 using EpiEconShocks
 
 # assume age groups, and unit pop sizes for illustrative purposes
-n_age = 8
-n_sectors = 10
-recovered = ones(n_age, n_sectors)
-deaths = copy(recovered) .* 0.02
+n_age = 8;
+n_sectors = 10;
+recovered = ones(n_age, n_sectors);
+deaths = copy(recovered) .* 0.02;
 
 # assume age-varying probability of disability
-p_disab = collect(1:1:8) ./ 100.0
-p_lab_redn = repeat([0.2, 0.3, 0.4, 0.5], 2)
+p_disab = collect(1:1:8) ./ 100.0;
+p_lab_redn = repeat([0.2, 0.3, 0.4, 0.5], 2);
 
 # assume a uniform probability of employment
-p_emp = 0.8
+p_emp = 0.8;
 
 # assume wages are unity to show losses in terms of current wages
-wage = 1.0
+wage = 1.0;
 ```
 
 ### Varying labour-market entry and exit
@@ -49,7 +49,7 @@ For current workers, the time to entry is zero.
 
 ```@example hca_cost
 # time to entry and exit
-t_entry = ones(n_age, n_sectors) .* [18, 15, 12, 1, 0, 0, 0, 0]
+t_entry = ones(n_age, n_sectors) .* [18, 15, 12, 1, 0, 0, 0, 0];
 t_ret = ones(n_age, n_sectors) .* [50, 50, 50, 50, 40, 25, 15, 5]
 ```
 
@@ -78,26 +78,26 @@ _EpiEconShocks.jl_ provides the function `calc_fca_cost` to get lost wages using
 using EpiEconShocks
 
 # assume age groups, and unit pop sizes for illustrative purposes
-n_age = 4
-n_sectors = 10
-recovered = ones(n_age, n_sectors)
-deaths = copy(recovered) .* 0.02
+n_age = 4;
+n_sectors = 10;
+recovered = ones(n_age, n_sectors);
+deaths = copy(recovered) .* 0.02;
 
 # assume age-varying probability of disability
-p_disab = collect(2:2:8) ./ 100.0
-p_lab_redn = [0.2, 0.3, 0.4, 0.5]
+p_disab = collect(2:2:8) ./ 100.0;
+p_lab_redn = [0.2, 0.3, 0.4, 0.5];
 
 # assume that only a proportion of disabled workers are replaced per age group
-p_disab_replaced = repeat([0.2], n_age)
+p_disab_replaced = repeat([0.2], n_age);
 
 # assume a uniform probability of employment
-p_emp = 0.8
+p_emp = 0.8;
 
 # assume a time for replacement, by age group
-t_replacement = [0.25, 0.5, 0.67, 0.25]
+t_replacement = [0.25, 0.5, 0.67, 0.25];
 
 # assume wages are unity to show losses in terms of current wages
-wage = 1.0
+wage = 1.0;
 
 # calculate loss
 calc_fca_cost(
@@ -116,47 +116,45 @@ This example shows how to apply a disability cost function across a range of par
 using Distributions, EpiEconShocks, Random, Statistics
 
 # assume age groups, and unit pop sizes for illustrative purposes
-n_age = 8
-n_sectors = 10
-recovered = ones(n_age, n_sectors)
-deaths = copy(recovered) .* 0.02
+n_age = 8;
+n_sectors = 10;
+recovered = ones(n_age, n_sectors);
+deaths = copy(recovered) .* 0.02;
 
 # assume age-varying productivity reduction
-p_lab_redn = repeat([0.2, 0.3, 0.4, 0.5], 2)
+p_lab_redn = repeat([0.2, 0.3, 0.4, 0.5], 2);
 
 # assume a uniform probability of employment
-p_emp = 0.8
+p_emp = 0.8;
 
 # assume wages are unity; may be a matrix for age-sector specific wages
-wage = 1.0
+wage = 1.0;
 
 # time to entry and exit
-t_entry = ones(n_age, n_sectors) .* [18, 15, 12, 1, 0, 0, 0, 0]
-t_ret = ones(n_age, n_sectors) .* [50, 50, 50, 50, 40, 25, 15, 5]
+t_entry = ones(n_age, n_sectors) .* [18, 15, 12, 1, 0, 0, 0, 0];
+t_ret = ones(n_age, n_sectors) .* [50, 50, 50, 50, 40, 25, 15, 5];
 ```
 
 Model uncertainty in the age-specific probability of disability.
 
 ```@example param_uncertainty
-p_disab = collect(1:1:8) ./ 100.0
+p_disab = collect(1:1:8) ./ 100.0;
 
 # select
-d = Normal(0.0, 0.05)
-samples = 1000
+d = Normal(0.0, 0.05);
+samples = 1000;
 p_disab_list = [p_disab .* rand(d, n_age) for i in 1:samples];
 
 # result has size (n_age, n_sectors, samples)
 result = stack([calc_hca_cost(
     recovered, deaths, pdsb, p_lab_redn, t_ret, t_entry;
     discount_rate = 0.03
-) for pdsb in p_disab_list])
+) for pdsb in p_disab_list]);
 ```
 
 ```@example param_uncertainty
 # see the age and sector specific median:
 result_median = dropdims(median(result; dims = 3); dims = 3)
-
-result_median
 ```
 
 ```@example param_uncertainty
@@ -179,13 +177,17 @@ The human capital method estimates the value of wages forgone due to the inabili
 
 The present value of future productivity losses from both current and future workers' disability is:
 
-``V^{W+C} = \sum_{j \in J} \sum_{k} Z_{j,k} \sum_{\tau = t^{\text{entry}}}^{t^{\text{ret}}} \frac{e_{j,\tau} W_{j,k,\tau} \omega_j}{(1 + r)^\tau} ``
+```math
+V^{W+C} = \sum_{j \in J} \sum_{k} Z_{j,k} \sum_{\tau = t^{\text{entry}}}^{t^{\text{ret}}} \frac{e_{j,\tau} W_{j,k,\tau} \omega_j}{(1 + r)^\tau}
+```
 
 Current workers may be considered to have a time until entry of zero, while future workers should have positive non-zero entry delays.
 
 The present value of future productivity losses due to premature deaths from infection at all ages is similar to that for disabled workers, except it removes productivity scaling and probability of being removed from the workforce (which is assumed 1.0 for deaths).
 
-``V^D = \sum_{j \in J} \sum_{k} \dot D_{j,k} \sum_{\tau = t^{\text{entry}}}^{t^{\text{ret}}} \frac{e_{j,\tau} W_{j,k,\tau}}{(1 + r)^\tau} ``
+```math
+V^D = \sum_{j \in J} \sum_{k} \dot D_{j,k} \sum_{\tau = t^{\text{entry}}}^{t^{\text{ret}}} \frac{e_{j,\tau} W_{j,k,\tau}}{(1 + r)^\tau}
+```
 
 The total present value of losses is then ``V^{W+C} + V^D``.
 
@@ -203,12 +205,16 @@ The friction cost method estimates the value of wages forgone due to the delay i
 
 The present value of future productivity losses from both current and future workers' disability is:
 
-``F^W = \sum_{j \in J} \sum_{k} Z_{j,k} \rho_{j,k} \sum_{\tau = 0}^{d_j} \frac{e_{j,\tau} W_{j,k,\tau} \omega_j}{(1 + r)^\tau} ``
+```math
+F^W = \sum_{j \in J} \sum_{k} Z_{j,k} \rho_{j,k} \sum_{\tau = 0}^{d_j} \frac{e_{j,\tau} W_{j,k,\tau} \omega_j}{(1 + r)^\tau}
+```
 
 Current workers may be considered to have a time until entry of zero, while future workers should have positive non-zero entry delays.
 
 The present value of future productivity losses due to premature deaths from infection at all ages is similar to that for disabled workers, except it removes productivity scaling and probability of being removed from the workforce (which is assumed 1.0 for deaths).
 
-``F^D = \sum_{j \in J} \sum_{k} \dot D_{j,k} \sum_{\tau = 0}^{d_j} \frac{e_{j,\tau} W_{j,k,\tau}}{(1 + r)^\tau} ``
+```math
+F^D = \sum_{j \in J} \sum_{k} \dot D_{j,k} \sum_{\tau = 0}^{d_j} \frac{e_{j,\tau} W_{j,k,\tau}}{(1 + r)^\tau}
+```
 
 The total present value of losses is then ``F^W + F^D``.
