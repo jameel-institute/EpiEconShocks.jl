@@ -1,7 +1,7 @@
 
 module EpiHelpers
 
-export calc_labour_avail, calc_consumption_avail, integrate_shock,
+export calc_labour_avail, calc_consumption_avail,
        count_epi_affected, default_labour_scaling
 
 using ..Tools
@@ -457,46 +457,6 @@ function calc_consumption_avail(df::DataFrame,
     c_avl = exp.(-phi' .* new_deaths)
 
     return trapz(times, c_avl')' ./ (times[end] - times[begin]);
-end
-
-"""
-    integrate_shock(t::AbstractVector, avail::AbstractVector)
-
-Compute time-weighted average of a daily availability time series using trapezoidal integration.
-
-Integrates the availability curve over time and normalizes by the total time span to produce
-a single scalar shock value (typically in [0.0, 1.0]) suitable for use as a `ParameterShock`
-scale factor.
-
-# Arguments
-- `t::AbstractVector`: Time vector (numeric, typically day-of-year or date-as-integer).
-  Must be strictly increasing.
-- `avail::AbstractVector`: Daily availability fractions, same length as `t`
-
-# Returns
-`Float64`: Time-weighted average availability, calculated as:
-```
-area_under_curve / (t[end] - (t[1] - 1.0))
-```
-where `area_under_curve` is computed using the trapezoidal rule.
-
-The normalization `t[end] - (t[1] - 1.0)` represents the total time span including the first day.
-
-# Example
-```julia
-t = [1.0, 2.0, 3.0, 4.0]
-avail = [1.0, 0.95, 0.90, 0.90]
-shock = integrate_shock(t, avail)
-# Trapezoidal area ≈ (1.0 + 0.95)/2 + (0.95 + 0.90)/2 + (0.90 + 0.90)/2 = 2.8
-# shock ≈ 2.8 / (4.0 - 0.0) = 0.7
-```
-"""
-function integrate_shock(t::AbstractVector, avail::AbstractVector)
-    # Trapezoidal integration
-    dt = diff(t)
-    area = sum((avail[1:(end - 1)] .+ avail[2:end]) ./ 2 .* dt)
-    # Normalize by total time span (inclusive of first day)
-    return area / (t[end] - (t[1] - 1.0))
 end
 
 end
