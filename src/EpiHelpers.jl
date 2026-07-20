@@ -205,7 +205,8 @@ work-from-home capability, care responsibilities, and economic closures.
     If scalar, applied uniformly; if vector, element `j` corresponds to sector
     `j` in sorted order. All elements must be >= 1.0.
 - `n_adults::Real`: Total adult population (>= 1.0)
-- `n_school::Real`: School-age population (>= 1.0)
+- `n_school::Real`: School-age population (>= 0.0). While a value >= 1.0 is
+    advised, passing 0.0 is an easy way to disregard the cost of childcare.
 - `comp_affected::Union{String, Vector{String}}`: Compartments representing
     workforce absence (default: `["infect_symp", "infect_asymp", "dead", 
     "hospitalised_recov", "hospitalised_death"]`)
