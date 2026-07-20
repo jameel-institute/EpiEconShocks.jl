@@ -11,7 +11,7 @@ using LinearAlgebra
 using Trapz
 
 """
-    validate_scaling(scaling_dict::Dict, n_sectors::Real)::Dict
+    validate_scaling(scaling_dict::Dict, n_sectors::Int)::Dict
 
 Validate compartment-specific scaling factors for epidemiological data.
 
@@ -21,7 +21,7 @@ number of sectors and all values in the valid range [0.0, 1.0].
 # Arguments
 - `scaling_dict::Dict`: Dictionary mapping compartment names (strings) to
     scaling vectors
-- `n_sectors::Real`: Expected number of economic sectors
+- `n_sectors::Int`: Expected number of economic sectors
 
 # Returns
 - `Dict`: The validated scaling dictionary (unchanged if all checks pass)
@@ -30,7 +30,7 @@ number of sectors and all values in the valid range [0.0, 1.0].
 - `ArgumentError`: if any scaling vector is not of type `Vector{Float64}`, has
     incorrect length, or contains values outside [0.0, 1.0]
 """
-function validate_scaling(scaling_dict::Dict, n_sectors::Real)::Dict
+function validate_scaling(scaling_dict::Dict, n_sectors::Int)::Dict
     for (key, val) in scaling_dict
         if !isa(val, Vector{Float64})
             throw(
@@ -60,7 +60,7 @@ function validate_scaling(scaling_dict::Dict, n_sectors::Real)::Dict
 end
 
 """
-    default_labour_scaling(n_sectors::Real = 45)::Dict
+    default_labour_scaling(n_sectors::Int = 45)::Dict
 
 Generate default compartment-specific scaling factors for labour availability
 calculations. This function is set up to work with Daedalus model outputs with
@@ -77,14 +77,14 @@ epidemiological state:
 Each scaling factor is replicated across all sectors, assuming uniform impact.
 
 # Arguments
-- `n_sectors::Real`: Number of economic sectors (default: 45)
+- `n_sectors::Int`: Number of economic sectors (default: 45)
 
 # Returns
 - `Dict`: Dictionary mapping compartment names to vectors of scaling factors
 (one per sector). Keys match Daedalus compartments where individuals are
 expected to have a reduction in productivity.
 """
-function default_labour_scaling(n_sectors::Real = 45)::Dict
+function default_labour_scaling(n_sectors::Int = 45)::Dict
     return Dict(
         "infect_symp" => repeat([1.0], n_sectors),
         "infect_asymp" => repeat([0.5], n_sectors),
@@ -148,6 +148,8 @@ function count_epi_affected(df::DataFrame,
         throw(ArgumentError("df must contain a column named \"$col_sector\""))
     end
 
+    comp_affected = isa(comp_affected, Vector{String}) ? comp_affected : [comp_affected]
+
     comp_epi_affected = exclude_deaths ?
                         comp_affected[comp_affected .!= "dead"] : comp_affected
 
@@ -158,7 +160,7 @@ function count_epi_affected(df::DataFrame,
 
     if isnothing(scaling_affected)
         df_epi_affected = filter(
-            row -> any(occursin.(comp_epi_affected, row.compartment)), df)
+            row -> row.compartment in comp_epi_affected, df)
         df_epi_affected = groupby(df_epi_affected, [:time, Symbol(col_sector)])
         df_epi_affected = combine(df_epi_affected, :value => (x -> sum(x)) => :value)
 
@@ -201,7 +203,7 @@ work-from-home capability, care responsibilities, and economic closures.
     `compartment`, `value`, `age_group`, and a sector column
     (default "econ_sector"). Column `time` must have contiguous times with
     no missing values.
-- `n_workers::Vector{Float64}`: Number of workers per sector.
+- `n_workers::Union{Float64, Vector{Float64}}`: Number of workers per sector.
     If scalar, applied uniformly; if vector, element `j` corresponds to sector
     `j` in sorted order. All elements must be >= 1.0.
 - `n_adults::Real`: Total adult population (>= 1.0)
@@ -251,7 +253,7 @@ work-from-home capability, care responsibilities, and economic closures.
     and `col_sector`
 """
 function calc_labour_avail(df::DataFrame,
-        n_workers::Vector{Float64},
+        n_workers::Union{Float64, Vector{Float64}},
         n_adults::Real,
         n_school::Real,
         comp_affected::Union{String, Vector{String}} =
@@ -299,6 +301,10 @@ function calc_labour_avail(df::DataFrame,
     end
 
     times = float.(unique(df[:, :time]))
+    if length(times) < 2
+        throw(ErrorException("Number of unique times in data `df` is less than 2!"))
+    end
+
     econ_closures = isnothing(times_econ_closures) ? times .* 0.0 :
                     is_npi_active(times, times_econ_closures)
     school_closures = isnothing(times_school_closures) ? times .* 0.0 :
@@ -309,7 +315,7 @@ function calc_labour_avail(df::DataFrame,
     # get working age indivs to calc direct infection-related loss
     df_work = filter(
         row -> row.age_group in age_group_working &&
-               row.econ_sector != sector_non_working,
+               row[col_sector] != sector_non_working,
         df
     )
     n_sectors = length(unique(df_work[:, col_sector]))
