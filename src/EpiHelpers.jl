@@ -449,9 +449,8 @@ function calc_consumption_avail(df::DataFrame,
 
     # only cumulative deaths needed
     cumulative_deaths = count_epi_affected(df, comp_deaths_vec; col_sector = col_sector)
-    cumulative_deaths = reshape(
-        sum(cumulative_deaths, dims = 2), length(cumulative_deaths)
-    )
+    cumulative_deaths = sum(cumulative_deaths, dims = 2)
+    cumulative_deaths = reshape(cumulative_deaths, length(cumulative_deaths))
 
     new_deaths = [cumulative_deaths[begin]; diff(cumulative_deaths)]
 
