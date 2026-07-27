@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- `calc_avail_labour()`: `N_work`, `wfh`, and `p_furl` now accept `AbstractVector` instead of `Dict` for per-sector values. Vector element `j` corresponds to the `j`-th sector in sorted order of unique sector labels in the data. Scalar inputs are unchanged.
+- `calc_labour_avail()`: `N_work`, `wfh`, and `p_furl` now accept `AbstractVector` instead of `Dict` for per-sector values. Vector element `j` corresponds to the `j`-th sector in sorted order of unique sector labels in the data. Scalar inputs are unchanged.
 - `calc_labour_avail()` no longer calls the removed `calc_indivs()`; weighted absence is now computed directly.
 - `calc_consumption_avail()`: signature changed from `(deaths::AbstractVector, phi)` to `(df::DataFrame, phi; comp_deaths, col_sector)`. Deaths are now read from a long-format epidemiological DataFrame, filtered by the `comp_deaths` compartment name(s) (default `"dead"`), summed across all sectors, and differenced internally to derive new deaths before applying the exponential decay.
 
