@@ -216,7 +216,7 @@ work-from-home capability, care responsibilities, and economic closures.
 # Keyword Arguments
 - `scaling_affected::Union{Nothing, Dict}`: Scaling weights for each compartment
     as a named dictionary, with keys being compartment names and values being
-    scaling values in the range ``[0, 1]`` as either scalars or a vector of the
+    a vector of scaling values in the range ``[0, 1]`` of the
     same length as the number of economic sectors.
     (default: `nothing`, function `default_labour_scaling()` is called after the
     number of economic sectors is counted from `df`).
@@ -321,8 +321,12 @@ function calc_labour_avail(df::DataFrame,
     n_sectors = length(unique(df_work[:, col_sector]))
 
     # Check n_workers vector length matches n_sectors
-    if isa(n_workers, Vector) && length(n_workers) != n_sectors
-        throw(ArgumentError("n_workers vector length must equal n_sectors ($n_sectors), got $(length(n_workers))"))
+    if isa(n_workers, Vector)
+        if length(n_workers) != n_sectors
+            throw(ArgumentError("n_workers vector length must equal n_sectors ($n_sectors), got $(length(n_workers))"))
+        end
+    else
+        n_workers = fill(n_workers, n_sectors)
     end
 
     workers_as_prop = n_workers / n_adults # sector-wise workers as prop adults
