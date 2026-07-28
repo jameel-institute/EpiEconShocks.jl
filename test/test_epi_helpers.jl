@@ -290,8 +290,8 @@ end
     df_spike = make_deaths_df([0.0, 0.0, 1.0, 1.0, 1.0])
     result = calc_consumption_avail(df_spike, phi)
 
-    # TODO: check tests
-    @test all(result .< 1.0)
+    expected = reshape((3.0 .+ exp.(-phi)) ./ 4.0, 1, length(phi))
+    @test result ≈ expected
 
     # Zero phi → no avoidance, all availability 1.0
     df_any = make_deaths_df([0.0, 1.0, 2.0, 3.0])

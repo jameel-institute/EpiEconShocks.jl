@@ -44,7 +44,7 @@ wage = 1.0;
 
 `calc_hca_cost` allows specifying age and sector specific times of labour market entry and exit, so that the lost wages of current and future workers can both be estimated.
 
-The function accepts matrices of the same dimensions as the number of recovered and dead for `t_entry` the time to labour market entry, and `t_ret` the time to labour market exit.
+The function accepts matrices of the same dimensions as the number of recovered and dead for `t_entry` the time to labour market entry, and `t_ret` the time to labour market exit following entry.
 For current workers, the time to entry is zero.
 
 ```@example hca_cost
@@ -69,8 +69,6 @@ The output can be aggregated by age group or economic sector for further use.
 The friction cost method is similar to the human capital method, but only considers wages lost during the time taken to replace a disabled or dead worker.
 
 It does not account for the wages lost due to disability or death in the future workforce, as there is no present cost to replacing these individuals.
-
-For a fixed population size with no inflows, outflows, or ageing of non-working individuals into working-age groups, the friction cost method and human capital method will give similar answers, as the assumption is that disabled workers cannot be replaced, and continue working at a lower productivity until retirement.
 
 _EpiEconShocks.jl_ provides the function `calc_fca_cost` to get lost wages using the FC approach.
 
@@ -143,7 +141,8 @@ p_disab = collect(1:1:8) ./ 100.0;
 # select
 d = Normal(0.0, 0.05);
 samples = 1000;
-p_disab_list = [p_disab .* rand(d, n_age) for i in 1:samples];
+p_disab_list = [
+    clamp.(p_disab .+ rand(d, n_age), 0.0, 1.0) for i in 1:samples];
 
 # result has size (n_age, n_sectors, samples)
 result = stack([calc_hca_cost(
@@ -178,7 +177,7 @@ The human capital method estimates the value of wages forgone due to the inabili
 The present value of future productivity losses from both current and future workers' disability is:
 
 ```math
-V^{W+C} = \sum_{j \in J} \sum_{k} Z_{j,k} \sum_{\tau = t^{\text{entry}}}^{t^{\text{ret}}} \frac{e_{j,\tau} W_{j,k,\tau} \omega_j}{(1 + r)^\tau}
+V^{W+C} = \sum_{j \in J} \sum_{k} Z_{j,k} \sum_{\tau = t^{\text{entry}}}^{t^{\text{entry}} + t^{\text{ret}}} \frac{e_{j,\tau} W_{j,k,\tau} \omega_j}{(1 + r)^\tau}
 ```
 
 Current workers may be considered to have a time until entry of zero, while future workers should have positive non-zero entry delays.
@@ -186,7 +185,7 @@ Current workers may be considered to have a time until entry of zero, while futu
 The present value of future productivity losses due to premature deaths from infection at all ages is similar to that for disabled workers, except it removes productivity scaling and probability of being removed from the workforce (which is assumed 1.0 for deaths).
 
 ```math
-V^D = \sum_{j \in J} \sum_{k} \dot D_{j,k} \sum_{\tau = t^{\text{entry}}}^{t^{\text{ret}}} \frac{e_{j,\tau} W_{j,k,\tau}}{(1 + r)^\tau}
+V^D = \sum_{j \in J} \sum_{k} \dot D_{j,k} \sum_{\tau = t^{\text{entry}}}^{t^{\text{entry}} + t^{\text{ret}}} \frac{e_{j,\tau} W_{j,k,\tau}}{(1 + r)^\tau}
 ```
 
 The total present value of losses is then ``V^{W+C} + V^D``.
