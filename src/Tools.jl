@@ -22,6 +22,10 @@ For each timepoint, returns 1.0 if it falls within at least one bounds interval,
 """
 function is_npi_active(time::Vector{Float64}, bounds::Vector{Tuple{
         Float64, Float64}})::Vector{Float64}
+    if isempty(time)
+        throw(ArgumentError("Vector `time` cannot be empty"))
+    end
+
     if isempty(bounds)
         throw(ArgumentError("`bounds` cannot be empty"))
     end

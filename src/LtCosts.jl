@@ -9,14 +9,29 @@ using LinearAlgebra
 using Random
 
 """
-    get_discount_sum(times::Real, r::Float64)
+    get_discount_sum(times::Real, r::Float64)::Float64
 
-Helper function to get the sum of a geometric series where
-    ``x = \frac{1}{1+r}``; used to calculate the discounting multiplier on
-    future wages.
+Sum of the discounted geometric series
+``\\sum_{i=0}^{\\text{times}} \\left(\\frac{1}{1+r}\\right)^i``, used to
+calculate the discounting multiplier applied to a constant annual wage (or
+wage loss) accruing over `times + 1` years, from the present (`i = 0`,
+undiscounted) out to `times` years in the future. `times` need not be an
+integer.
+
+# Arguments
+- `times::Real`: Upper index of the summation.
+- `r::Float64`: Discount rate. When `r` is approximately `0.0` the undiscounted
+    value `times + 1.0` is returned.
+
+# Returns
+- `Float64`: The discounted sum.
 """
-function get_discount_sum(times::Real, r::Float64)
-    ((1.0 + r) / r) * (1.0 - (1.0 + r) ^ (-(times + 1.0)))
+function get_discount_sum(times::Real, r::Float64)::Float64
+    if r ≈ 0.0
+        return times + 1.0
+    else
+        return ((1.0 + r) / r) * (1.0 - (1.0 + r) ^ (-(times + 1.0)))
+    end
 end
 
 """
@@ -34,9 +49,10 @@ group is already working or will enter the labour market later is encoded
 per-row in `t_entry` (`0.0` for age groups already working) and `t_ret`.
 The disability loss reflects a permanent reduction in labour productivity
 for survivors, while the death loss reflects the full forgone
-future wage. Both are discounted from the present over the working period
-running from labour market entry (`t_entry`) to retirement
-(`t_entry + t_ret`).
+future wage. Both are discounted from the present over a working period of
+`t_ret + 1` years — the entry year itself, plus `t_ret` further years —
+running from labour market entry (year `t_entry`) to retirement (year
+`t_entry + t_ret`), inclusive of both endpoints.
 
 # Arguments
 - `n_recovered::Matrix{Float64}`: Number of recovered by age group and
@@ -48,20 +64,22 @@ running from labour market entry (`t_entry`) to retirement
     recovered, by age group (length `n_age`).
 - `p_lab_redn::Vector{Float64}`: Proportional reduction in labour
     productivity for disabled individuals, by age group (length `n_age`).
-- `t_ret::Matrix{Float64}`: Duration of working years remaining after labour
-    market entry (i.e. years until retirement, counted from entry), by age
-    group and economic sector, of size `(n_age, n_sectors)`.
+- `t_ret::Matrix{Float64}`: Number of years, after labour market entry, over
+    which lost wages accrue; the discounted window spans `t_ret + 1` years
+    in total (see above), by age group and economic sector, of size
+    `(n_age, n_sectors)`.
 - `t_entry::Matrix{Float64}`: Years until labour market entry, by age group
     and economic sector, of size `(n_age, n_sectors)`; should be `0.0` for age
     groups already working.
-- `wage::Union{Matrix{Float64}, Nothing}`: Annual wage, by age group and
-    economic sector, of size `(n_age, n_sectors)`. If `nothing` (default),
-    losses are computed as a proportion of wage (`wage` is treated as
-    `1.0`) rather than in currency units.
+- `wage::Union{Float64, Matrix{Float64}, Nothing}`: Annual wage, by age
+    group and economic sector, of size `(n_age, n_sectors)`. A scalar
+    applies the same wage to every age group and sector. If `nothing`
+    (default), losses are computed as a proportion of wage (`wage` is
+    treated as `1.0`) rather than in currency units.
 - `p_emp::Union{Float64, Vector{Float64}}`: Probability of employment given
     participation in the labour force. May be a single value applied to all
     age groups or a vector by age group (length `n_age`) (default: `0.8`).
-- `discount_rate::Real`: Annual discount rate applied to future earnings
+- `discount_rate::Float64`: Annual discount rate applied to future earnings
     (default: `0.01`).
 
 # Returns
@@ -84,8 +102,8 @@ function calc_hca_cost(
         t_entry::Matrix{Float64},
         wage::Union{Float64, Matrix{Float64}, Nothing} = nothing,
         p_emp::Union{Float64, Vector{Float64}} = 0.8;
-        discount_rate::Real = 0.01
-)
+        discount_rate::Float64 = 0.01
+)::Matrix{Float64}
     n_age, n_sectors = size(n_recovered)
 
     for (name, m) in ((:n_dead, n_dead), (:t_ret, t_ret), (:t_entry, t_entry))
@@ -127,11 +145,11 @@ function calc_hca_cost(
     # subtract the sum up to (t_entry - 1) rather than t_entry, so that the
     # entry year itself (i = t_entry, undiscounted when t_entry = 0) is kept
     # rather than cancelled out by the subtraction
-    discount = get_discount_sum.(t_ret + t_entry, discount_rate) -
+    discount = get_discount_sum.(t_ret .+ t_entry, discount_rate) .-
                get_discount_sum.(t_entry .- 1.0, discount_rate)
 
     loss_disab = lt .* discount
-    loss_death = wage .* n_dead .* discount
+    loss_death = wage .* p_emp .* n_dead .* discount
 
     return loss_disab + loss_death
 end
@@ -145,9 +163,10 @@ Calculate the present-value cost of infection-related disability and death
 using the Friction Cost Approach (FCA).
 
 The FCA only values output lost during the period needed to replace a worker
-(`t_replacement`). Costs are discounted over `t_replacement`
-rather than to retirement, and `n_recovered` and `n_dead` are expected to
-hold only current workers. Only a proportion of disabled workers is expected to
+(`t_replacement`). Costs are discounted over a window of `t_replacement + 1`
+years — the current year, plus `t_replacement` further years — rather than
+to retirement, and `n_recovered` and `n_dead` are expected to hold only
+current workers. Only a proportion of disabled workers is expected to
 require replacement, while all deaths are assumed to require replacement.
 
 # Arguments
@@ -164,16 +183,18 @@ require replacement, while all deaths are assumed to require replacement.
 - `p_disab_replaced::Vector{Float64}`: Proportion of long-term disabled
     workers who are assumed to be replaced, by age group (length `n_age`).
 - `t_replacement::Union{Float64, Vector{Float64}}`: Time in years taken to
-    replace a worker. May be a single value applied to all age groups or a
-    vector by age group (length `n_age`).
-- `wage::Union{Matrix{Float64}, Nothing}`: Annual wage, by age group and
-    economic sector, of size `(n_age, n_sectors)`. If `nothing` (default),
-    losses are computed as a proportion of wage (`wage` is treated as
-    `1.0`) rather than in currency units.
+    replace a worker; the discounted window spans `t_replacement + 1` years
+    in total (see above). May be a single value applied to all age groups
+    or a vector by age group (length `n_age`).
+- `wage::Union{Float64, Matrix{Float64}, Nothing}`: Annual wage, by age
+    group and economic sector, of size `(n_age, n_sectors)`. A scalar
+    applies the same wage to every age group and sector. If `nothing`
+    (default), losses are computed as a proportion of wage (`wage` is
+    treated as `1.0`) rather than in currency units.
 - `p_emp::Union{Float64, Vector{Float64}}`: Probability of employment given
     participation in the labour force. May be a single value applied to all
     age groups or a vector by age group (length `n_age`) (default: `0.8`).
-- `discount_rate::Real`: Annual discount rate applied to future earnings
+- `discount_rate::Float64`: Annual discount rate applied to future earnings
     (default: `0.01`).
 
 # Returns
@@ -196,8 +217,8 @@ function calc_fca_cost(
         t_replacement::Union{Float64, Vector{Float64}},
         wage::Union{Float64, Matrix{Float64}, Nothing} = nothing,
         p_emp::Union{Float64, Vector{Float64}} = 0.8;
-        discount_rate::Real = 0.01
-)
+        discount_rate::Float64 = 0.01
+)::Matrix{Float64}
     n_age, n_sectors = size(n_recovered)
 
     if size(n_dead) != (n_age, n_sectors)
