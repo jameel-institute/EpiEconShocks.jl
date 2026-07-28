@@ -140,7 +140,7 @@ end
     t_entry = zeros(n_age, n_sectors) # no non-working (future) age groups
     p_disab_replaced = ones(n_age) # every disabled worker is replaced
     wage = fill(100.0, n_age, n_sectors)
-    p_emp = 0.8
+    p_emp = 1.0
     r = 0.03
 
     result_hca = calc_hca_cost(

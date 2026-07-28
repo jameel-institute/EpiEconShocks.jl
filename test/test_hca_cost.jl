@@ -22,7 +22,7 @@
     )
     val_no_discounting = calc_hca_cost(
         n_recovered, n_dead, p_disab, p_lab_redn, t_ret, t_entry,
-        wage, p_emp; discount_rate = 1e-12
+        wage, p_emp; discount_rate = 0.0
     )
 
     @test isa(result, Matrix{Float64})
@@ -35,7 +35,7 @@
     discount = manual_discount_sum.(t_ret, r)
     pop_disab = n_recovered .* p_disab
     lt = wage .* p_emp .* pop_disab .* p_lab_redn
-    expected = lt .* discount + wage .* n_dead .* discount
+    expected = lt .* discount + wage .* p_emp .* n_dead .* discount
     @test result ≈ expected
 end
 

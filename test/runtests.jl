@@ -20,4 +20,5 @@ using Test
     # tests for LtCosts
     include("test_hca_cost.jl")
     include("test_fca_cost.jl")
+    include("test_check_bounds.jl")
 end
