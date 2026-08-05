@@ -104,6 +104,45 @@ calc_fca_cost(
 )
 ```
 
+## Sector heterogeneity
+
+The examples above vary ``\phi`` (`p_disab`), ``\omega`` (`p_lab_redn`), and ``e`` (`p_emp`) — and, for `calc_fca_cost`, ``\rho`` (`p_disab_replaced`) — by age group only, passing each as a `Vector{Float64}` of length `n_age`.
+
+These parameters may instead vary by economic sector as well as age group, by passing a `Matrix{Float64}` of size `(n_age, n_sectors)` in place of the vector.
+This is useful, for example, when a manual-labour sector is assumed to carry a higher probability of long-term disability than an office-based sector, for workers of the same age.
+
+```@example hca_sector
+using EpiEconShocks
+
+n_age = 8;
+n_sectors = 2; # e.g. "office" and "manual_labour"
+
+recovered = ones(n_age, n_sectors);
+deaths = copy(recovered) .* 0.02;
+
+p_lab_redn = repeat([0.2, 0.3, 0.4, 0.5], 2);
+p_emp = 0.8;
+wage = 1.0;
+
+t_entry = ones(n_age, n_sectors) .* [18, 15, 12, 1, 0, 0, 0, 0];
+t_ret = ones(n_age, n_sectors) .* [50, 50, 50, 50, 40, 25, 15, 5];
+
+# age-varying probability of disability, doubled in the manual-labour sector
+p_disab_age = collect(1:1:8) ./ 100.0;
+p_disab_sector = hcat(p_disab_age, p_disab_age .* 2);
+
+calc_hca_cost(
+    recovered, deaths, p_disab_sector, p_lab_redn, t_ret, t_entry, wage, p_emp;
+    discount_rate = 0.03
+)
+```
+
+Vector and matrix parameters can be freely mixed within a single call: `p_disab` above varies by age and sector, while `p_lab_redn` and `p_emp` continue to vary by age only.
+The same applies to `calc_fca_cost`, including its additional `p_disab_replaced` parameter.
+
+`n_recovered`, `n_dead`, `t_ret`, `t_entry`, `t_replacement`, and `wage` are unaffected by this and continue to be specified as before (see the function docstrings).
+
+
 ## Modelling parameter uncertainty
 
 ### Uncertainty in fixed parameters
@@ -167,9 +206,9 @@ The resulting age- and sector-specific summary statistics can be used to create 
 
 The human capital method estimates the value of wages forgone due to the inability of disabled individuals to achieve full productivity in the labour market, and makes the following assumptions for age group ``j`` and economic sector ``k`` at time ``\tau``.
 
-- A proportion ``phi_j \in [0, 1]`` of individuals are recovered from infection and living with lifelong disability;
-- A proportion ``e_{j} \in [0, 1]`` are employed; the probability of employment may be age-group specific but is constant over time;
-- The labour productivity of disabled and employed individuals is scaled by ``\omega_j``;
+- A proportion ``\phi_{j,k} \in [0, 1]`` of individuals are recovered from infection and living with lifelong disability;
+- A proportion ``e_{j,k} \in [0, 1]`` are employed; the probability of employment may be age- and sector-specific but is constant over time;
+- The labour productivity of disabled and employed individuals is scaled by ``\omega_{j,k}``;
 - The sector- and age-specific individual annual wage in real terms is ``W_{j,k}``, which is assumed to be constant over time;
 - Each age group has ``t^{\text{ret}}`` years of remaining employment after ``t^{\text{entry}}`` years until entry into the labour market, and ``t^{\text{ret}} = a^{\text{ret}} - a_j``, and ``t^{\text{entry}} = a^{\text{entry}} - a_j``, where ``a^{\text{ret}}`` is the age of retirement, ``a^{\text{entry}}`` is the age of labour market entry, and ``a_j`` is the representative age of each group;
 - The discount rate for the present value of future wages is ``r``.
@@ -177,7 +216,7 @@ The human capital method estimates the value of wages forgone due to the inabili
 The present value of future productivity losses from both current and future workers' disability is:
 
 ```math
-V^{W+C} = \sum_{j \in J} \sum_{k} Z_{j,k} \sum_{\tau = t^{\text{entry}}}^{t^{\text{entry}} + t^{\text{ret}}} \frac{e_j W_{j,k,\tau} \omega_j}{(1 + r)^\tau}
+V^{W+C} = \sum_{j \in J} \sum_{k} Z_{j,k} \sum_{\tau = t^{\text{entry}}}^{t^{\text{entry}} + t^{\text{ret}}} \frac{e_{j,k} W_{j,k,\tau} \omega_{j,k}}{(1 + r)^\tau}
 ```
 
 Current workers may be considered to have a time until entry of zero, while future workers should have positive non-zero entry delays.
@@ -185,7 +224,7 @@ Current workers may be considered to have a time until entry of zero, while futu
 The present value of future productivity losses due to premature deaths from infection at all ages is similar to that for disabled workers, except it removes productivity scaling and probability of being removed from the workforce (which is assumed 1.0 for deaths).
 
 ```math
-V^D = \sum_{j \in J} \sum_{k} \dot D_{j,k} \sum_{\tau = t^{\text{entry}}}^{t^{\text{entry}} + t^{\text{ret}}} \frac{e_j W_{j,k,\tau}}{(1 + r)^\tau}
+V^D = \sum_{j \in J} \sum_{k} \dot D_{j,k} \sum_{\tau = t^{\text{entry}}}^{t^{\text{entry}} + t^{\text{ret}}} \frac{e_{j,k} W_{j,k,\tau}}{(1 + r)^\tau}
 ```
 
 The total present value of losses is then ``V^{W+C} + V^D``.
@@ -194,18 +233,18 @@ The total present value of losses is then ``V^{W+C} + V^D``.
 
 The friction cost method estimates the value of wages forgone due to the delay in replacing disabled and dead individuals in the labour market, and makes the following assumptions for age group ``j`` and economic sector ``k`` at time ``\tau``.
 
-- A proportion ``phi_j \in [0, 1]`` of individuals are recovered from infection and living with lifelong disability;
-- A proportion ``e_{j} \in [0, 1]`` are employed; the probability of employment may be age-group specific but is constant over time;
-- The labour productivity of disabled and employed individuals is scaled by ``\omega_j \in [0, 1]``;
+- A proportion ``\phi_{j,k} \in [0, 1]`` of individuals are recovered from infection and living with lifelong disability;
+- A proportion ``e_{j,k} \in [0, 1]`` are employed; the probability of employment may be age- and sector-specific but is constant over time;
+- The labour productivity of disabled and employed individuals is scaled by ``\omega_{j,k} \in [0, 1]``;
 - The sector- and age-specific individual annual wage in real terms is ``W_{j,k}``, which is assumed to be constant over time``;
 - Each age group has a friction period ``d_{j}`` years needed to replace an individual in that age group; this may also be a single value applied to all age groups;
-- The proportion of workers in each age group that need replacement is ``\rho_{j}``;
+- The proportion of workers in each age group and sector that need replacement is ``\rho_{j,k}``;
 - The discount rate for the present value of future wages is ``r``.
 
 The present value of future productivity losses from both current and future workers' disability is:
 
 ```math
-F^W = \sum_{j \in J} \sum_{k} Z_{j,k} \rho_{j} \sum_{\tau = 0}^{d_j} \frac{e_j W_{j,k,\tau} \omega_j}{(1 + r)^\tau}
+F^W = \sum_{j \in J} \sum_{k} Z_{j,k} \rho_{j,k} \sum_{\tau = 0}^{d_j} \frac{e_{j,k} W_{j,k,\tau} \omega_{j,k}}{(1 + r)^\tau}
 ```
 
 Current workers may be considered to have a time until entry of zero, while future workers should have positive non-zero entry delays.
@@ -213,7 +252,7 @@ Current workers may be considered to have a time until entry of zero, while futu
 The present value of future productivity losses due to premature deaths from infection at all ages is similar to that for disabled workers, except it removes productivity scaling and probability of being removed from the workforce (which is assumed 1.0 for deaths).
 
 ```math
-F^D = \sum_{j \in J} \sum_{k} \dot D_{j,k} \sum_{\tau = 0}^{d_j} \frac{e_j W_{j,k,\tau}}{(1 + r)^\tau}
+F^D = \sum_{j \in J} \sum_{k} \dot D_{j,k} \sum_{\tau = 0}^{d_j} \frac{e_{j,k} W_{j,k,\tau}}{(1 + r)^\tau}
 ```
 
 The total present value of losses is then ``F^W + F^D``.
