@@ -104,11 +104,13 @@ end
     )
     @test result_mat ≈ result_vec
 
-    # genuine sector variation in p_disab propagates to the output
+    # sector-only variation in p_disab propagates to the output
     p_disab_sector = [0.1 0.2 0.3; 0.1 0.2 0.3]
     result_sector = calc_hca_cost(
-        n_recovered, n_dead, p_disab_sector, p_lab_redn_vec, t_ret, t_entry
+        fill(10.0, 1, 3), zeros(1, 3), [0.1 0.2 0.3], [0.5],
+        fill(20.0, 1, 3), zeros(1, 3)
     )
+
     @test result_sector[1, 1] < result_sector[1, 2] < result_sector[1, 3]
 end
 
