@@ -197,15 +197,15 @@ The friction cost method estimates the value of wages forgone due to the delay i
 - A proportion ``phi_j \in [0, 1]`` of individuals are recovered from infection and living with lifelong disability;
 - A proportion ``e_{j} \in [0, 1]`` are employed; the probability of employment may be age-group specific but is constant over time;
 - The labour productivity of disabled and employed individuals is scaled by ``\omega_j \in [0, 1]``;
-- The sector- and age-specific individual annual wage in real terms is ``W_{j,k}, which is assumed to be constant over time``;
+- The sector- and age-specific individual annual wage in real terms is ``W_{j,k}``, which is assumed to be constant over time``;
 - Each age group has a friction period ``d_{j}`` years needed to replace an individual in that age group; this may also be a single value applied to all age groups;
-- The proportion of workers in each age group and economic sector that are replaced is ``\rho_{j,k}``;
+- The proportion of workers in each age group that need replacement is ``\rho_{j}``;
 - The discount rate for the present value of future wages is ``r``.
 
 The present value of future productivity losses from both current and future workers' disability is:
 
 ```math
-F^W = \sum_{j \in J} \sum_{k} Z_{j,k} \rho_{j,k} \sum_{\tau = 0}^{d_j} \frac{e_j W_{j,k,\tau} \omega_j}{(1 + r)^\tau}
+F^W = \sum_{j \in J} \sum_{k} Z_{j,k} \rho_{j} \sum_{\tau = 0}^{d_j} \frac{e_j W_{j,k,\tau} \omega_j}{(1 + r)^\tau}
 ```
 
 Current workers may be considered to have a time until entry of zero, while future workers should have positive non-zero entry delays.
