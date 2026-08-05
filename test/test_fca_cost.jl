@@ -155,6 +155,39 @@ end
     @test result_fca ≈ result_hca
 end
 
+@testset "LtCosts.calc_fca_cost with matrix (sector-varying) parameters" begin
+    n_age, n_sectors = 2, 3
+    n_recovered = [10.0 20.0 30.0; 5.0 15.0 25.0]
+    n_dead = [1.0 2.0 3.0; 0.5 1.5 2.5]
+    p_disab_vec = [0.1, 0.2]
+    p_lab_redn_vec = [0.5, 0.3]
+    p_disab_replaced_vec = [0.6, 0.4]
+    t_replacement = [2.0, 1.0]
+    p_emp_vec = [0.8, 0.7]
+
+    result_vec = calc_fca_cost(
+        n_recovered, n_dead, p_disab_vec, p_lab_redn_vec, p_disab_replaced_vec,
+        t_replacement, nothing, p_emp_vec
+    )
+
+    # a matrix built by repeating a vector across sectors carries no
+    # additional information; mixing vector and matrix arguments must also
+    # compose correctly via broadcasting
+    result_mixed = calc_fca_cost(
+        n_recovered, n_dead, repeat(p_disab_vec, 1, n_sectors), p_lab_redn_vec,
+        repeat(p_disab_replaced_vec, 1, n_sectors), t_replacement,
+        nothing, p_emp_vec
+    )
+    @test result_mixed ≈ result_vec
+
+    # genuine sector variation in p_disab_replaced propagates to the output
+    result_sector = calc_fca_cost(
+        fill(10.0, 1, 3), zeros(1, 3), [0.2], [0.5], [0.0 0.5 1.0], [0.5]
+    )
+    @test result_sector[1, 1] ≈ 0.0
+    @test result_sector[1, 2] ≈ result_sector[1, 3] / 2
+end
+
 @testset "LtCosts.calc_fca_cost input validation" begin
     n_age, n_sectors = 2, 2
     n_recovered = fill(10.0, n_age, n_sectors)
@@ -179,6 +212,12 @@ end
     # p_disab wrong length
     @test_throws ArgumentError calc_fca_cost(
         n_recovered, n_dead, [0.1], p_lab_redn, p_disab_replaced, t_replacement
+    )
+
+    # p_disab wrong matrix shape
+    @test_throws ArgumentError calc_fca_cost(
+        n_recovered, n_dead, fill(0.1, n_age, n_sectors + 1), p_lab_redn,
+        p_disab_replaced, t_replacement
     )
 
     # p_lab_redn wrong length

@@ -35,6 +35,28 @@ function get_discount_sum(times::Real, r::Float64)::Float64
 end
 
 """
+    _validate_age_sector_param(name, v, n_age, n_sectors)
+
+Validate that `v` is either a scalar, a `Vector` of length `n_age` (variation
+by age only), or a `Matrix` of size `(n_age, n_sectors)` (variation by age and
+economic sector). Throws `ArgumentError` naming `name` on a size mismatch.
+"""
+function _validate_age_sector_param(
+        name::Symbol,
+        v::Union{Float64, AbstractVector{Float64}, AbstractMatrix{Float64}},
+        n_age::Int, n_sectors::Int
+)
+    if v isa AbstractVector && length(v) != n_age
+        throw(ArgumentError("`$name` must have length $n_age, got $(length(v))"))
+    elseif v isa AbstractMatrix && size(v) != (n_age, n_sectors)
+        throw(ArgumentError(
+            "`$name` must have size ($n_age, $n_sectors) when a matrix, or " *
+            "length $n_age when a vector, got size $(size(v))"
+        ))
+    end
+end
+
+"""
     calc_hca_cost(n_recovered, n_dead, p_disab, p_lab_redn, t_ret, t_entry,
                   wage = nothing, p_emp = 0.8; discount_rate = 0.01)
 
@@ -60,10 +82,17 @@ running from labour market entry (year `t_entry`) to retirement (year
     both current and future workers (see `t_entry`).
 - `n_dead::Matrix{Float64}`: Number of deaths by age group and economic
     sector, of size `(n_age, n_sectors)`.
-- `p_disab::Vector{Float64}`: Probability of long-term disability among
-    recovered, by age group (length `n_age`).
-- `p_lab_redn::Vector{Float64}`: Proportional reduction in labour
-    productivity for disabled individuals, by age group (length `n_age`).
+- `p_disab::Union{Vector{Float64}, Matrix{Float64}}`: Probability of
+    long-term disability among recovered. Either a `Vector` by age group
+    (length `n_age`), or a `Matrix` by age group and economic sector, of
+    size `(n_age, n_sectors)`, for sector-specific variation.
+- `p_lab_redn::Union{Vector{Float64}, Matrix{Float64}}`: Proportional
+    reduction in labour productivity for disabled individuals. Either a
+    `Vector` by age group (length `n_age`), or a `Matrix` by age group and
+    economic sector, of size `(n_age, n_sectors)`, for sector-specific
+    variation. Note that this is the proportional reduction, and not a
+    scaling factor. To represent a productivity of 80%, pass 0.2 for a
+    reduction of 20%.
 - `t_ret::Matrix{Float64}`: Number of years, after labour market entry, over
     which lost wages accrue; the discounted window spans `t_ret + 1` years
     in total (see above), by age group and economic sector, of size
@@ -76,9 +105,11 @@ running from labour market entry (year `t_entry`) to retirement (year
     applies the same wage to every age group and sector. If `nothing`
     (default), losses are computed as a proportion of wage (`wage` is
     treated as `1.0`) rather than in currency units.
-- `p_emp::Union{Float64, Vector{Float64}}`: Probability of employment given
-    participation in the labour force. May be a single value applied to all
-    age groups or a vector by age group (length `n_age`) (default: `0.8`).
+- `p_emp::Union{Float64, Vector{Float64}, Matrix{Float64}}`: Probability of
+    employment given participation in the labour force. May be a single
+    value applied to all age groups and sectors, a `Vector` by age group
+    (length `n_age`), or a `Matrix` by age group and economic sector, of
+    size `(n_age, n_sectors)` (default: `0.8`).
 - `discount_rate::Float64`: Annual discount rate applied to future earnings
     (default: `0.01`).
 
@@ -90,18 +121,18 @@ running from labour market entry (year `t_entry`) to retirement (year
 # Raises
 - `ArgumentError`: if `n_dead`, `t_ret`, `t_entry`, or `wage` (when
     provided) do not share the size `(n_age, n_sectors)` of `n_recovered`;
-    if `p_disab` or `p_lab_redn` do not have length `n_age`; or if `p_emp`
-    is a vector without length `n_age`.
+    if `p_disab`, `p_lab_redn`, or `p_emp` are a vector without length
+    `n_age`, or a matrix without size `(n_age, n_sectors)`.
 """
 function calc_hca_cost(
         n_recovered::Matrix{Float64},
         n_dead::Matrix{Float64},
-        p_disab::Vector{Float64},
-        p_lab_redn::Vector{Float64},
+        p_disab::Union{Vector{Float64}, Matrix{Float64}},
+        p_lab_redn::Union{Vector{Float64}, Matrix{Float64}},
         t_ret::Matrix{Float64},
         t_entry::Matrix{Float64},
         wage::Union{Float64, Matrix{Float64}, Nothing} = nothing,
-        p_emp::Union{Float64, Vector{Float64}} = 0.8;
+        p_emp::Union{Float64, Vector{Float64}, Matrix{Float64}} = 0.8;
         discount_rate::Float64 = 0.01
 )::Matrix{Float64}
     n_age, n_sectors = size(n_recovered)
@@ -114,21 +145,13 @@ function calc_hca_cost(
         end
     end
 
-    for (name, v) in ((:p_disab, p_disab), (:p_lab_redn, p_lab_redn))
-        if length(v) != n_age
-            throw(ArgumentError("`$name` must have length $n_age, got $(length(v))"))
-        end
+    for (name, v) in ((:p_disab, p_disab), (:p_lab_redn, p_lab_redn), (:p_emp, p_emp))
+        _validate_age_sector_param(name, v, n_age, n_sectors)
     end
 
     if !isnothing(wage) && !isa(wage, Float64) && size(wage) != (n_age, n_sectors)
         throw(ArgumentError(
             "`wage` must have size ($n_age, $n_sectors), got $(size(wage))"
-        ))
-    end
-
-    if p_emp isa AbstractVector && length(p_emp) != n_age
-        throw(ArgumentError(
-            "`p_emp` must have length $n_age, got $(length(p_emp))"
         ))
     end
 
@@ -176,12 +199,22 @@ require replacement, while all deaths are assumed to require replacement.
 - `n_dead::Matrix{Float64}`: Number of deaths by age group and economic
     sector, of size `(n_age, n_sectors)`. Age groups should hold only
     current workers.
-- `p_disab::Vector{Float64}`: Probability of long-term disability among
-    recovered, by age group (length `n_age`).
-- `p_lab_redn::Vector{Float64}`: Proportional reduction in labour
-    productivity for disabled individuals, by age group (length `n_age`).
-- `p_disab_replaced::Vector{Float64}`: Proportion of long-term disabled
-    workers who are assumed to be replaced, by age group (length `n_age`).
+- `p_disab::Union{Vector{Float64}, Matrix{Float64}}`: Probability of
+    long-term disability among recovered. Either a `Vector` by age group
+    (length `n_age`), or a `Matrix` by age group and economic sector, of
+    size `(n_age, n_sectors)`, for sector-specific variation.
+- `p_lab_redn::Union{Vector{Float64}, Matrix{Float64}}`: Proportional
+    reduction in labour productivity for disabled individuals. Either a
+    `Vector` by age group (length `n_age`), or a `Matrix` by age group and
+    economic sector, of size `(n_age, n_sectors)`, for sector-specific
+    variation. Note that this is the proportional reduction, and not a
+    scaling factor. To represent a productivity of 80%, pass 0.2 for a
+    reduction of 20%.
+- `p_disab_replaced::Union{Vector{Float64}, Matrix{Float64}}`: Proportion
+    of long-term disabled workers who are assumed to be replaced. Either a
+    `Vector` by age group (length `n_age`), or a `Matrix` by age group and
+    economic sector, of size `(n_age, n_sectors)`, for sector-specific
+    variation.
 - `t_replacement::Union{Float64, Vector{Float64}}`: Time in years taken to
     replace a worker; the discounted window spans `t_replacement + 1` years
     in total (see above). May be a single value applied to all age groups
@@ -191,9 +224,11 @@ require replacement, while all deaths are assumed to require replacement.
     applies the same wage to every age group and sector. If `nothing`
     (default), losses are computed as a proportion of wage (`wage` is
     treated as `1.0`) rather than in currency units.
-- `p_emp::Union{Float64, Vector{Float64}}`: Probability of employment given
-    participation in the labour force. May be a single value applied to all
-    age groups or a vector by age group (length `n_age`) (default: `0.8`).
+- `p_emp::Union{Float64, Vector{Float64}, Matrix{Float64}}`: Probability of
+    employment given participation in the labour force. May be a single
+    value applied to all age groups and sectors, a `Vector` by age group
+    (length `n_age`), or a `Matrix` by age group and economic sector, of
+    size `(n_age, n_sectors)` (default: `0.8`).
 - `discount_rate::Float64`: Annual discount rate applied to future earnings
     (default: `0.01`).
 
@@ -204,19 +239,20 @@ require replacement, while all deaths are assumed to require replacement.
 
 # Raises
 - `ArgumentError`: if `n_dead` or `wage` (when provided) do not share the
-    size `(n_age, n_sectors)` of `n_recovered`; if `p_disab`, `p_lab_redn`,
-    `p_disab_replaced`, or `t_replacement` (when a vector) do not have
-    length `n_age`; or if `p_emp` is a vector without length `n_age`.
+    size `(n_age, n_sectors)` of `n_recovered`; if `t_replacement` (when a
+    vector) does not have length `n_age`; or if `p_disab`, `p_lab_redn`,
+    `p_disab_replaced`, or `p_emp` are a vector without length `n_age`, or a
+    matrix without size `(n_age, n_sectors)`.
 """
 function calc_fca_cost(
         n_recovered::Matrix{Float64},
         n_dead::Matrix{Float64},
-        p_disab::Vector{Float64},
-        p_lab_redn::Vector{Float64},
-        p_disab_replaced::Vector{Float64},
+        p_disab::Union{Vector{Float64}, Matrix{Float64}},
+        p_lab_redn::Union{Vector{Float64}, Matrix{Float64}},
+        p_disab_replaced::Union{Vector{Float64}, Matrix{Float64}},
         t_replacement::Union{Float64, Vector{Float64}},
         wage::Union{Float64, Matrix{Float64}, Nothing} = nothing,
-        p_emp::Union{Float64, Vector{Float64}} = 0.8;
+        p_emp::Union{Float64, Vector{Float64}, Matrix{Float64}} = 0.8;
         discount_rate::Float64 = 0.01
 )::Matrix{Float64}
     n_age, n_sectors = size(n_recovered)
@@ -229,10 +265,8 @@ function calc_fca_cost(
 
     for (name, v) in (
         (:p_disab, p_disab), (:p_lab_redn, p_lab_redn),
-        (:p_disab_replaced, p_disab_replaced))
-        if length(v) != n_age
-            throw(ArgumentError("`$name` must have length $n_age, got $(length(v))"))
-        end
+        (:p_disab_replaced, p_disab_replaced), (:p_emp, p_emp))
+        _validate_age_sector_param(name, v, n_age, n_sectors)
     end
 
     if t_replacement isa AbstractVector && length(t_replacement) != n_age
@@ -244,12 +278,6 @@ function calc_fca_cost(
     if !isnothing(wage) && !isa(wage, Float64) && size(wage) != (n_age, n_sectors)
         throw(ArgumentError(
             "`wage` must have size ($n_age, $n_sectors), got $(size(wage))"
-        ))
-    end
-
-    if p_emp isa AbstractVector && length(p_emp) != n_age
-        throw(ArgumentError(
-            "`p_emp` must have length $n_age, got $(length(p_emp))"
         ))
     end
 

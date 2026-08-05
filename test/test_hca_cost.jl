@@ -79,6 +79,39 @@ end
     @test result_vec ≈ result_scalar
 end
 
+@testset "LtCosts.calc_hca_cost with matrix (sector-varying) parameters" begin
+    n_age, n_sectors = 2, 3
+    n_recovered = [10.0 20.0 30.0; 5.0 15.0 25.0]
+    n_dead = [1.0 2.0 3.0; 0.5 1.5 2.5]
+    p_disab_vec = [0.1, 0.2]
+    p_lab_redn_vec = [0.5, 0.3]
+    t_ret = repeat([20.0, 10.0], 1, n_sectors)
+    t_entry = zeros(n_age, n_sectors)
+    p_emp_vec = [0.8, 0.7]
+
+    result_vec = calc_hca_cost(
+        n_recovered, n_dead, p_disab_vec, p_lab_redn_vec, t_ret, t_entry,
+        nothing, p_emp_vec
+    )
+
+    # a matrix built by repeating a vector across sectors carries no
+    # additional information, so results must match exactly regardless of
+    # which parameters are passed as matrices
+    result_mat = calc_hca_cost(
+        n_recovered, n_dead, repeat(p_disab_vec, 1, n_sectors),
+        repeat(p_lab_redn_vec, 1, n_sectors), t_ret, t_entry,
+        nothing, repeat(p_emp_vec, 1, n_sectors)
+    )
+    @test result_mat ≈ result_vec
+
+    # genuine sector variation in p_disab propagates to the output
+    p_disab_sector = [0.1 0.2 0.3; 0.1 0.2 0.3]
+    result_sector = calc_hca_cost(
+        n_recovered, n_dead, p_disab_sector, p_lab_redn_vec, t_ret, t_entry
+    )
+    @test result_sector[1, 1] < result_sector[1, 2] < result_sector[1, 3]
+end
+
 @testset "LtCosts.calc_hca_cost input validation" begin
     n_age, n_sectors = 2, 2
     n_recovered = fill(10.0, n_age, n_sectors)
@@ -106,6 +139,11 @@ end
     # p_disab wrong length
     @test_throws ArgumentError calc_hca_cost(
         n_recovered, n_dead, [0.1], p_lab_redn, t_ret, t_entry
+    )
+
+    # p_disab wrong matrix shape
+    @test_throws ArgumentError calc_hca_cost(
+        n_recovered, n_dead, fill(0.1, n_age, n_sectors + 1), p_lab_redn, t_ret, t_entry
     )
 
     # p_lab_redn wrong length
