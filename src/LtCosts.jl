@@ -39,7 +39,8 @@ end
 
 Validate that `v` is either a scalar, a `Vector` of length `n_age` (variation
 by age only), or a `Matrix` of size `(n_age, n_sectors)` (variation by age and
-economic sector). Throws `ArgumentError` naming `name` on a size mismatch.
+economic sector), and that all of its values lie in `[0.0, 1.0]`. Throws
+`ArgumentError` naming `name` on a size mismatch or an out-of-range value.
 """
 function _validate_age_sector_param(
         name::Symbol,
@@ -53,6 +54,26 @@ function _validate_age_sector_param(
             "`$name` must have size ($n_age, $n_sectors) when a matrix, or " *
             "length $n_age when a vector, got size $(size(v))"
         ))
+    end
+
+    if !all(x -> 0.0 <= x <= 1.0, v)
+        throw(ArgumentError("`$name` must have all values in [0.0, 1.0]"))
+    end
+end
+
+"""
+    _validate_time(name, v)
+
+Validate that all values in `v` (a scalar, `Vector`, or `Matrix`) are
+non-negative and finite (not `Inf`, `-Inf`, or `NaN`). Throws `ArgumentError`
+naming `name` otherwise.
+"""
+function _validate_time(
+        name::Symbol,
+        v::Union{Float64, AbstractVector{Float64}, AbstractMatrix{Float64}}
+)
+    if !all(x -> isfinite(x) && x >= 0.0, v)
+        throw(ArgumentError("`$name` must be non-negative and finite"))
     end
 end
 
@@ -122,7 +143,9 @@ running from labour market entry (year `t_entry`) to retirement (year
 - `ArgumentError`: if `n_dead`, `t_ret`, `t_entry`, or `wage` (when
     provided) do not share the size `(n_age, n_sectors)` of `n_recovered`;
     if `p_disab`, `p_lab_redn`, or `p_emp` are a vector without length
-    `n_age`, or a matrix without size `(n_age, n_sectors)`.
+    `n_age`, a matrix without size `(n_age, n_sectors)`, or contain a value
+    outside `[0.0, 1.0]`; or if `t_ret` or `t_entry` contain a negative or
+    non-finite value.
 """
 function calc_hca_cost(
         n_recovered::Matrix{Float64},
@@ -143,6 +166,10 @@ function calc_hca_cost(
                 "`$name` must have size ($n_age, $n_sectors), got $(size(m))"
             ))
         end
+    end
+
+    for (name, m) in ((:t_ret, t_ret), (:t_entry, t_entry))
+        _validate_time(name, m)
     end
 
     for (name, v) in ((:p_disab, p_disab), (:p_lab_redn, p_lab_redn), (:p_emp, p_emp))
@@ -240,9 +267,10 @@ require replacement, while all deaths are assumed to require replacement.
 # Raises
 - `ArgumentError`: if `n_dead` or `wage` (when provided) do not share the
     size `(n_age, n_sectors)` of `n_recovered`; if `t_replacement` (when a
-    vector) does not have length `n_age`; or if `p_disab`, `p_lab_redn`,
-    `p_disab_replaced`, or `p_emp` are a vector without length `n_age`, or a
-    matrix without size `(n_age, n_sectors)`.
+    vector) does not have length `n_age`, or contains a negative or
+    non-finite value; or if `p_disab`, `p_lab_redn`, `p_disab_replaced`, or
+    `p_emp` are a vector without length `n_age`, a matrix without size
+    `(n_age, n_sectors)`, or contain a value outside `[0.0, 1.0]`.
 """
 function calc_fca_cost(
         n_recovered::Matrix{Float64},
@@ -275,6 +303,8 @@ function calc_fca_cost(
         ))
     end
 
+    _validate_time(:t_replacement, t_replacement)
+
     if !isnothing(wage) && !isa(wage, Float64) && size(wage) != (n_age, n_sectors)
         throw(ArgumentError(
             "`wage` must have size ($n_age, $n_sectors), got $(size(wage))"
@@ -294,7 +324,7 @@ function calc_fca_cost(
     discount = get_discount_sum.(t_replacement, discount_rate)
 
     loss_disab = lt .* discount
-    loss_death = wage .* n_dead .* discount
+    loss_death = wage .* p_emp .* n_dead .* discount
 
     return loss_disab + loss_death
 end
