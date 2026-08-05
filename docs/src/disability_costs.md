@@ -247,8 +247,6 @@ The present value of future productivity losses from both current and future wor
 F^W = \sum_{j \in J} \sum_{k} Z_{j,k} \rho_{j,k} \sum_{\tau = 0}^{d_j} \frac{e_{j,k} W_{j,k,\tau} \omega_{j,k}}{(1 + r)^\tau}
 ```
 
-Current workers may be considered to have a time until entry of zero, while future workers should have positive non-zero entry delays.
-
 The present value of future productivity losses due to premature deaths from infection at all ages is similar to that for disabled workers, except it removes productivity scaling and probability of being removed from the workforce (which is assumed 1.0 for deaths).
 
 ```math

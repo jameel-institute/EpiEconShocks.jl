@@ -161,4 +161,19 @@ end
     @test_throws ArgumentError calc_hca_cost(
         n_recovered, n_dead, p_disab, p_lab_redn, t_ret, t_entry, nothing, [0.8]
     )
+
+    # p_disab value out of [0.0, 1.0]
+    @test_throws ArgumentError calc_hca_cost(
+        n_recovered, n_dead, [0.1, 1.1], p_lab_redn, t_ret, t_entry
+    )
+
+    # t_ret negative value
+    @test_throws ArgumentError calc_hca_cost(
+        n_recovered, n_dead, p_disab, p_lab_redn, fill(-1.0, n_age, n_sectors), t_entry
+    )
+
+    # t_entry non-finite value
+    @test_throws ArgumentError calc_hca_cost(
+        n_recovered, n_dead, p_disab, p_lab_redn, t_ret, fill(Inf, n_age, n_sectors)
+    )
 end

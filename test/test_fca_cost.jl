@@ -35,7 +35,7 @@
     discount = manual_discount_sum.(t_replacement, r)
     pop_disab = n_recovered .* p_disab .* p_disab_replaced
     lt = wage .* p_emp .* pop_disab .* p_lab_redn
-    expected = lt .* discount + wage .* n_dead .* discount
+    expected = lt .* discount + wage .* p_emp .* n_dead .* discount
     @test result ≈ expected
 end
 
@@ -240,5 +240,20 @@ end
     @test_throws ArgumentError calc_fca_cost(
         n_recovered, n_dead, p_disab, p_lab_redn, p_disab_replaced, t_replacement,
         nothing, [0.8]
+    )
+
+    # p_disab_replaced value out of [0.0, 1.0]
+    @test_throws ArgumentError calc_fca_cost(
+        n_recovered, n_dead, p_disab, p_lab_redn, [-0.1, 0.5], t_replacement
+    )
+
+    # t_replacement negative value
+    @test_throws ArgumentError calc_fca_cost(
+        n_recovered, n_dead, p_disab, p_lab_redn, p_disab_replaced, fill(-0.5, n_age)
+    )
+
+    # t_replacement non-finite value
+    @test_throws ArgumentError calc_fca_cost(
+        n_recovered, n_dead, p_disab, p_lab_redn, p_disab_replaced, NaN
     )
 end
