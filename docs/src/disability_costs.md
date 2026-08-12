@@ -26,7 +26,8 @@ using EpiEconShocks
 # assume age groups, and unit pop sizes for illustrative purposes
 n_age = 8;
 n_sectors = 10;
-recovered = ones(n_age, n_sectors);
+# assume 100,000 recovered individuals for this example, per sector and age
+recovered = 1e5 .* ones(n_age, n_sectors);
 deaths = copy(recovered) .* 0.02;
 
 # assume age-varying probability of disability
@@ -78,7 +79,8 @@ using EpiEconShocks
 # assume age groups, and unit pop sizes for illustrative purposes
 n_age = 4;
 n_sectors = 10;
-recovered = ones(n_age, n_sectors);
+# assume 100,000 recovered individuals for this example, per sector and age
+recovered = 1e5 .* ones(n_age, n_sectors);
 deaths = copy(recovered) .* 0.02;
 
 # assume age-varying probability of disability
@@ -117,7 +119,8 @@ using EpiEconShocks
 n_age = 8;
 n_sectors = 2; # e.g. "office" and "manual_labour"
 
-recovered = ones(n_age, n_sectors);
+# assume 100,000 recovered individuals for this example, per sector and age
+recovered = 1e5 .* ones(n_age, n_sectors);
 deaths = copy(recovered) .* 0.02;
 
 p_lab_redn = repeat([0.2, 0.3, 0.4, 0.5], 2);
@@ -152,7 +155,8 @@ using Distributions, EpiEconShocks, Random, Statistics
 # assume age groups, and unit pop sizes for illustrative purposes
 n_age = 8;
 n_sectors = 10;
-recovered = ones(n_age, n_sectors);
+# assume 100,000 recovered individuals for this example, per sector and age
+recovered = 1e5 .* ones(n_age, n_sectors);
 deaths = copy(recovered) .* 0.02;
 
 # assume age-varying productivity reduction
@@ -223,7 +227,8 @@ using EpiEconShocks
 
 n_age = 2; # only modelling future and current workers
 n_sectors = 1;
-recovered = ones(n_age, n_sectors);
+# assume 100,000 recovered individuals for this example, per sector and age
+recovered = 1e5 .* ones(n_age, n_sectors);
 deaths = copy(recovered) .* 0.02;
 
 # assume a uniform productivity reduction
