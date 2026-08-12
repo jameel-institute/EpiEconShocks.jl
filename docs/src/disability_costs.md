@@ -36,8 +36,8 @@ p_lab_redn = repeat([0.2, 0.3, 0.4, 0.5], 2);
 # assume a uniform probability of employment
 p_emp = 0.8;
 
-# assume wages are unity to show losses in terms of current wages
-wage = 1.0;
+# assume median wage uniform over age and economic sector
+wage = 40e3;
 ```
 
 ### Varying labour-market entry and exit
@@ -94,8 +94,8 @@ p_emp = 0.8;
 # assume a time for replacement, by age group
 t_replacement = [0.25, 0.5, 0.67, 0.25];
 
-# assume wages are unity to show losses in terms of current wages
-wage = 1.0;
+# assume median wage uniform over age and economic sector
+wage = 40e3;
 
 # calculate loss
 calc_fca_cost(
@@ -122,7 +122,7 @@ deaths = copy(recovered) .* 0.02;
 
 p_lab_redn = repeat([0.2, 0.3, 0.4, 0.5], 2);
 p_emp = 0.8;
-wage = 1.0;
+wage = 40e3;
 
 t_entry = ones(n_age, n_sectors) .* [18, 15, 12, 1, 0, 0, 0, 0];
 t_ret = ones(n_age, n_sectors) .* [50, 50, 50, 50, 40, 25, 15, 5];
@@ -142,10 +142,7 @@ The same applies to `calc_fca_cost`, including its additional `p_disab_replaced`
 
 `n_recovered`, `n_dead`, `t_ret`, `t_entry`, `t_replacement`, and `wage` are unaffected by this and continue to be specified as before (see the function docstrings).
 
-
-## Modelling parameter uncertainty
-
-### Uncertainty in fixed parameters
+## Extension uncertainty in fixed parameters
 
 This example shows how to apply a disability cost function across a range of parameter values, using the probability of disability in the human capital method as an example.
 
@@ -164,8 +161,8 @@ p_lab_redn = repeat([0.2, 0.3, 0.4, 0.5], 2);
 # assume a uniform probability of employment
 p_emp = 0.8;
 
-# assume wages are unity; may be a matrix for age-sector specific wages
-wage = 1.0;
+# assume median wage uniform over age and economic sector
+wage = 40e3;
 
 # time to entry and exit
 t_entry = ones(n_age, n_sectors) .* [18, 15, 12, 1, 0, 0, 0, 0];
@@ -201,6 +198,68 @@ result_quantiles = mapslices(x -> quantile(x, [0.025, 0.975]), result; dims = 3)
 ```
 
 The resulting age- and sector-specific summary statistics can be used to create figures or tables.
+
+## Extension: Modelling reduced educational attainment
+
+Educational attainment for future workers (children) may be reduced by pandemic related disruptions, which include missed education due to infection and mitigation measures that result in lower efficacy of instruction.
+
+This can be included in the human capital method which values the productivity loss of future workers.
+
+The effect of reduced educational attainment may be assumed to have a scaling effect on wages.
+The wage expected to be attained will depend on the proportion of education missed relative to the pre-pandemic norm, and the education coefficient of wages (see [mincer1974](@citet)).
+
+```math
+    W^{1}_{j,k,\tau} = W^{0}_{j,k,\tau} e^{\left(-\beta^{\text{Edu}}\Delta \text{Edu}_j \right)}
+```
+
+Assuming a value of ``\beta^{\text{Edu}}`` of 0.04 following [ge2013](@citet), we can calculate the reduced expected wage due to lower educational attainment as shown in the following code snippet.
+We assume that the loss in educational attainment is 0.1 or 10% of the expected pre-pandemic attainment.
+
+First we set up the initial epidemic outcomes and population parameters.
+
+```@example edu_loss
+# set up initial population parameters
+using EpiEconShocks
+
+n_age = 2; # only modelling future and current workers
+n_sectors = 1;
+recovered = ones(n_age, n_sectors);
+deaths = copy(recovered) .* 0.02;
+
+# assume a uniform productivity reduction
+p_lab_redn = [0.2, 0.2];
+
+# assume a uniform probability of employment
+p_emp = 0.8;
+
+# uniform prob of disability
+p_disab = [0.2, 0.2];
+
+# assume median wage for both age groups
+wage = 40e3;
+
+# time to entry and exit
+t_entry = ones(n_age, n_sectors) .* [10, 0];
+t_ret = ones(n_age, n_sectors) .* [50, 25];
+```
+
+We calculate ``W^{1}_{j,k,\tau}`` for each age group.
+With only two age groups (future; ``j = 1`` and current workers; ``j = 2``), ``W^{1}_{1,k,\tau}`` is scaled only for ``j = 1``.
+
+**Note that** since current workers are not assumed to be affected, the corresponding values of ``\beta^{\text{Edu}}_j`` and ``\Delta \text{Edu}_j`` are 0.0 for ``j = 2``; they are specified only to satisfy the vectorised operation in Julia.
+
+```@example edu_loss
+wage = reshape(wage .* exp.([-0.04, 0.0] .* [0.1, 0.0]), n_age, n_sectors);
+```
+
+We can now pass the age-scaled wage array (in this case, a vector as values are uniform over sectors) to `calc_hca_costs`.
+
+```@example edu_loss
+calc_hca_cost(
+    recovered, deaths, p_disab, p_lab_redn, t_ret, t_entry, wage, p_emp;
+    discount_rate = 0.03
+)
+```
 
 ## Theory: Human capital approach
 
@@ -254,3 +313,8 @@ F^D = \sum_{j \in J} \sum_{k} \dot D_{j,k} \sum_{\tau = 0}^{d_j} \frac{e_{j,k} W
 ```
 
 The total present value of losses is then ``F^W + F^D``.
+
+## References
+
+```@bibliography
+```
