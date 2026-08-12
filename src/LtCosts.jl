@@ -18,6 +18,9 @@ wage loss) accruing over `times + 1` years, from the present (`i = 0`,
 undiscounted) out to `times` years in the future. `times` need not be an
 integer.
 
+The sum is expressed as ``\\frac{1 + r}{r} (1 - (1 + r))^{-(t + 1)}`` following
+the formula for the sum of a finite geometric series.
+
 # Arguments
 - `times::Real`: Upper index of the summation.
 - `r::Float64`: Discount rate. When `r` is approximately `0.0` the undiscounted
@@ -124,8 +127,8 @@ running from labour market entry (year `t_entry`) to retirement (year
 - `wage::Union{Float64, Matrix{Float64}, Nothing}`: Annual wage, by age
     group and economic sector, of size `(n_age, n_sectors)`. A scalar
     applies the same wage to every age group and sector. If `nothing`
-    (default), losses are computed as a proportion of wage (`wage` is
-    treated as `1.0`) rather than in currency units.
+    (default), losses are computed as a proportion of the per-capita annual wage
+    (`wage` is treated as `1.0`) rather than in currency units.
 - `p_emp::Union{Float64, Vector{Float64}, Matrix{Float64}}`: Probability of
     employment given participation in the labour force. May be a single
     value applied to all age groups and sectors, a `Vector` by age group
@@ -249,8 +252,8 @@ require replacement, while all deaths are assumed to require replacement.
 - `wage::Union{Float64, Matrix{Float64}, Nothing}`: Annual wage, by age
     group and economic sector, of size `(n_age, n_sectors)`. A scalar
     applies the same wage to every age group and sector. If `nothing`
-    (default), losses are computed as a proportion of wage (`wage` is
-    treated as `1.0`) rather than in currency units.
+    (default), losses are computed as a proportion of the per-capita annual wage
+    (`wage` is treated as `1.0`) rather than in currency units.
 - `p_emp::Union{Float64, Vector{Float64}, Matrix{Float64}}`: Probability of
     employment given participation in the labour force. May be a single
     value applied to all age groups and sectors, a `Vector` by age group
