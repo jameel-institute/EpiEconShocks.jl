@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Estimating costs of long-term disability · EpiEconShocks.jl</title><meta name="title" content="Estimating costs of long-term disability · EpiEconShocks.jl"/><meta property="og:title" content="Estimating costs of long-term disability · EpiEconShocks.jl"/><meta property="twitter:title" content="Estimating costs of long-term disability · EpiEconShocks.jl"/><meta name="description" content="Documentation for EpiEconShocks.jl."/><meta property="og:description" content="Documentation for EpiEconShocks.jl."/><meta property="twitter:description" content="Documentation for EpiEconShocks.jl."/><meta property="og:url" content="https://jameel-institute.github.io/EpiEconShocks.jl/disability_costs/"/><meta property="twitter:url" content="https://jameel-institute.github.io/EpiEconShocks.jl/disability_costs/"/><link rel="canonical" href="https://jameel-institute.github.io/EpiEconShocks.jl/disability_costs/"/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">EpiEconShocks.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li><span class="tocitem">Working with epi outputs</span><ul><li><a class="tocitem" href="../estim_lab_consump/">Estimating labour and consumption over an epidemic</a></li><li class="is-active"><a class="tocitem" href>Estimating costs of long-term disability</a><ul class="internal"><li><a class="tocitem" href="#Human-capital-method"><span>Human capital method</span></a></li><li><a class="tocitem" href="#Friction-cost-method"><span>Friction cost method</span></a></li><li><a class="tocitem" href="#Sector-heterogeneity"><span>Sector heterogeneity</span></a></li><li><a class="tocitem" href="#Extension-uncertainty-in-fixed-parameters"><span>Extension uncertainty in fixed parameters</span></a></li><li><a class="tocitem" href="#Extension:-Modelling-reduced-educational-attainment"><span>Extension: Modelling reduced educational attainment</span></a></li><li><a class="tocitem" href="#Theory:-Human-capital-approach"><span>Theory: Human capital approach</span></a></li><li><a class="tocitem" href="#Theory:-Friction-cost-approach"><span>Theory: Friction cost approach</span></a></li><li><a class="tocitem" href="#References"><span>References</span></a></li></ul></li></ul></li><li><span class="tocitem">Working with GTAP</span><ul><li><a class="tocitem" href="../setup/">Setting up a GTAP model</a></li><li><a class="tocitem" href="../daedalus/">Using epi model outputs with GTAP</a></li></ul></li><li><a class="tocitem" href="../pkg_index/">Index</a></li><li><a class="tocitem" href="../reference/">Function Reference</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Working with epi outputs</a></li><li class="is-active"><a href>Estimating costs of long-term disability</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Estimating costs of long-term disability</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/jameel-institute/EpiEconShocks.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/jameel-institute/EpiEconShocks.jl/blob/main/docs/src/disability_costs.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Estimating-the-long-term-disability-costs-of-an-epidemic"><a class="docs-heading-anchor" href="#Estimating-the-long-term-disability-costs-of-an-epidemic">Estimating the long-term disability costs of an epidemic</a><a id="Estimating-the-long-term-disability-costs-of-an-epidemic-1"></a><a class="docs-heading-anchor-permalink" href="#Estimating-the-long-term-disability-costs-of-an-epidemic" title="Permalink"></a></h1><p><em>EpiEconShocks.jl</em> can help to quantify the costs associated with wages lost due to infection-linked long-term disability or death due to an epidemic.</p><p>The package implements two approaches, a human capital (HC) approach and a friction cost (FC) approach.</p><h2 id="Human-capital-method"><a class="docs-heading-anchor" href="#Human-capital-method">Human capital method</a><a id="Human-capital-method-1"></a><a class="docs-heading-anchor-permalink" href="#Human-capital-method" title="Permalink"></a></h2><p>The human capital approach is implemented using the function <code>calc_hca_cost</code>.</p><p>The function accepts a matrix of the number of recovered individuals per age-group and economic sector, a similar matrix for age-and-sector deaths; it also requires the proportion of recovered who are disabled long-term in each age group, the proportional labour reduction for these individuals, the probability of employment at any time <span>$t$</span> (which may be age-specific), and the expected wage at current values per age and sector.</p><p>Users can also pass a discount rate, and specify the time until retirement of current workers, as well as the time until workforce entry and eventual retirement of the future workforce who may be affected by disability.</p><p>The example below shows how to use this function.</p><h3 id="Basic-setup-of-counts-and-proportions"><a class="docs-heading-anchor" href="#Basic-setup-of-counts-and-proportions">Basic setup of counts and proportions</a><a id="Basic-setup-of-counts-and-proportions-1"></a><a class="docs-heading-anchor-permalink" href="#Basic-setup-of-counts-and-proportions" title="Permalink"></a></h3><pre><code class="language-julia hljs">using EpiEconShocks
+
+# assume age groups, and unit pop sizes for illustrative purposes
+n_age = 8;
+n_sectors = 10;
+# assume 100,000 recovered individuals for this example, per sector and age
+recovered = 1e5 .* ones(n_age, n_sectors);
+deaths = copy(recovered) .* 0.02;
+
+# assume age-varying probability of disability
+p_disab = collect(1:1:8) ./ 100.0;
+p_lab_redn = repeat([0.2, 0.3, 0.4, 0.5], 2);
+
+# assume a uniform probability of employment
+p_emp = 0.8;
+
+# assume median wage uniform over age and economic sector
+wage = 40e3;</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">40000.0</code></pre><h3 id="Varying-labour-market-entry-and-exit"><a class="docs-heading-anchor" href="#Varying-labour-market-entry-and-exit">Varying labour-market entry and exit</a><a id="Varying-labour-market-entry-and-exit-1"></a><a class="docs-heading-anchor-permalink" href="#Varying-labour-market-entry-and-exit" title="Permalink"></a></h3><p><code>calc_hca_cost</code> allows specifying age and sector specific times of labour market entry and exit, so that the lost wages of current and future workers can both be estimated.</p><p>The function accepts matrices of the same dimensions as the number of recovered and dead for <code>t_entry</code> the time to labour market entry, and <code>t_ret</code> the time to labour market exit following entry. For current workers, the time to entry is zero.</p><pre><code class="language-julia hljs"># time to entry and exit
+t_entry = ones(n_age, n_sectors) .* [18, 15, 12, 1, 0, 0, 0, 0];
+t_ret = ones(n_age, n_sectors) .* [50, 50, 50, 50, 40, 25, 15, 5]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">8×10 Matrix{Float64}:
+ 50.0  50.0  50.0  50.0  50.0  50.0  50.0  50.0  50.0  50.0
+ 50.0  50.0  50.0  50.0  50.0  50.0  50.0  50.0  50.0  50.0
+ 50.0  50.0  50.0  50.0  50.0  50.0  50.0  50.0  50.0  50.0
+ 50.0  50.0  50.0  50.0  50.0  50.0  50.0  50.0  50.0  50.0
+ 40.0  40.0  40.0  40.0  40.0  40.0  40.0  40.0  40.0  40.0
+ 25.0  25.0  25.0  25.0  25.0  25.0  25.0  25.0  25.0  25.0
+ 15.0  15.0  15.0  15.0  15.0  15.0  15.0  15.0  15.0  15.0
+  5.0   5.0   5.0   5.0   5.0   5.0   5.0   5.0   5.0   5.0</code></pre><p>The net present value of total lost wages can be calculated by passing a discount rate.</p><pre><code class="language-julia hljs">calc_hca_cost(
+    recovered, deaths, p_disab, p_lab_redn, t_ret, t_entry, wage, p_emp;
+    discount_rate = 0.03
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">8×10 Matrix{Float64}:
+ 1.10534e9  1.10534e9  1.10534e9  …  1.10534e9  1.10534e9  1.10534e9
+ 1.42745e9  1.42745e9  1.42745e9     1.42745e9  1.42745e9  1.42745e9
+ 1.91977e9  1.91977e9  1.91977e9     1.91977e9  1.91977e9  1.91977e9
+ 3.32176e9  3.32176e9  3.32176e9     3.32176e9  3.32176e9  3.32176e9
+ 2.31502e9  2.31502e9  2.31502e9     2.31502e9  2.31502e9  2.31502e9
+ 2.23904e9  2.23904e9  2.23904e9  …  2.23904e9  2.23904e9  2.23904e9
+ 1.98727e9  1.98727e9  1.98727e9     1.98727e9  1.98727e9  1.98727e9
+ 1.0713e9   1.0713e9   1.0713e9      1.0713e9   1.0713e9   1.0713e9</code></pre><p>The output can be aggregated by age group or economic sector for further use.</p><h2 id="Friction-cost-method"><a class="docs-heading-anchor" href="#Friction-cost-method">Friction cost method</a><a id="Friction-cost-method-1"></a><a class="docs-heading-anchor-permalink" href="#Friction-cost-method" title="Permalink"></a></h2><p>The friction cost method is similar to the human capital method, but only considers wages lost during the time taken to replace a disabled or dead worker.</p><p>It does not account for the wages lost due to disability or death in the future workforce, as there is no present cost to replacing these individuals.</p><p><em>EpiEconShocks.jl</em> provides the function <code>calc_fca_cost</code> to get lost wages using the FC approach.</p><pre><code class="language-julia hljs">using EpiEconShocks
+
+# assume age groups, and unit pop sizes for illustrative purposes
+n_age = 4;
+n_sectors = 10;
+# assume 100,000 recovered individuals for this example, per sector and age
+recovered = 1e5 .* ones(n_age, n_sectors);
+deaths = copy(recovered) .* 0.02;
+
+# assume age-varying probability of disability
+p_disab = collect(2:2:8) ./ 100.0;
+p_lab_redn = [0.2, 0.3, 0.4, 0.5];
+
+# assume that only a proportion of disabled workers are replaced per age group
+p_disab_replaced = repeat([0.2], n_age);
+
+# assume a uniform probability of employment
+p_emp = 0.8;
+
+# assume a time for replacement, by age group
+t_replacement = [0.25, 0.5, 0.67, 0.25];
+
+# assume median wage uniform over age and economic sector
+wage = 40e3;
+
+# calculate loss
+calc_fca_cost(
+    recovered, deaths, p_disab, p_lab_redn, p_disab_replaced, t_replacement,
+    wage, p_emp; discount_rate = 0.03
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">4×10 Matrix{Float64}:
+ 8.28949e7  8.28949e7  8.28949e7  …  8.28949e7  8.28949e7  8.28949e7
+ 1.06733e8  1.06733e8  1.06733e8     1.06733e8  1.06733e8  1.06733e8
+ 1.31234e8  1.31234e8  1.31234e8     1.31234e8  1.31234e8  1.31234e8
+ 1.11589e8  1.11589e8  1.11589e8     1.11589e8  1.11589e8  1.11589e8</code></pre><h2 id="Sector-heterogeneity"><a class="docs-heading-anchor" href="#Sector-heterogeneity">Sector heterogeneity</a><a id="Sector-heterogeneity-1"></a><a class="docs-heading-anchor-permalink" href="#Sector-heterogeneity" title="Permalink"></a></h2><p>The examples above vary <span>$\phi$</span> (<code>p_disab</code>), <span>$\omega$</span> (<code>p_lab_redn</code>), and <span>$e$</span> (<code>p_emp</code>) — and, for <code>calc_fca_cost</code>, <span>$\rho$</span> (<code>p_disab_replaced</code>) — by age group only, passing each as a <code>Vector{Float64}</code> of length <code>n_age</code>.</p><p>These parameters may instead vary by economic sector as well as age group, by passing a <code>Matrix{Float64}</code> of size <code>(n_age, n_sectors)</code> in place of the vector. This is useful, for example, when a manual-labour sector is assumed to carry a higher probability of long-term disability than an office-based sector, for workers of the same age.</p><pre><code class="language-julia hljs">using EpiEconShocks
+
+n_age = 8;
+n_sectors = 2; # e.g. &quot;office&quot; and &quot;manual_labour&quot;
+
+# assume 100,000 recovered individuals for this example, per sector and age
+recovered = 1e5 .* ones(n_age, n_sectors);
+deaths = copy(recovered) .* 0.02;
+
+p_lab_redn = repeat([0.2, 0.3, 0.4, 0.5], 2);
+p_emp = 0.8;
+wage = 40e3;
+
+t_entry = ones(n_age, n_sectors) .* [18, 15, 12, 1, 0, 0, 0, 0];
+t_ret = ones(n_age, n_sectors) .* [50, 50, 50, 50, 40, 25, 15, 5];
+
+# age-varying probability of disability, doubled in the manual-labour sector
+p_disab_age = collect(1:1:8) ./ 100.0;
+p_disab_sector = hcat(p_disab_age, p_disab_age .* 2);
+
+calc_hca_cost(
+    recovered, deaths, p_disab_sector, p_lab_redn, t_ret, t_entry, wage, p_emp;
+    discount_rate = 0.03
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">8×2 Matrix{Float64}:
+ 1.10534e9  1.20583e9
+ 1.42745e9  1.75686e9
+ 1.91977e9  2.63968e9
+ 3.32176e9  4.98264e9
+ 2.31502e9  3.08669e9
+ 2.23904e9  3.29964e9
+ 1.98727e9  3.14651e9
+ 1.0713e9   1.78551e9</code></pre><p>Vector and matrix parameters can be freely mixed within a single call: <code>p_disab</code> above varies by age and sector, while <code>p_lab_redn</code> and <code>p_emp</code> continue to vary by age only. The same applies to <code>calc_fca_cost</code>, including its additional <code>p_disab_replaced</code> parameter.</p><p><code>n_recovered</code>, <code>n_dead</code>, <code>t_ret</code>, <code>t_entry</code>, <code>t_replacement</code>, and <code>wage</code> are unaffected by this and continue to be specified as before (see the function docstrings).</p><h2 id="Extension-uncertainty-in-fixed-parameters"><a class="docs-heading-anchor" href="#Extension-uncertainty-in-fixed-parameters">Extension uncertainty in fixed parameters</a><a id="Extension-uncertainty-in-fixed-parameters-1"></a><a class="docs-heading-anchor-permalink" href="#Extension-uncertainty-in-fixed-parameters" title="Permalink"></a></h2><p>This example shows how to apply a disability cost function across a range of parameter values, using the probability of disability in the human capital method as an example.</p><pre><code class="language-julia hljs">using Distributions, EpiEconShocks, Random, Statistics
+
+# assume age groups, and unit pop sizes for illustrative purposes
+n_age = 8;
+n_sectors = 10;
+# assume 100,000 recovered individuals for this example, per sector and age
+recovered = 1e5 .* ones(n_age, n_sectors);
+deaths = copy(recovered) .* 0.02;
+
+# assume age-varying productivity reduction
+p_lab_redn = repeat([0.2, 0.3, 0.4, 0.5], 2);
+
+# assume a uniform probability of employment
+p_emp = 0.8;
+
+# assume median wage uniform over age and economic sector
+wage = 40e3;
+
+# time to entry and exit
+t_entry = ones(n_age, n_sectors) .* [18, 15, 12, 1, 0, 0, 0, 0];
+t_ret = ones(n_age, n_sectors) .* [50, 50, 50, 50, 40, 25, 15, 5];</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">8×10 Matrix{Float64}:
+ 50.0  50.0  50.0  50.0  50.0  50.0  50.0  50.0  50.0  50.0
+ 50.0  50.0  50.0  50.0  50.0  50.0  50.0  50.0  50.0  50.0
+ 50.0  50.0  50.0  50.0  50.0  50.0  50.0  50.0  50.0  50.0
+ 50.0  50.0  50.0  50.0  50.0  50.0  50.0  50.0  50.0  50.0
+ 40.0  40.0  40.0  40.0  40.0  40.0  40.0  40.0  40.0  40.0
+ 25.0  25.0  25.0  25.0  25.0  25.0  25.0  25.0  25.0  25.0
+ 15.0  15.0  15.0  15.0  15.0  15.0  15.0  15.0  15.0  15.0
+  5.0   5.0   5.0   5.0   5.0   5.0   5.0   5.0   5.0   5.0</code></pre><p>Model uncertainty in the age-specific probability of disability.</p><pre><code class="language-julia hljs">p_disab = collect(1:1:8) ./ 100.0;
+
+# select
+d = Normal(0.0, 0.05);
+samples = 1000;
+p_disab_list = [
+    clamp.(p_disab .+ rand(d, n_age), 0.0, 1.0) for i in 1:samples];
+
+# result has size (n_age, n_sectors, samples)
+result = stack([calc_hca_cost(
+    recovered, deaths, pdsb, p_lab_redn, t_ret, t_entry;
+    discount_rate = 0.03
+) for pdsb in p_disab_list]);</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">8×10×1000 Array{Float64, 3}:
+[:, :, 1] =
+ 25121.5        25121.5        25121.5        …  25121.5        25121.5
+ 27450.9        27450.9        27450.9           27450.9        27450.9
+     1.11717e5      1.11717e5      1.11717e5         1.11717e5      1.11717e5
+     1.1316e5       1.1316e5       1.1316e5          1.1316e5       1.1316e5
+ 95291.3        95291.3        95291.3           95291.3        95291.3
+ 80538.2        80538.2        80538.2        …  80538.2        80538.2
+ 58693.7        58693.7        58693.7           58693.7        58693.7
+  8927.53        8927.53        8927.53           8927.53        8927.53
+
+[:, :, 2] =
+  25121.5         25121.5        …   25121.5         25121.5
+  27450.9         27450.9            27450.9         27450.9
+ 108277.0        108277.0           108277.0        108277.0
+      1.44955e5       1.44955e5          1.44955e5       1.44955e5
+  68656.2         68656.2            68656.2         68656.2
+  51616.4         51616.4        …   51616.4         51616.4
+  20700.7         20700.7            20700.7         20700.7
+  39876.5         39876.5            39876.5         39876.5
+
+[:, :, 3] =
+ 25121.5  25121.5  25121.5  25121.5  …  25121.5  25121.5  25121.5  25121.5
+ 47523.4  47523.4  47523.4  47523.4     47523.4  47523.4  47523.4  47523.4
+ 50378.8  50378.8  50378.8  50378.8     50378.8  50378.8  50378.8  50378.8
+ 98275.9  98275.9  98275.9  98275.9     98275.9  98275.9  98275.9  98275.9
+ 38583.6  38583.6  38583.6  38583.6     38583.6  38583.6  38583.6  38583.6
+ 67869.3  67869.3  67869.3  67869.3  …  67869.3  67869.3  67869.3  67869.3
+ 20700.7  20700.7  20700.7  20700.7     20700.7  20700.7  20700.7  20700.7
+ 32588.7  32588.7  32588.7  32588.7     32588.7  32588.7  32588.7  32588.7
+
+;;; … 
+
+[:, :, 998] =
+ 35167.0       35167.0       35167.0       …  35167.0       35167.0
+ 46010.4       46010.4       46010.4          46010.4       46010.4
+ 29996.3       29996.3       29996.3          29996.3       29996.3
+     1.5156e5      1.5156e5      1.5156e5         1.5156e5      1.5156e5
+ 58299.9       58299.9       58299.9          58299.9       58299.9
+ 64665.5       64665.5       64665.5       …  64665.5       64665.5
+ 66746.1       66746.1       66746.1          66746.1       66746.1
+ 44680.4       44680.4       44680.4          44680.4       44680.4
+
+[:, :, 999] =
+ 25121.5   25121.5   25121.5   25121.5   …  25121.5   25121.5   25121.5
+ 27971.7   27971.7   27971.7   27971.7      27971.7   27971.7   27971.7
+ 87329.1   87329.1   87329.1   87329.1      87329.1   87329.1   87329.1
+ 78980.6   78980.6   78980.6   78980.6      78980.6   78980.6   78980.6
+ 38583.6   38583.6   38583.6   38583.6      38583.6   38583.6   38583.6
+ 31062.3   31062.3   31062.3   31062.3   …  31062.3   31062.3   31062.3
+ 50842.7   50842.7   50842.7   50842.7      50842.7   50842.7   50842.7
+  9417.29   9417.29   9417.29   9417.29      9417.29   9417.29   9417.29
+
+[:, :, 1000] =
+ 25121.5        25121.5        25121.5        …  25121.5        25121.5
+ 32345.2        32345.2        32345.2           32345.2        32345.2
+ 29996.3        29996.3        29996.3           29996.3        29996.3
+     1.01003e5      1.01003e5      1.01003e5         1.01003e5      1.01003e5
+ 66460.2        66460.2        66460.2           66460.2        66460.2
+ 85701.9        85701.9        85701.9        …  85701.9        85701.9
+ 29033.0        29033.0        29033.0           29033.0        29033.0
+ 37878.6        37878.6        37878.6           37878.6        37878.6</code></pre><pre><code class="language-julia hljs"># see the age and sector specific median:
+result_median = dropdims(median(result; dims = 3); dims = 3)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">8×10 Matrix{Float64}:
+ 27212.1  27212.1  27212.1  27212.1  …  27212.1  27212.1  27212.1  27212.1
+ 35750.4  35750.4  35750.4  35750.4     35750.4  35750.4  35750.4  35750.4
+ 48602.2  48602.2  48602.2  48602.2     48602.2  48602.2  48602.2  48602.2
+ 82806.6  82806.6  82806.6  82806.6     82806.6  82806.6  82806.6  82806.6
+ 58048.6  58048.6  58048.6  58048.6     58048.6  58048.6  58048.6  58048.6
+ 56861.0  56861.0  56861.0  56861.0  …  56861.0  56861.0  56861.0  56861.0
+ 49112.8  49112.8  49112.8  49112.8     49112.8  49112.8  49112.8  49112.8
+ 27569.8  27569.8  27569.8  27569.8     27569.8  27569.8  27569.8  27569.8</code></pre><pre><code class="language-julia hljs"># see age and sector specific quantiles
+result_quantiles = mapslices(x -&gt; quantile(x, [0.025, 0.975]), result; dims = 3)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">8×10×2 Array{Float64, 3}:
+[:, :, 1] =
+ 25121.5   25121.5   25121.5   25121.5   …  25121.5   25121.5   25121.5
+ 27450.9   27450.9   27450.9   27450.9      27450.9   27450.9   27450.9
+ 29996.3   29996.3   29996.3   29996.3      29996.3   29996.3   29996.3
+ 41522.0   41522.0   41522.0   41522.0      41522.0   41522.0   41522.0
+ 38583.6   38583.6   38583.6   38583.6      38583.6   38583.6   38583.6
+ 29461.0   29461.0   29461.0   29461.0   …  29461.0   29461.0   29461.0
+ 20700.7   20700.7   20700.7   20700.7      20700.7   20700.7   20700.7
+  8927.53   8927.53   8927.53   8927.53      8927.53   8927.53   8927.53
+
+[:, :, 2] =
+ 53522.2        53522.2        53522.2        …  53522.2        53522.2
+ 76529.9        76529.9        76529.9           76529.9        76529.9
+     1.08842e5      1.08842e5      1.08842e5         1.08842e5      1.08842e5
+     1.78311e5      1.78311e5      1.78311e5         1.78311e5      1.78311e5
+ 97554.1        97554.1        97554.1           97554.1        97554.1
+ 97947.0        97947.0        97947.0        …  97947.0        97947.0
+ 89953.0        89953.0        89953.0           89953.0        89953.0
+ 47842.3        47842.3        47842.3           47842.3        47842.3</code></pre><p>The resulting age- and sector-specific summary statistics can be used to create figures or tables.</p><h2 id="Extension:-Modelling-reduced-educational-attainment"><a class="docs-heading-anchor" href="#Extension:-Modelling-reduced-educational-attainment">Extension: Modelling reduced educational attainment</a><a id="Extension:-Modelling-reduced-educational-attainment-1"></a><a class="docs-heading-anchor-permalink" href="#Extension:-Modelling-reduced-educational-attainment" title="Permalink"></a></h2><p>Educational attainment for future workers (children) may be reduced by pandemic related disruptions, which include missed education due to infection and mitigation measures that result in lower efficacy of instruction.</p><p>This can be included in the human capital method which values the productivity loss of future workers.</p><p>The effect of reduced educational attainment may be assumed to have a scaling effect on wages. The wage expected to be attained will depend on the proportion of education missed relative to the pre-pandemic norm, and the education coefficient of wages (see <a href="#mincer1974">Mincer [2]</a>).</p><p class="math-container">\[    W^{1}_{j,k,\tau} = W^{0}_{j,k,\tau} e^{\left(-\beta^{\text{Edu}}\Delta \text{Edu}_j \right)}\]</p><p>Assuming a value of <span>$\beta^{\text{Edu}}$</span> of 0.04 following <a href="#ge2013">Ge [3]</a>, we can calculate the reduced expected wage due to lower educational attainment as shown in the following code snippet. We assume that the loss in educational attainment is 0.1 or 10% of the expected pre-pandemic attainment.</p><p>First we set up the initial epidemic outcomes and population parameters.</p><pre><code class="language-julia hljs"># set up initial population parameters
+using EpiEconShocks
+
+n_age = 2; # only modelling future and current workers
+n_sectors = 1;
+# assume 100,000 recovered individuals for this example, per sector and age
+recovered = 1e5 .* ones(n_age, n_sectors);
+deaths = copy(recovered) .* 0.02;
+
+# assume a uniform productivity reduction
+p_lab_redn = [0.2, 0.2];
+
+# assume a uniform probability of employment
+p_emp = 0.8;
+
+# uniform prob of disability
+p_disab = [0.2, 0.2];
+
+# assume median wage for both age groups
+wage = 40e3;
+
+# time to entry and exit
+t_entry = ones(n_age, n_sectors) .* [10, 0];
+t_ret = ones(n_age, n_sectors) .* [50, 25];</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">2×1 Matrix{Float64}:
+ 50.0
+ 25.0</code></pre><p>We calculate <span>$W^{1}_{j,k,\tau}$</span> for each age group. With only two age groups (future; <span>$j = 1$</span> and current workers; <span>$j = 2$</span>), <span>$W^{1}_{1,k,\tau}$</span> is scaled only for <span>$j = 1$</span>.</p><p><strong>Note that</strong> since current workers are not assumed to be affected, the corresponding values of <span>$\beta^{\text{Edu}}_j$</span> and <span>$\Delta \text{Edu}_j$</span> are 0.0 for <span>$j = 2$</span>; they are specified only to satisfy the vectorised operation in Julia.</p><pre><code class="language-julia hljs">wage = reshape(wage .* exp.([-0.04, 0.0] .* [0.1, 0.0]), n_age, n_sectors);</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">2×1 Matrix{Float64}:
+ 39840.31957375966
+ 40000.0</code></pre><p>We can now pass the age-scaled wage array (in this case, a vector as values are uniform over sectors) to <code>calc_hca_costs</code>.</p><pre><code class="language-julia hljs">calc_hca_cost(
+    recovered, deaths, p_disab, p_lab_redn, t_ret, t_entry, wage, p_emp;
+    discount_rate = 0.03
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">2×1 Matrix{Float64}:
+ 3.8035307191601496e9
+ 3.5353243567253823e9</code></pre><h2 id="Theory:-Human-capital-approach"><a class="docs-heading-anchor" href="#Theory:-Human-capital-approach">Theory: Human capital approach</a><a id="Theory:-Human-capital-approach-1"></a><a class="docs-heading-anchor-permalink" href="#Theory:-Human-capital-approach" title="Permalink"></a></h2><p>The human capital method estimates the value of wages forgone due to the inability of disabled individuals to achieve full productivity in the labour market, and makes the following assumptions for age group <span>$j$</span> and economic sector <span>$k$</span> at time <span>$\tau$</span>.</p><ul><li>A proportion <span>$\phi_{j,k} \in [0, 1]$</span> of individuals are recovered from infection and living with lifelong disability;</li><li>A proportion <span>$e_{j,k} \in [0, 1]$</span> are employed; the probability of employment may be age- and sector-specific but is constant over time;</li><li>The labour productivity of disabled and employed individuals is scaled by <span>$\omega_{j,k}$</span>;</li><li>The sector- and age-specific individual annual wage in real terms is <span>$W_{j,k}$</span>, which is assumed to be constant over time;</li><li>Each age group has <span>$t^{\text{ret}}$</span> years of remaining employment after <span>$t^{\text{entry}}$</span> years until entry into the labour market, and <span>$t^{\text{ret}} = a^{\text{ret}} - a_j$</span>, and <span>$t^{\text{entry}} = a^{\text{entry}} - a_j$</span>, where <span>$a^{\text{ret}}$</span> is the age of retirement, <span>$a^{\text{entry}}$</span> is the age of labour market entry, and <span>$a_j$</span> is the representative age of each group;</li><li>The discount rate for the present value of future wages is <span>$r$</span>.</li></ul><p>The present value of future productivity losses from both current and future workers&#39; disability is:</p><p class="math-container">\[V^{W+C} = \sum_{j \in J} \sum_{k} Z_{j,k} \sum_{\tau = t^{\text{entry}}}^{t^{\text{entry}} + t^{\text{ret}}} \frac{e_{j,k} W_{j,k,\tau} \omega_{j,k}}{(1 + r)^\tau}\]</p><p>Current workers may be considered to have a time until entry of zero, while future workers should have positive non-zero entry delays.</p><p>The present value of future productivity losses due to premature deaths from infection at all ages is similar to that for disabled workers, except it removes productivity scaling and probability of being removed from the workforce (which is assumed 1.0 for deaths).</p><p class="math-container">\[V^D = \sum_{j \in J} \sum_{k} \dot D_{j,k} \sum_{\tau = t^{\text{entry}}}^{t^{\text{entry}} + t^{\text{ret}}} \frac{e_{j,k} W_{j,k,\tau}}{(1 + r)^\tau}\]</p><p>The total present value of losses is then <span>$V^{W+C} + V^D$</span>.</p><h2 id="Theory:-Friction-cost-approach"><a class="docs-heading-anchor" href="#Theory:-Friction-cost-approach">Theory: Friction cost approach</a><a id="Theory:-Friction-cost-approach-1"></a><a class="docs-heading-anchor-permalink" href="#Theory:-Friction-cost-approach" title="Permalink"></a></h2><p>The friction cost method estimates the value of wages forgone due to the delay in replacing disabled and dead individuals in the labour market, and makes the following assumptions for age group <span>$j$</span> and economic sector <span>$k$</span> at time <span>$\tau$</span>.</p><ul><li>A proportion <span>$\phi_{j,k} \in [0, 1]$</span> of individuals are recovered from infection and living with lifelong disability;</li><li>A proportion <span>$e_{j,k} \in [0, 1]$</span> are employed; the probability of employment may be age- and sector-specific but is constant over time;</li><li>The labour productivity of disabled and employed individuals is scaled by <span>$\omega_{j,k} \in [0, 1]$</span>;</li><li>The sector- and age-specific individual annual wage in real terms is <span>$W_{j,k}$</span>, which is assumed to be constant over time``;</li><li>Each age group has a friction period <span>$d_{j}$</span> years needed to replace an individual in that age group; this may also be a single value applied to all age groups;</li><li>The proportion of workers in each age group and sector that need replacement is <span>$\rho_{j,k}$</span>;</li><li>The discount rate for the present value of future wages is <span>$r$</span>.</li></ul><p>The present value of future productivity losses from both current and future workers&#39; disability is:</p><p class="math-container">\[F^W = \sum_{j \in J} \sum_{k} Z_{j,k} \rho_{j,k} \sum_{\tau = 0}^{d_j} \frac{e_{j,k} W_{j,k,\tau} \omega_{j,k}}{(1 + r)^\tau}\]</p><p>The present value of future productivity losses due to premature deaths from infection at all ages is similar to that for disabled workers, except it removes productivity scaling and probability of being removed from the workforce (which is assumed 1.0 for deaths).</p><p class="math-container">\[F^D = \sum_{j \in J} \sum_{k} \dot D_{j,k} \sum_{\tau = 0}^{d_j} \frac{e_{j,k} W_{j,k,\tau}}{(1 + r)^\tau}\]</p><p>The total present value of losses is then <span>$F^W + F^D$</span>.</p><h2 id="References"><a class="docs-heading-anchor" href="#References">References</a><a id="References-1"></a><a class="docs-heading-anchor-permalink" href="#References" title="Permalink"></a></h2><div class="citation canonical"><dl><dt>[1]</dt><dd><div id="pangallo2024">M. Pangallo, A. Aleta, R. M. del Rio-Chanona, A. Pichler, D. Martı́n-Corral, M. Chinazzi, F. Lafond, M. Ajelli, E. Moro, Y. Moreno and others. <em>The unequal effects of the health–economy trade-off during the COVID-19 pandemic</em>. Nature Human Behaviour <strong>8</strong>, 264–275 (2024).</div></dd><dt>[2]</dt><dd><div id="mincer1974">J. Mincer. <a href="https://www.nber.org/books-and-chapters/schooling-experience-and-earnings"><em>Schooling, Experience, and Earnings</em></a> (National Bureau of Economic Research, 1974).</div></dd><dt>[3]</dt><dd><div id="ge2013">S. Ge. <a href="https://www.sciencedirect.com/science/article/pii/S0927537112001121"><em>Estimating the returns to schooling: Implications from a dynamic discrete choice model</em></a>. <a href="https://doi.org/10.1016/j.labeco.2012.11.004">Labour Economics <strong>20</strong>, 92–105</a> (2013).</div></dd></dl></div></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../estim_lab_consump/">« Estimating labour and consumption over an epidemic</a><a class="docs-footer-nextpage" href="../setup/">Setting up a GTAP model »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Monday 17 August 2026 11:34">Monday 17 August 2026</span>. Using Julia version 1.12.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
