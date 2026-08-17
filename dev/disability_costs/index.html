@@ -143,75 +143,75 @@ result = stack([calc_hca_cost(
     discount_rate = 0.03
 ) for pdsb in p_disab_list]);</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">8×10×1000 Array{Float64, 3}:
 [:, :, 1] =
- 25121.5        25121.5        25121.5        …  25121.5        25121.5
- 27450.9        27450.9        27450.9           27450.9        27450.9
-     1.11717e5      1.11717e5      1.11717e5         1.11717e5      1.11717e5
-     1.1316e5       1.1316e5       1.1316e5          1.1316e5       1.1316e5
- 95291.3        95291.3        95291.3           95291.3        95291.3
- 80538.2        80538.2        80538.2        …  80538.2        80538.2
- 58693.7        58693.7        58693.7           58693.7        58693.7
-  8927.53        8927.53        8927.53           8927.53        8927.53
+ 25121.5  25121.5  25121.5  25121.5  …  25121.5  25121.5  25121.5  25121.5
+ 27450.9  27450.9  27450.9  27450.9     27450.9  27450.9  27450.9  27450.9
+ 29996.3  29996.3  29996.3  29996.3     29996.3  29996.3  29996.3  29996.3
+ 46918.5  46918.5  46918.5  46918.5     46918.5  46918.5  46918.5  46918.5
+ 53344.9  53344.9  53344.9  53344.9     53344.9  53344.9  53344.9  53344.9
+ 64217.0  64217.0  64217.0  64217.0  …  64217.0  64217.0  64217.0  64217.0
+ 61301.5  61301.5  61301.5  61301.5     61301.5  61301.5  61301.5  61301.5
+ 23570.2  23570.2  23570.2  23570.2     23570.2  23570.2  23570.2  23570.2
 
 [:, :, 2] =
-  25121.5         25121.5        …   25121.5         25121.5
-  27450.9         27450.9            27450.9         27450.9
- 108277.0        108277.0           108277.0        108277.0
-      1.44955e5       1.44955e5          1.44955e5       1.44955e5
-  68656.2         68656.2            68656.2         68656.2
-  51616.4         51616.4        …   51616.4         51616.4
-  20700.7         20700.7            20700.7         20700.7
-  39876.5         39876.5            39876.5         39876.5
+ 42950.3  42950.3  42950.3  42950.3  …  42950.3  42950.3  42950.3  42950.3
+ 42509.7  42509.7  42509.7  42509.7     42509.7  42509.7  42509.7  42509.7
+ 29996.3  29996.3  29996.3  29996.3     29996.3  29996.3  29996.3  29996.3
+ 79112.3  79112.3  79112.3  79112.3     79112.3  79112.3  79112.3  79112.3
+ 61425.4  61425.4  61425.4  61425.4     61425.4  61425.4  61425.4  61425.4
+ 73643.0  73643.0  73643.0  73643.0  …  73643.0  73643.0  73643.0  73643.0
+ 70851.5  70851.5  70851.5  70851.5     70851.5  70851.5  70851.5  70851.5
+ 14485.3  14485.3  14485.3  14485.3     14485.3  14485.3  14485.3  14485.3
 
 [:, :, 3] =
- 25121.5  25121.5  25121.5  25121.5  …  25121.5  25121.5  25121.5  25121.5
- 47523.4  47523.4  47523.4  47523.4     47523.4  47523.4  47523.4  47523.4
- 50378.8  50378.8  50378.8  50378.8     50378.8  50378.8  50378.8  50378.8
- 98275.9  98275.9  98275.9  98275.9     98275.9  98275.9  98275.9  98275.9
- 38583.6  38583.6  38583.6  38583.6     38583.6  38583.6  38583.6  38583.6
- 67869.3  67869.3  67869.3  67869.3  …  67869.3  67869.3  67869.3  67869.3
- 20700.7  20700.7  20700.7  20700.7     20700.7  20700.7  20700.7  20700.7
- 32588.7  32588.7  32588.7  32588.7     32588.7  32588.7  32588.7  32588.7
+ 25775.9        25775.9        25775.9        …  25775.9        25775.9
+ 27450.9        27450.9        27450.9           27450.9        27450.9
+ 45182.0        45182.0        45182.0           45182.0        45182.0
+     1.40948e5      1.40948e5      1.40948e5         1.40948e5      1.40948e5
+ 69138.9        69138.9        69138.9           69138.9        69138.9
+     1.04646e5      1.04646e5      1.04646e5  …      1.04646e5      1.04646e5
+ 37963.8        37963.8        37963.8           37963.8        37963.8
+ 23719.4        23719.4        23719.4           23719.4        23719.4
 
 ;;; … 
 
 [:, :, 998] =
- 35167.0       35167.0       35167.0       …  35167.0       35167.0
- 46010.4       46010.4       46010.4          46010.4       46010.4
- 29996.3       29996.3       29996.3          29996.3       29996.3
-     1.5156e5      1.5156e5      1.5156e5         1.5156e5      1.5156e5
- 58299.9       58299.9       58299.9          58299.9       58299.9
- 64665.5       64665.5       64665.5       …  64665.5       64665.5
- 66746.1       66746.1       66746.1          66746.1       66746.1
- 44680.4       44680.4       44680.4          44680.4       44680.4
+ 28625.7  28625.7  28625.7  28625.7  …  28625.7  28625.7  28625.7  28625.7
+ 44773.0  44773.0  44773.0  44773.0     44773.0  44773.0  44773.0  44773.0
+ 84735.6  84735.6  84735.6  84735.6     84735.6  84735.6  84735.6  84735.6
+ 41522.0  41522.0  41522.0  41522.0     41522.0  41522.0  41522.0  41522.0
+ 80534.7  80534.7  80534.7  80534.7     80534.7  80534.7  80534.7  80534.7
+ 63671.1  63671.1  63671.1  63671.1  …  63671.1  63671.1  63671.1  63671.1
+ 39741.5  39741.5  39741.5  39741.5     39741.5  39741.5  39741.5  39741.5
+ 32366.8  32366.8  32366.8  32366.8     32366.8  32366.8  32366.8  32366.8
 
 [:, :, 999] =
- 25121.5   25121.5   25121.5   25121.5   …  25121.5   25121.5   25121.5
- 27971.7   27971.7   27971.7   27971.7      27971.7   27971.7   27971.7
- 87329.1   87329.1   87329.1   87329.1      87329.1   87329.1   87329.1
- 78980.6   78980.6   78980.6   78980.6      78980.6   78980.6   78980.6
- 38583.6   38583.6   38583.6   38583.6      38583.6   38583.6   38583.6
- 31062.3   31062.3   31062.3   31062.3   …  31062.3   31062.3   31062.3
- 50842.7   50842.7   50842.7   50842.7      50842.7   50842.7   50842.7
-  9417.29   9417.29   9417.29   9417.29      9417.29   9417.29   9417.29
+ 25121.5  25121.5  25121.5  25121.5  …  25121.5  25121.5  25121.5  25121.5
+ 27450.9  27450.9  27450.9  27450.9     27450.9  27450.9  27450.9  27450.9
+ 73882.0  73882.0  73882.0  73882.0     73882.0  73882.0  73882.0  73882.0
+ 93677.7  93677.7  93677.7  93677.7     93677.7  93677.7  93677.7  93677.7
+ 50848.2  50848.2  50848.2  50848.2     50848.2  50848.2  50848.2  50848.2
+ 67332.2  67332.2  67332.2  67332.2  …  67332.2  67332.2  67332.2  67332.2
+ 22231.2  22231.2  22231.2  22231.2     22231.2  22231.2  22231.2  22231.2
+ 23248.8  23248.8  23248.8  23248.8     23248.8  23248.8  23248.8  23248.8
 
 [:, :, 1000] =
  25121.5        25121.5        25121.5        …  25121.5        25121.5
- 32345.2        32345.2        32345.2           32345.2        32345.2
- 29996.3        29996.3        29996.3           29996.3        29996.3
-     1.01003e5      1.01003e5      1.01003e5         1.01003e5      1.01003e5
- 66460.2        66460.2        66460.2           66460.2        66460.2
- 85701.9        85701.9        85701.9        …  85701.9        85701.9
- 29033.0        29033.0        29033.0           29033.0        29033.0
- 37878.6        37878.6        37878.6           37878.6        37878.6</code></pre><pre><code class="language-julia hljs"># see the age and sector specific median:
+ 32526.6        32526.6        32526.6           32526.6        32526.6
+ 82647.4        82647.4        82647.4           82647.4        82647.4
+     1.81047e5      1.81047e5      1.81047e5         1.81047e5      1.81047e5
+ 39216.5        39216.5        39216.5           39216.5        39216.5
+ 72229.2        72229.2        72229.2        …  72229.2        72229.2
+ 44082.4        44082.4        44082.4           44082.4        44082.4
+ 30246.5        30246.5        30246.5           30246.5        30246.5</code></pre><pre><code class="language-julia hljs"># see the age and sector specific median:
 result_median = dropdims(median(result; dims = 3); dims = 3)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">8×10 Matrix{Float64}:
- 27212.1  27212.1  27212.1  27212.1  …  27212.1  27212.1  27212.1  27212.1
- 35750.4  35750.4  35750.4  35750.4     35750.4  35750.4  35750.4  35750.4
- 48602.2  48602.2  48602.2  48602.2     48602.2  48602.2  48602.2  48602.2
- 82806.6  82806.6  82806.6  82806.6     82806.6  82806.6  82806.6  82806.6
- 58048.6  58048.6  58048.6  58048.6     58048.6  58048.6  58048.6  58048.6
- 56861.0  56861.0  56861.0  56861.0  …  56861.0  56861.0  56861.0  56861.0
- 49112.8  49112.8  49112.8  49112.8     49112.8  49112.8  49112.8  49112.8
- 27569.8  27569.8  27569.8  27569.8     27569.8  27569.8  27569.8  27569.8</code></pre><pre><code class="language-julia hljs"># see age and sector specific quantiles
+ 27788.5  27788.5  27788.5  27788.5  …  27788.5  27788.5  27788.5  27788.5
+ 34976.9  34976.9  34976.9  34976.9     34976.9  34976.9  34976.9  34976.9
+ 47333.8  47333.8  47333.8  47333.8     47333.8  47333.8  47333.8  47333.8
+ 82619.3  82619.3  82619.3  82619.3     82619.3  82619.3  82619.3  82619.3
+ 57769.5  57769.5  57769.5  57769.5     57769.5  57769.5  57769.5  57769.5
+ 54798.1  54798.1  54798.1  54798.1  …  54798.1  54798.1  54798.1  54798.1
+ 49469.6  49469.6  49469.6  49469.6     49469.6  49469.6  49469.6  49469.6
+ 26321.1  26321.1  26321.1  26321.1     26321.1  26321.1  26321.1  26321.1</code></pre><pre><code class="language-julia hljs"># see age and sector specific quantiles
 result_quantiles = mapslices(x -&gt; quantile(x, [0.025, 0.975]), result; dims = 3)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">8×10×2 Array{Float64, 3}:
 [:, :, 1] =
  25121.5   25121.5   25121.5   25121.5   …  25121.5   25121.5   25121.5
@@ -224,14 +224,14 @@ result_quantiles = mapslices(x -&gt; quantile(x, [0.025, 0.975]), result; dims =
   8927.53   8927.53   8927.53   8927.53      8927.53   8927.53   8927.53
 
 [:, :, 2] =
- 53522.2        53522.2        53522.2        …  53522.2        53522.2
- 76529.9        76529.9        76529.9           76529.9        76529.9
-     1.08842e5      1.08842e5      1.08842e5         1.08842e5      1.08842e5
-     1.78311e5      1.78311e5      1.78311e5         1.78311e5      1.78311e5
- 97554.1        97554.1        97554.1           97554.1        97554.1
- 97947.0        97947.0        97947.0        …  97947.0        97947.0
- 89953.0        89953.0        89953.0           89953.0        89953.0
- 47842.3        47842.3        47842.3           47842.3        47842.3</code></pre><p>The resulting age- and sector-specific summary statistics can be used to create figures or tables.</p><h2 id="Extension:-Modelling-reduced-educational-attainment"><a class="docs-heading-anchor" href="#Extension:-Modelling-reduced-educational-attainment">Extension: Modelling reduced educational attainment</a><a id="Extension:-Modelling-reduced-educational-attainment-1"></a><a class="docs-heading-anchor-permalink" href="#Extension:-Modelling-reduced-educational-attainment" title="Permalink"></a></h2><p>Educational attainment for future workers (children) may be reduced by pandemic related disruptions, which include missed education due to infection and mitigation measures that result in lower efficacy of instruction.</p><p>This can be included in the human capital method which values the productivity loss of future workers.</p><p>The effect of reduced educational attainment may be assumed to have a scaling effect on wages. The wage expected to be attained will depend on the proportion of education missed relative to the pre-pandemic norm, and the education coefficient of wages (see <a href="#mincer1974">Mincer [2]</a>).</p><p class="math-container">\[    W^{1}_{j,k,\tau} = W^{0}_{j,k,\tau} e^{\left(-\beta^{\text{Edu}}\Delta \text{Edu}_j \right)}\]</p><p>Assuming a value of <span>$\beta^{\text{Edu}}$</span> of 0.04 following <a href="#ge2013">Ge [3]</a>, we can calculate the reduced expected wage due to lower educational attainment as shown in the following code snippet. We assume that the loss in educational attainment is 0.1 or 10% of the expected pre-pandemic attainment.</p><p>First we set up the initial epidemic outcomes and population parameters.</p><pre><code class="language-julia hljs"># set up initial population parameters
+ 53877.7        53877.7        53877.7        …  53877.7        53877.7
+ 75192.4        75192.4        75192.4           75192.4        75192.4
+     1.07782e5      1.07782e5      1.07782e5         1.07782e5      1.07782e5
+     1.86634e5      1.86634e5      1.86634e5         1.86634e5      1.86634e5
+ 95705.0        95705.0        95705.0           95705.0        95705.0
+     1.00388e5      1.00388e5      1.00388e5  …      1.00388e5      1.00388e5
+ 89179.9        89179.9        89179.9           89179.9        89179.9
+ 46849.1        46849.1        46849.1           46849.1        46849.1</code></pre><p>The resulting age- and sector-specific summary statistics can be used to create figures or tables.</p><h2 id="Extension:-Modelling-reduced-educational-attainment"><a class="docs-heading-anchor" href="#Extension:-Modelling-reduced-educational-attainment">Extension: Modelling reduced educational attainment</a><a id="Extension:-Modelling-reduced-educational-attainment-1"></a><a class="docs-heading-anchor-permalink" href="#Extension:-Modelling-reduced-educational-attainment" title="Permalink"></a></h2><p>Educational attainment for future workers (children) may be reduced by pandemic related disruptions, which include missed education due to infection and mitigation measures that result in lower efficacy of instruction.</p><p>This can be included in the human capital method which values the productivity loss of future workers.</p><p>The effect of reduced educational attainment may be assumed to have a scaling effect on wages. The wage expected to be attained will depend on the proportion of education missed relative to the pre-pandemic norm, and the education coefficient of wages (see <a href="#mincer1974">Mincer [2]</a>).</p><p class="math-container">\[    W^{1}_{j,k,\tau} = W^{0}_{j,k,\tau} e^{\left(-\beta^{\text{Edu}}\Delta \text{Edu}_j \right)}\]</p><p>Assuming a value of <span>$\beta^{\text{Edu}}$</span> of 0.04 following <a href="#ge2013">Ge [3]</a>, we can calculate the reduced expected wage due to lower educational attainment as shown in the following code snippet. We assume that the loss in educational attainment is 0.1 or 10% of the expected pre-pandemic attainment.</p><p>First we set up the initial epidemic outcomes and population parameters.</p><pre><code class="language-julia hljs"># set up initial population parameters
 using EpiEconShocks
 
 n_age = 2; # only modelling future and current workers
@@ -263,4 +263,4 @@ t_ret = ones(n_age, n_sectors) .* [50, 25];</code></pre><pre class="documenter-e
     discount_rate = 0.03
 )</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">2×1 Matrix{Float64}:
  3.8035307191601496e9
- 3.5353243567253823e9</code></pre><h2 id="Theory:-Human-capital-approach"><a class="docs-heading-anchor" href="#Theory:-Human-capital-approach">Theory: Human capital approach</a><a id="Theory:-Human-capital-approach-1"></a><a class="docs-heading-anchor-permalink" href="#Theory:-Human-capital-approach" title="Permalink"></a></h2><p>The human capital method estimates the value of wages forgone due to the inability of disabled individuals to achieve full productivity in the labour market, and makes the following assumptions for age group <span>$j$</span> and economic sector <span>$k$</span> at time <span>$\tau$</span>.</p><ul><li>A proportion <span>$\phi_{j,k} \in [0, 1]$</span> of individuals are recovered from infection and living with lifelong disability;</li><li>A proportion <span>$e_{j,k} \in [0, 1]$</span> are employed; the probability of employment may be age- and sector-specific but is constant over time;</li><li>The labour productivity of disabled and employed individuals is scaled by <span>$\omega_{j,k}$</span>;</li><li>The sector- and age-specific individual annual wage in real terms is <span>$W_{j,k}$</span>, which is assumed to be constant over time;</li><li>Each age group has <span>$t^{\text{ret}}$</span> years of remaining employment after <span>$t^{\text{entry}}$</span> years until entry into the labour market, and <span>$t^{\text{ret}} = a^{\text{ret}} - a_j$</span>, and <span>$t^{\text{entry}} = a^{\text{entry}} - a_j$</span>, where <span>$a^{\text{ret}}$</span> is the age of retirement, <span>$a^{\text{entry}}$</span> is the age of labour market entry, and <span>$a_j$</span> is the representative age of each group;</li><li>The discount rate for the present value of future wages is <span>$r$</span>.</li></ul><p>The present value of future productivity losses from both current and future workers&#39; disability is:</p><p class="math-container">\[V^{W+C} = \sum_{j \in J} \sum_{k} Z_{j,k} \sum_{\tau = t^{\text{entry}}}^{t^{\text{entry}} + t^{\text{ret}}} \frac{e_{j,k} W_{j,k,\tau} \omega_{j,k}}{(1 + r)^\tau}\]</p><p>Current workers may be considered to have a time until entry of zero, while future workers should have positive non-zero entry delays.</p><p>The present value of future productivity losses due to premature deaths from infection at all ages is similar to that for disabled workers, except it removes productivity scaling and probability of being removed from the workforce (which is assumed 1.0 for deaths).</p><p class="math-container">\[V^D = \sum_{j \in J} \sum_{k} \dot D_{j,k} \sum_{\tau = t^{\text{entry}}}^{t^{\text{entry}} + t^{\text{ret}}} \frac{e_{j,k} W_{j,k,\tau}}{(1 + r)^\tau}\]</p><p>The total present value of losses is then <span>$V^{W+C} + V^D$</span>.</p><h2 id="Theory:-Friction-cost-approach"><a class="docs-heading-anchor" href="#Theory:-Friction-cost-approach">Theory: Friction cost approach</a><a id="Theory:-Friction-cost-approach-1"></a><a class="docs-heading-anchor-permalink" href="#Theory:-Friction-cost-approach" title="Permalink"></a></h2><p>The friction cost method estimates the value of wages forgone due to the delay in replacing disabled and dead individuals in the labour market, and makes the following assumptions for age group <span>$j$</span> and economic sector <span>$k$</span> at time <span>$\tau$</span>.</p><ul><li>A proportion <span>$\phi_{j,k} \in [0, 1]$</span> of individuals are recovered from infection and living with lifelong disability;</li><li>A proportion <span>$e_{j,k} \in [0, 1]$</span> are employed; the probability of employment may be age- and sector-specific but is constant over time;</li><li>The labour productivity of disabled and employed individuals is scaled by <span>$\omega_{j,k} \in [0, 1]$</span>;</li><li>The sector- and age-specific individual annual wage in real terms is <span>$W_{j,k}$</span>, which is assumed to be constant over time``;</li><li>Each age group has a friction period <span>$d_{j}$</span> years needed to replace an individual in that age group; this may also be a single value applied to all age groups;</li><li>The proportion of workers in each age group and sector that need replacement is <span>$\rho_{j,k}$</span>;</li><li>The discount rate for the present value of future wages is <span>$r$</span>.</li></ul><p>The present value of future productivity losses from both current and future workers&#39; disability is:</p><p class="math-container">\[F^W = \sum_{j \in J} \sum_{k} Z_{j,k} \rho_{j,k} \sum_{\tau = 0}^{d_j} \frac{e_{j,k} W_{j,k,\tau} \omega_{j,k}}{(1 + r)^\tau}\]</p><p>The present value of future productivity losses due to premature deaths from infection at all ages is similar to that for disabled workers, except it removes productivity scaling and probability of being removed from the workforce (which is assumed 1.0 for deaths).</p><p class="math-container">\[F^D = \sum_{j \in J} \sum_{k} \dot D_{j,k} \sum_{\tau = 0}^{d_j} \frac{e_{j,k} W_{j,k,\tau}}{(1 + r)^\tau}\]</p><p>The total present value of losses is then <span>$F^W + F^D$</span>.</p><h2 id="References"><a class="docs-heading-anchor" href="#References">References</a><a id="References-1"></a><a class="docs-heading-anchor-permalink" href="#References" title="Permalink"></a></h2><div class="citation canonical"><dl><dt>[1]</dt><dd><div id="pangallo2024">M. Pangallo, A. Aleta, R. M. del Rio-Chanona, A. Pichler, D. Martı́n-Corral, M. Chinazzi, F. Lafond, M. Ajelli, E. Moro, Y. Moreno and others. <em>The unequal effects of the health–economy trade-off during the COVID-19 pandemic</em>. Nature Human Behaviour <strong>8</strong>, 264–275 (2024).</div></dd><dt>[2]</dt><dd><div id="mincer1974">J. Mincer. <a href="https://www.nber.org/books-and-chapters/schooling-experience-and-earnings"><em>Schooling, Experience, and Earnings</em></a> (National Bureau of Economic Research, 1974).</div></dd><dt>[3]</dt><dd><div id="ge2013">S. Ge. <a href="https://www.sciencedirect.com/science/article/pii/S0927537112001121"><em>Estimating the returns to schooling: Implications from a dynamic discrete choice model</em></a>. <a href="https://doi.org/10.1016/j.labeco.2012.11.004">Labour Economics <strong>20</strong>, 92–105</a> (2013).</div></dd></dl></div></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../estim_lab_consump/">« Estimating labour and consumption over an epidemic</a><a class="docs-footer-nextpage" href="../setup/">Setting up a GTAP model »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Monday 17 August 2026 11:34">Monday 17 August 2026</span>. Using Julia version 1.12.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+ 3.5353243567253823e9</code></pre><h2 id="Theory:-Human-capital-approach"><a class="docs-heading-anchor" href="#Theory:-Human-capital-approach">Theory: Human capital approach</a><a id="Theory:-Human-capital-approach-1"></a><a class="docs-heading-anchor-permalink" href="#Theory:-Human-capital-approach" title="Permalink"></a></h2><p>The human capital method estimates the value of wages forgone due to the inability of disabled individuals to achieve full productivity in the labour market, and makes the following assumptions for age group <span>$j$</span> and economic sector <span>$k$</span> at time <span>$\tau$</span>.</p><ul><li>A proportion <span>$\phi_{j,k} \in [0, 1]$</span> of individuals are recovered from infection and living with lifelong disability;</li><li>A proportion <span>$e_{j,k} \in [0, 1]$</span> are employed; the probability of employment may be age- and sector-specific but is constant over time;</li><li>The labour productivity of disabled and employed individuals is scaled by <span>$\omega_{j,k}$</span>;</li><li>The sector- and age-specific individual annual wage in real terms is <span>$W_{j,k}$</span>, which is assumed to be constant over time;</li><li>Each age group has <span>$t^{\text{ret}}$</span> years of remaining employment after <span>$t^{\text{entry}}$</span> years until entry into the labour market, and <span>$t^{\text{ret}} = a^{\text{ret}} - a_j$</span>, and <span>$t^{\text{entry}} = a^{\text{entry}} - a_j$</span>, where <span>$a^{\text{ret}}$</span> is the age of retirement, <span>$a^{\text{entry}}$</span> is the age of labour market entry, and <span>$a_j$</span> is the representative age of each group;</li><li>The discount rate for the present value of future wages is <span>$r$</span>.</li></ul><p>The present value of future productivity losses from both current and future workers&#39; disability is:</p><p class="math-container">\[V^{W+C} = \sum_{j \in J} \sum_{k} Z_{j,k} \sum_{\tau = t^{\text{entry}}}^{t^{\text{entry}} + t^{\text{ret}}} \frac{e_{j,k} W_{j,k,\tau} \omega_{j,k}}{(1 + r)^\tau}\]</p><p>Current workers may be considered to have a time until entry of zero, while future workers should have positive non-zero entry delays.</p><p>The present value of future productivity losses due to premature deaths from infection at all ages is similar to that for disabled workers, except it removes productivity scaling and probability of being removed from the workforce (which is assumed 1.0 for deaths).</p><p class="math-container">\[V^D = \sum_{j \in J} \sum_{k} \dot D_{j,k} \sum_{\tau = t^{\text{entry}}}^{t^{\text{entry}} + t^{\text{ret}}} \frac{e_{j,k} W_{j,k,\tau}}{(1 + r)^\tau}\]</p><p>The total present value of losses is then <span>$V^{W+C} + V^D$</span>.</p><h2 id="Theory:-Friction-cost-approach"><a class="docs-heading-anchor" href="#Theory:-Friction-cost-approach">Theory: Friction cost approach</a><a id="Theory:-Friction-cost-approach-1"></a><a class="docs-heading-anchor-permalink" href="#Theory:-Friction-cost-approach" title="Permalink"></a></h2><p>The friction cost method estimates the value of wages forgone due to the delay in replacing disabled and dead individuals in the labour market, and makes the following assumptions for age group <span>$j$</span> and economic sector <span>$k$</span> at time <span>$\tau$</span>.</p><ul><li>A proportion <span>$\phi_{j,k} \in [0, 1]$</span> of individuals are recovered from infection and living with lifelong disability;</li><li>A proportion <span>$e_{j,k} \in [0, 1]$</span> are employed; the probability of employment may be age- and sector-specific but is constant over time;</li><li>The labour productivity of disabled and employed individuals is scaled by <span>$\omega_{j,k} \in [0, 1]$</span>;</li><li>The sector- and age-specific individual annual wage in real terms is <span>$W_{j,k}$</span>, which is assumed to be constant over time``;</li><li>Each age group has a friction period <span>$d_{j}$</span> years needed to replace an individual in that age group; this may also be a single value applied to all age groups;</li><li>The proportion of workers in each age group and sector that need replacement is <span>$\rho_{j,k}$</span>;</li><li>The discount rate for the present value of future wages is <span>$r$</span>.</li></ul><p>The present value of future productivity losses from both current and future workers&#39; disability is:</p><p class="math-container">\[F^W = \sum_{j \in J} \sum_{k} Z_{j,k} \rho_{j,k} \sum_{\tau = 0}^{d_j} \frac{e_{j,k} W_{j,k,\tau} \omega_{j,k}}{(1 + r)^\tau}\]</p><p>The present value of future productivity losses due to premature deaths from infection at all ages is similar to that for disabled workers, except it removes productivity scaling and probability of being removed from the workforce (which is assumed 1.0 for deaths).</p><p class="math-container">\[F^D = \sum_{j \in J} \sum_{k} \dot D_{j,k} \sum_{\tau = 0}^{d_j} \frac{e_{j,k} W_{j,k,\tau}}{(1 + r)^\tau}\]</p><p>The total present value of losses is then <span>$F^W + F^D$</span>.</p><h2 id="References"><a class="docs-heading-anchor" href="#References">References</a><a id="References-1"></a><a class="docs-heading-anchor-permalink" href="#References" title="Permalink"></a></h2><div class="citation canonical"><dl><dt>[1]</dt><dd><div id="pangallo2024">M. Pangallo, A. Aleta, R. M. del Rio-Chanona, A. Pichler, D. Martı́n-Corral, M. Chinazzi, F. Lafond, M. Ajelli, E. Moro, Y. Moreno and others. <em>The unequal effects of the health–economy trade-off during the COVID-19 pandemic</em>. Nature Human Behaviour <strong>8</strong>, 264–275 (2024).</div></dd><dt>[2]</dt><dd><div id="mincer1974">J. Mincer. <a href="https://www.nber.org/books-and-chapters/schooling-experience-and-earnings"><em>Schooling, Experience, and Earnings</em></a> (National Bureau of Economic Research, 1974).</div></dd><dt>[3]</dt><dd><div id="ge2013">S. Ge. <a href="https://www.sciencedirect.com/science/article/pii/S0927537112001121"><em>Estimating the returns to schooling: Implications from a dynamic discrete choice model</em></a>. <a href="https://doi.org/10.1016/j.labeco.2012.11.004">Labour Economics <strong>20</strong>, 92–105</a> (2013).</div></dd></dl></div></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../estim_lab_consump/">« Estimating labour and consumption over an epidemic</a><a class="docs-footer-nextpage" href="../setup/">Setting up a GTAP model »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Monday 17 August 2026 11:35">Monday 17 August 2026</span>. Using Julia version 1.12.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
