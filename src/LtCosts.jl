@@ -1,7 +1,7 @@
 
 module LtCosts
 
-export calc_hca_cost, calc_fca_cost
+export calc_hca_cost, calc_fca_cost, calc_healthcare_cost
 
 using DataFrames
 using Distributions
@@ -334,6 +334,75 @@ function calc_fca_cost(
     loss_death = wage .* p_emp .* n_dead .* discount
 
     return loss_disab + loss_death
+end
+
+"""
+    calc_healthcare_cost(n_recovered, p_disab, t_life, cost_care;
+                          discount_rate = 0.01)
+
+Calculate the present-value cost of long-term treatment and care for
+infection-related disability.
+
+Costs accrue immediately (from the
+present, ``\\tau = 0``) rather than from a future labour-market entry date.
+Healthcare costs are assumed to vary by age only, not by economic sector.
+
+# Arguments
+- `n_recovered::Matrix{Float64}`: Number of recovered by age group and
+    economic sector, of size `(n_age, n_sectors)`.
+- `p_disab::Union{Float64, Vector{Float64}}`: Probability of long-term
+    disability among recovered, by age group. Either a single value applied
+    to all age groups, or a `Vector` of length `n_age`.
+- `t_life::Union{Float64, Vector{Float64}}`: Number of years, from the
+    present, over which treatment and care costs are projected — the
+    difference between an age group's life expectancy and its
+    representative (or median) age; the discounted window spans
+    `t_life + 1` years in total. May be a single value applied to all age
+    groups, or a `Vector` by age group (length `n_age`).
+- `cost_care::Union{Float64, Vector{Float64}}`: Expected annual treatment
+    and care cost per disabled individual, by age group. Either a single
+    value applied to all age groups, or a `Vector` of length `n_age`.
+- `discount_rate::Float64`: Annual discount rate applied to future costs
+    (default: `0.03`).
+
+# Returns
+- `Matrix{Float64}`: Present-value treatment and care cost, by age group
+    and economic sector, of size `(n_age, n_sectors)`.
+
+# Raises
+- `ArgumentError`: if `p_disab` is a vector without length `n_age`, or
+    contains a value outside `[0.0, 1.0]`; if `t_life` (when a vector) does
+    not have length `n_age`, or contains a negative or non-finite value; or
+    if `cost_care` is a vector without length `n_age`.
+"""
+function calc_healthcare_cost(
+        n_recovered::Matrix{Float64},
+        p_disab::Union{Float64, Vector{Float64}},
+        t_life::Union{Float64, Vector{Float64}},
+        cost_care::Union{Float64, Vector{Float64}};
+        discount_rate::Float64 = 0.03
+)::Matrix{Float64}
+    n_age, n_sectors = size(n_recovered)
+
+    _validate_age_sector_param(:p_disab, p_disab, n_age, n_sectors)
+
+    if t_life isa AbstractVector && length(t_life) != n_age
+        throw(ArgumentError(
+            "`t_life` must have length $n_age, got $(length(t_life))"
+        ))
+    end
+    _validate_time(:t_life, t_life)
+
+    if cost_care isa AbstractVector && length(cost_care) != n_age
+        throw(ArgumentError(
+            "`cost_care` must have length $n_age, got $(length(cost_care))"
+        ))
+    end
+
+    pop_disab = n_recovered .* p_disab
+    discount = get_discount_sum.(t_life, discount_rate)
+
+    return pop_disab .* cost_care .* discount
 end
 
 end
