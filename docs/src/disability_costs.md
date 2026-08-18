@@ -2,7 +2,7 @@
 CurrentModule = EpiEconShocks
 ```
 
-# Estimating the long-term disability costs of an epidemic
+# Estimating the productivity costs of long-term disability
 
 _EpiEconShocks.jl_ can help to quantify the costs associated with wages lost due to infection-linked long-term disability or death due to an epidemic.
 

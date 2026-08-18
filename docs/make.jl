@@ -22,11 +22,12 @@ makedocs(;
     checkdocs = :exports,
     pages = [
         "Home" => "index.md",
-        "Working with epi outputs" => [
-            "Estimating labour and consumption over an epidemic" => "estim_lab_consump.md",
-            "Estimating costs of long-term disability" => "disability_costs.md"
+        "Working with epidemic model outputs" => [
+            "Estimating labour and consumption reductions over an epidemic" => "estim_lab_consump.md",
+            "Estimating productivity costs of long-term disability" => "disability_costs.md",
+            "Estimating healthcare costs of long-term disability" => "healthcare_costs.md"
         ],
-        "Working with GTAP" => [
+        "Working with GTAP via GlobalTradeAnalysisProjectv7.jl" => [
             "Setting up a GTAP model" => "setup.md",
             "Using epi model outputs with GTAP" => "daedalus.md"
         ],

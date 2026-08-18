@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.13] - 2026-08-24
+
+### Added
+
+- `calc_healthcare_cost()` in `LtCosts` for calculating the present-value cost of long-term treatment and care for infection-related disability, complementing the wage-loss functions `calc_hca_cost()` and `calc_fca_cost()`;
+- Test suite and documentation for `calc_healthcare_cost()`.
+
 ## [0.0.12] - 2026-08-24
 
 - `calc_hca_cost()` and `calc_fca_cost()`: `p_disab` and `p_lab_redn` now accept a `Float64` scalar (in addition to `Vector{Float64}` and `Matrix{Float64}`), applying the same value across all age groups and sectors.
