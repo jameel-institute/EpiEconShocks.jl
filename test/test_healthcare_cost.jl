@@ -119,4 +119,34 @@ end
     @test_throws ArgumentError calc_healthcare_cost(
         n_recovered, p_disab, t_life, fill(500.0, n_age + 1)
     )
+
+    # cost_care scalar negative value
+    @test_throws ArgumentError calc_healthcare_cost(
+        n_recovered, p_disab, t_life, -500.0
+    )
+
+    # cost_care scalar NaN value
+    @test_throws ArgumentError calc_healthcare_cost(
+        n_recovered, p_disab, t_life, NaN
+    )
+
+    # cost_care scalar Inf value
+    @test_throws ArgumentError calc_healthcare_cost(
+        n_recovered, p_disab, t_life, Inf
+    )
+
+    # cost_care vector negative value
+    @test_throws ArgumentError calc_healthcare_cost(
+        n_recovered, p_disab, t_life, [-500.0, 500.0]
+    )
+
+    # cost_care vector NaN value
+    @test_throws ArgumentError calc_healthcare_cost(
+        n_recovered, p_disab, t_life, [500.0, NaN]
+    )
+
+    # cost_care vector Inf value
+    @test_throws ArgumentError calc_healthcare_cost(
+        n_recovered, p_disab, t_life, [500.0, Inf]
+    )
 end
