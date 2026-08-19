@@ -145,6 +145,8 @@ The same applies to `calc_fca_cost`, including its additional `p_disab_replaced`
 
 `n_recovered`, `n_dead`, `t_ret`, `t_entry`, `t_replacement`, and `wage` are unaffected by this and continue to be specified as before (see the function docstrings).
 
+`p_disab` and `p_lab_redn` may also be passed as a single `Float64` scalar, in which case the same value is applied uniformly across all age groups and sectors.
+
 ## Extension uncertainty in fixed parameters
 
 This example shows how to apply a disability cost function across a range of parameter values, using the probability of disability in the human capital method as an example.

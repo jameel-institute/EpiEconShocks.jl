@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- `calc_hca_cost()` and `calc_fca_cost()`: `p_disab` and `p_lab_redn` now accept a `Float64` scalar (in addition to `Vector{Float64}` and `Matrix{Float64}`), applying the same value across all age groups and sectors.
+
 ## [0.0.11] - 2026-07-16
 
 ### Added

@@ -106,17 +106,19 @@ running from labour market entry (year `t_entry`) to retirement (year
     both current and future workers (see `t_entry`).
 - `n_dead::Matrix{Float64}`: Number of deaths by age group and economic
     sector, of size `(n_age, n_sectors)`.
-- `p_disab::Union{Vector{Float64}, Matrix{Float64}}`: Probability of
-    long-term disability among recovered. Either a `Vector` by age group
-    (length `n_age`), or a `Matrix` by age group and economic sector, of
-    size `(n_age, n_sectors)`, for sector-specific variation.
-- `p_lab_redn::Union{Vector{Float64}, Matrix{Float64}}`: Proportional
-    reduction in labour productivity for disabled individuals. Either a
-    `Vector` by age group (length `n_age`), or a `Matrix` by age group and
-    economic sector, of size `(n_age, n_sectors)`, for sector-specific
-    variation. Note that this is the proportional reduction, and not a
-    scaling factor. To represent a productivity of 80%, pass 0.2 for a
-    reduction of 20%.
+- `p_disab::Union{Float64, Vector{Float64}, Matrix{Float64}}`: Probability
+    of long-term disability among recovered. A scalar applies the same
+    probability to every age group and sector; alternatively a `Vector` by
+    age group (length `n_age`), or a `Matrix` by age group and economic
+    sector, of size `(n_age, n_sectors)`, for sector-specific variation.
+- `p_lab_redn::Union{Float64, Vector{Float64}, Matrix{Float64}}`:
+    Proportional reduction in labour productivity for disabled individuals.
+    A scalar applies the same reduction to every age group and sector;
+    alternatively a `Vector` by age group (length `n_age`), or a `Matrix` by
+    age group and economic sector, of size `(n_age, n_sectors)`, for
+    sector-specific variation. Note that this is the proportional
+    reduction, and not a scaling factor. To represent a productivity of
+    80%, pass 0.2 for a reduction of 20%.
 - `t_ret::Matrix{Float64}`: Number of years, after labour market entry, over
     which lost wages accrue; the discounted window spans `t_ret + 1` years
     in total (see above), by age group and economic sector, of size
@@ -153,8 +155,8 @@ running from labour market entry (year `t_entry`) to retirement (year
 function calc_hca_cost(
         n_recovered::Matrix{Float64},
         n_dead::Matrix{Float64},
-        p_disab::Union{Vector{Float64}, Matrix{Float64}},
-        p_lab_redn::Union{Vector{Float64}, Matrix{Float64}},
+        p_disab::Union{Float64, Vector{Float64}, Matrix{Float64}},
+        p_lab_redn::Union{Float64, Vector{Float64}, Matrix{Float64}},
         t_ret::Matrix{Float64},
         t_entry::Matrix{Float64},
         wage::Union{Float64, Matrix{Float64}, Nothing} = nothing,
@@ -229,17 +231,19 @@ require replacement, while all deaths are assumed to require replacement.
 - `n_dead::Matrix{Float64}`: Number of deaths by age group and economic
     sector, of size `(n_age, n_sectors)`. Age groups should hold only
     current workers.
-- `p_disab::Union{Vector{Float64}, Matrix{Float64}}`: Probability of
-    long-term disability among recovered. Either a `Vector` by age group
-    (length `n_age`), or a `Matrix` by age group and economic sector, of
-    size `(n_age, n_sectors)`, for sector-specific variation.
-- `p_lab_redn::Union{Vector{Float64}, Matrix{Float64}}`: Proportional
-    reduction in labour productivity for disabled individuals. Either a
-    `Vector` by age group (length `n_age`), or a `Matrix` by age group and
-    economic sector, of size `(n_age, n_sectors)`, for sector-specific
-    variation. Note that this is the proportional reduction, and not a
-    scaling factor. To represent a productivity of 80%, pass 0.2 for a
-    reduction of 20%.
+- `p_disab::Union{Float64, Vector{Float64}, Matrix{Float64}}`: Probability
+    of long-term disability among recovered. A scalar applies the same
+    probability to every age group and sector; alternatively a `Vector` by
+    age group (length `n_age`), or a `Matrix` by age group and economic
+    sector, of size `(n_age, n_sectors)`, for sector-specific variation.
+- `p_lab_redn::Union{Float64, Vector{Float64}, Matrix{Float64}}`:
+    Proportional reduction in labour productivity for disabled individuals.
+    A scalar applies the same reduction to every age group and sector;
+    alternatively a `Vector` by age group (length `n_age`), or a `Matrix` by
+    age group and economic sector, of size `(n_age, n_sectors)`, for
+    sector-specific variation. Note that this is the proportional
+    reduction, and not a scaling factor. To represent a productivity of
+    80%, pass 0.2 for a reduction of 20%.
 - `p_disab_replaced::Union{Vector{Float64}, Matrix{Float64}}`: Proportion
     of long-term disabled workers who are assumed to be replaced. Either a
     `Vector` by age group (length `n_age`), or a `Matrix` by age group and
@@ -278,8 +282,8 @@ require replacement, while all deaths are assumed to require replacement.
 function calc_fca_cost(
         n_recovered::Matrix{Float64},
         n_dead::Matrix{Float64},
-        p_disab::Union{Vector{Float64}, Matrix{Float64}},
-        p_lab_redn::Union{Vector{Float64}, Matrix{Float64}},
+        p_disab::Union{Float64, Vector{Float64}, Matrix{Float64}},
+        p_lab_redn::Union{Float64, Vector{Float64}, Matrix{Float64}},
         p_disab_replaced::Union{Vector{Float64}, Matrix{Float64}},
         t_replacement::Union{Float64, Vector{Float64}},
         wage::Union{Float64, Matrix{Float64}, Nothing} = nothing,

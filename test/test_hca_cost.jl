@@ -114,6 +114,28 @@ end
     @test result_sector[1, 1] < result_sector[1, 2] < result_sector[1, 3]
 end
 
+@testset "LtCosts.calc_hca_cost with scalar p_disab and p_lab_redn" begin
+    n_age, n_sectors = 2, 3
+    n_recovered = [10.0 20.0 30.0; 5.0 15.0 25.0]
+    n_dead = [1.0 2.0 3.0; 0.5 1.5 2.5]
+    t_ret = repeat([20.0, 10.0], 1, n_sectors)
+    t_entry = zeros(n_age, n_sectors)
+    p_disab_scalar = 0.15
+    p_lab_redn_scalar = 0.4
+
+    result_scalar = calc_hca_cost(
+        n_recovered, n_dead, p_disab_scalar, p_lab_redn_scalar, t_ret, t_entry
+    )
+    result_mat = calc_hca_cost(
+        n_recovered, n_dead, fill(p_disab_scalar, n_age, n_sectors),
+        fill(p_lab_redn_scalar, n_age, n_sectors), t_ret, t_entry
+    )
+
+    @test isa(result_scalar, Matrix{Float64})
+    @test size(result_scalar) == (n_age, n_sectors)
+    @test result_scalar ≈ result_mat
+end
+
 @testset "LtCosts.calc_hca_cost input validation" begin
     n_age, n_sectors = 2, 2
     n_recovered = fill(10.0, n_age, n_sectors)
