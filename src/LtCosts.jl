@@ -338,7 +338,7 @@ end
 
 """
     calc_healthcare_cost(n_recovered, p_disab, t_life, cost_care;
-                          discount_rate = 0.01)
+                          discount_rate = 0.03)
 
 Calculate the present-value cost of long-term treatment and care for
 infection-related disability.
@@ -373,7 +373,8 @@ Healthcare costs are assumed to vary by age only, not by economic sector.
 - `ArgumentError`: if `p_disab` is a vector without length `n_age`, or
     contains a value outside `[0.0, 1.0]`; if `t_life` (when a vector) does
     not have length `n_age`, or contains a negative or non-finite value; or
-    if `cost_care` is a vector without length `n_age`.
+    if `cost_care` is a vector without length `n_age`, or contains a
+    negative or non-finite value.
 """
 function calc_healthcare_cost(
         n_recovered::Matrix{Float64},
@@ -398,6 +399,9 @@ function calc_healthcare_cost(
             "`cost_care` must have length $n_age, got $(length(cost_care))"
         ))
     end
+
+    # reusing useful fn to check finite non-neg vals, disregard name
+    _validate_time(:cost_care, cost_care)
 
     pop_disab = n_recovered .* p_disab
     discount = get_discount_sum.(t_life, discount_rate)
