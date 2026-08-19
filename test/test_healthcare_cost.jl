@@ -149,4 +149,26 @@ end
     @test_throws ArgumentError calc_healthcare_cost(
         n_recovered, p_disab, t_life, [500.0, Inf]
     )
+
+    # discount_rate NaN
+    @test_throws ArgumentError calc_healthcare_cost(
+        n_recovered, p_disab, t_life, cost_care; discount_rate = NaN
+    )
+
+    # discount_rate Inf
+    @test_throws ArgumentError calc_healthcare_cost(
+        n_recovered, p_disab, t_life, cost_care; discount_rate = Inf
+    )
+
+    # discount_rate exactly -1.0
+    @test_throws ArgumentError calc_healthcare_cost(
+        n_recovered, p_disab, t_life, cost_care; discount_rate = -1.0
+    )
+
+    # discount_rate valid negative value in (-1.0, 0.0)
+    result = calc_healthcare_cost(
+        n_recovered, p_disab, t_life, cost_care; discount_rate = -0.5
+    )
+    @test isa(result, Matrix{Float64})
+    @test all(isfinite.(result))
 end

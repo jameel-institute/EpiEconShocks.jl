@@ -10,7 +10,7 @@ _EpiEconShocks.jl_ can help to quantify the treatment and care costs associated 
 
 ## Using package functionality to calculate healthcare costs
 
-_EpiEconShocks.jl_ provides the function [calc_healthcare_cost](@ref) to calculate healthcare costs.
+_EpiEconShocks.jl_ provides the function `calc_healthcare_cost` to calculate healthcare costs.
 
 We make two simplifying assumptions: disability is assumed to be life-long, and the starting point of disability is assumed to be some arbitrary end-date of a pandemic.
 This may lead to an under-estimate of healthcare costs of an individual affected early in a multi-year pandemic.
