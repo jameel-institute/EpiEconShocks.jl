@@ -200,4 +200,30 @@ end
     @test_throws ArgumentError calc_hca_cost(
         n_recovered, n_dead, p_disab, p_lab_redn, t_ret, fill(Inf, n_age, n_sectors)
     )
+
+    # discount_rate NaN
+    @test_throws ArgumentError calc_hca_cost(
+        n_recovered, n_dead, p_disab, p_lab_redn, t_ret, t_entry;
+        discount_rate = NaN
+    )
+
+    # discount_rate Inf
+    @test_throws ArgumentError calc_hca_cost(
+        n_recovered, n_dead, p_disab, p_lab_redn, t_ret, t_entry;
+        discount_rate = Inf
+    )
+
+    # discount_rate exactly -1.0
+    @test_throws ArgumentError calc_hca_cost(
+        n_recovered, n_dead, p_disab, p_lab_redn, t_ret, t_entry;
+        discount_rate = -1.0
+    )
+
+    # discount_rate valid negative value in (-1.0, 0.0)
+    result = calc_hca_cost(
+        n_recovered, n_dead, p_disab, p_lab_redn, t_ret, t_entry;
+        discount_rate = -0.5
+    )
+    @test isa(result, Matrix{Float64})
+    @test all(isfinite.(result))
 end

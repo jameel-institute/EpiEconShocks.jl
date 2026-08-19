@@ -279,4 +279,30 @@ end
     @test_throws ArgumentError calc_fca_cost(
         n_recovered, n_dead, p_disab, p_lab_redn, p_disab_replaced, NaN
     )
+
+    # discount_rate NaN
+    @test_throws ArgumentError calc_fca_cost(
+        n_recovered, n_dead, p_disab, p_lab_redn, p_disab_replaced, t_replacement;
+        discount_rate = NaN
+    )
+
+    # discount_rate Inf
+    @test_throws ArgumentError calc_fca_cost(
+        n_recovered, n_dead, p_disab, p_lab_redn, p_disab_replaced, t_replacement;
+        discount_rate = Inf
+    )
+
+    # discount_rate exactly -1.0
+    @test_throws ArgumentError calc_fca_cost(
+        n_recovered, n_dead, p_disab, p_lab_redn, p_disab_replaced, t_replacement;
+        discount_rate = -1.0
+    )
+
+    # discount_rate valid negative value in (-1.0, 0.0)
+    result = calc_fca_cost(
+        n_recovered, n_dead, p_disab, p_lab_redn, p_disab_replaced, t_replacement;
+        discount_rate = -0.5
+    )
+    @test isa(result, Matrix{Float64})
+    @test all(isfinite.(result))
 end

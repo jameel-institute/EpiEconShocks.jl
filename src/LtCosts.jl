@@ -24,12 +24,19 @@ the formula for the sum of a finite geometric series.
 # Arguments
 - `times::Real`: Upper index of the summation.
 - `r::Float64`: Discount rate. When `r` is approximately `0.0` the undiscounted
-    value `times + 1.0` is returned.
+    value `times + 1.0` is returned. Must be finite and greater than `-1.0`.
 
 # Returns
 - `Float64`: The discounted sum.
+
+# Raises
+- `ArgumentError`: if `r` is not finite, or is not greater than `-1.0`.
 """
 function get_discount_sum(times::Real, r::Float64)::Float64
+    if !isfinite(r) || r <= -1.0
+        throw(ArgumentError("`discount_rate` must be finite and greater than -1.0"))
+    end
+
     if r ≈ 0.0
         return times + 1.0
     else
@@ -137,7 +144,7 @@ running from labour market entry (year `t_entry`) to retirement (year
     (length `n_age`), or a `Matrix` by age group and economic sector, of
     size `(n_age, n_sectors)` (default: `0.8`).
 - `discount_rate::Float64`: Annual discount rate applied to future earnings
-    (default: `0.01`).
+    (default: `0.01`). Must be finite and greater than `-1.0`.
 
 # Returns
 - `Matrix{Float64}`: Present-value wage loss (or proportional loss, if
@@ -149,8 +156,9 @@ running from labour market entry (year `t_entry`) to retirement (year
     provided) do not share the size `(n_age, n_sectors)` of `n_recovered`;
     if `p_disab`, `p_lab_redn`, or `p_emp` are a vector without length
     `n_age`, a matrix without size `(n_age, n_sectors)`, or contain a value
-    outside `[0.0, 1.0]`; or if `t_ret` or `t_entry` contain a negative or
-    non-finite value.
+    outside `[0.0, 1.0]`; if `t_ret` or `t_entry` contain a negative or
+    non-finite value; or if `discount_rate` is not finite or not greater
+    than `-1.0`.
 """
 function calc_hca_cost(
         n_recovered::Matrix{Float64},
@@ -264,7 +272,7 @@ require replacement, while all deaths are assumed to require replacement.
     (length `n_age`), or a `Matrix` by age group and economic sector, of
     size `(n_age, n_sectors)` (default: `0.8`).
 - `discount_rate::Float64`: Annual discount rate applied to future earnings
-    (default: `0.01`).
+    (default: `0.01`). Must be finite and greater than `-1.0`.
 
 # Returns
 - `Matrix{Float64}`: Present-value friction cost (or proportional cost, if
@@ -275,9 +283,10 @@ require replacement, while all deaths are assumed to require replacement.
 - `ArgumentError`: if `n_dead` or `wage` (when provided) do not share the
     size `(n_age, n_sectors)` of `n_recovered`; if `t_replacement` (when a
     vector) does not have length `n_age`, or contains a negative or
-    non-finite value; or if `p_disab`, `p_lab_redn`, `p_disab_replaced`, or
+    non-finite value; if `p_disab`, `p_lab_redn`, `p_disab_replaced`, or
     `p_emp` are a vector without length `n_age`, a matrix without size
-    `(n_age, n_sectors)`, or contain a value outside `[0.0, 1.0]`.
+    `(n_age, n_sectors)`, or contain a value outside `[0.0, 1.0]`; or if
+    `discount_rate` is not finite or not greater than `-1.0`.
 """
 function calc_fca_cost(
         n_recovered::Matrix{Float64},
@@ -363,7 +372,7 @@ Healthcare costs are assumed to vary by age only, not by economic sector.
     and care cost per disabled individual, by age group. Either a single
     value applied to all age groups, or a `Vector` of length `n_age`.
 - `discount_rate::Float64`: Annual discount rate applied to future costs
-    (default: `0.03`).
+    (default: `0.03`). Must be finite and greater than `-1.0`.
 
 # Returns
 - `Matrix{Float64}`: Present-value treatment and care cost, by age group
@@ -372,9 +381,10 @@ Healthcare costs are assumed to vary by age only, not by economic sector.
 # Raises
 - `ArgumentError`: if `p_disab` is a vector without length `n_age`, or
     contains a value outside `[0.0, 1.0]`; if `t_life` (when a vector) does
-    not have length `n_age`, or contains a negative or non-finite value; or
-    if `cost_care` is a vector without length `n_age`, or contains a
-    negative or non-finite value.
+    not have length `n_age`, or contains a negative or non-finite value; if
+    `cost_care` is a vector without length `n_age`, or contains a negative
+    or non-finite value; or if `discount_rate` is not finite or not greater
+    than `-1.0`.
 """
 function calc_healthcare_cost(
         n_recovered::Matrix{Float64},
