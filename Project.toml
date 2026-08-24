@@ -1,7 +1,7 @@
 name = "EpiEconShocks"
 uuid = "d5106ebc-8f76-4abe-9d9c-e2e957300c8c"
 authors = ["Imperial College London"]
-version = "0.0.12"
+version = "0.0.13"
 
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
